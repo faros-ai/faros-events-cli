@@ -25,6 +25,8 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # -k / --api_key <api_key>      | FAROS_API_KEY
 # -a / --application <app_name> | APPLICATION_NAME
 # -c / --commit <commit_sha>    | COMMIT_SHA
+# -p / --pipeline <pipeline>    | PIPELINE_UID
+# --ci_org                      | CI_ORG_UID
 #
 # (Required Deployment Fields)
 # -e / --environment <env>      | DEPLOYMENT_ENV
@@ -33,6 +35,8 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # (Required Build Fields)
 # -bs / --build_status          | BUILD_STATUS (e.g. Success, Failed, etc)
 # -r / --repo                   | REPOSITORY
+# --vcs_org                     | VCS_ORG_UID
+# --vcs_source                  | VCS_SOURCE
 #
 # Optional fields:
 # Flag                  | Env Var                  | Default
@@ -56,10 +60,6 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 #                       | BUILD_STATUS_DETAIL      | ""
 #                       | BUILD_START_TIME         | START_TIME
 #                       | BUILD_END_TIME           | END_TIME
-#                       | PIPELINE_UID             | Random UUID TODO: what should this be?
-#                       | CI_ORG_UID               | Random UUID TODO: what should this be?
-#                       | VCS_ORG_UID              | Random UUID TODO: what should this be?
-#                       | VCS_SOURCE               | GitHub
 #
 # Optional Script Flags:
 # Flag          | Description
@@ -68,9 +68,19 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # --print_event | If present, the event will be printed.
 # --debug       | If present, helpful information will be printed.
 #
-# Example emit:
-# ./faros_emit.sh full -k <api_key> -a <application_name> \ 
-# -e <environment> -c <commit_sha> -s <status>
+# Example full emit:
+# ./faros_emit.sh full -k <api_key> \
+#   -a <app_name> \
+#   -e <environment> \
+#   -c <commit_sha> \
+#   --build_status <build_status> \ 
+#   --deploy_status <deploy_status> \
+#   --repo <vcs_repo> \ 
+#   -p <ci_pipeline> \ 
+#   --ci_org <ci_organization> \
+#   --vcs_source <vcs_source> \
+#   --vcs_org <vcs_organization> \
+#   --dry_run
 main() {
     EMIT_TYPE=$1
     shift
@@ -89,20 +99,16 @@ main() {
 
     if [ $EMIT_TYPE = "deployment" ]
     then
-        echo "Not implemented"
-        exit 1
-        # validateDeploymentInput
-        # makeDeploymentEvent
+        validateDeploymentInput
+        makeDeploymentEvent
     elif [ $EMIT_TYPE = "build" ]
     then
-        # echo "Not implemented"
-        # exit 1
         validateBuildInput
         makeBuildEvent
     elif [ $EMIT_TYPE = "full" ]
     then
-        validateDeploymentInput
         validateBuildInput
+        validateDeploymentInput
         makeFullEvent
     else
         echo "Unrecognized emit type: $EMIT_TYPE"
@@ -141,6 +147,10 @@ function parseArgs() {
                 commit_sha="$2"
                 shift 2 
                 ;;
+            -p|--pipeline)
+                pipeline_uid="$2"
+                shift 2
+                ;;
             -e|--environment)
                 deployment_env="$2"
                 shift 2
@@ -151,6 +161,18 @@ function parseArgs() {
                 ;;
             -bs|--build_status)
                 build_status="$2"
+                shift 2
+                ;;
+            --ci_org)
+                ci_org_uid="$2"
+                shift 2
+                ;;
+            --vcs_source)
+                vcs_source="$2"
+                shift 2
+                ;;
+            --vcs_org)
+                vcs_org_uid="$2"
                 shift 2
                 ;;
             -r|--repo)
@@ -189,6 +211,8 @@ function validateInput() {
     faros_api_key=${faros_api_key:-$FAROS_API_KEY}
     application_name=${application_name:-$APPLICATION_NAME}
     commit_sha=${commit_sha:-$COMMIT_SHA}
+    pipeline_uid=${pipeline_uid:-$PIPELINE_UID}
+    ci_org_uid=${ci_org_uid:-$CI_ORG_UID}
 
     # Optional fields: If flag missing fall back to env var then defualt
     FAROS_GRAPH=${FAROS_GRAPH:-"default"}
@@ -214,6 +238,9 @@ function validateDeploymentInput() {
     # Required fields:
     deployment_env=${deployment_env:-$DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$DEPLOYMENT_STATUS}
+    
+    # Some build fields required
+    BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
 
     # Optional fields (No flag offered): If unset use default
     DEPLOYMENT_UID=${DEPLOYMENT_UID:-$(uuidgen)} # default Random UUID
@@ -227,16 +254,14 @@ function validateBuildInput() {
     # Required fields:
     build_status=${build_status:-$BUILD_STATUS}
     repository=${repository:-$REPOSITORY}
+    vcs_source=${vcs_source:-$VCS_SOURCE}
+    vcs_org_uid=${vcs_org_uid:-$VCS_ORG_UID}
 
     # Optional fields (no flag offered): If unset use default
     BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
-    BUILD_START_TIME=${BUILD_START_TIME:-START_TIME}
-    BUILD_END_TIME=${BUILD_END_TIME:-END_TIME}
+    BUILD_START_TIME=${BUILD_START_TIME:-$START_TIME}
+    BUILD_END_TIME=${BUILD_END_TIME:-$END_TIME}
     BUILD_STATUS_DETAIL=${BUILD_STATUS_DETAIL:-""}
-    PIPELINE_UID=${PIPELINE_UID:-$(uuidgen)} # TODO: required?
-    CI_ORG_UID=${CI_ORG_UID:-$(uuidgen)} # TODO: required?
-    VCS_ORG_UID=${VCS_ORG_UID:-$(uuidgen)} # TODO: required?
-    VCS_SOURCE=${VCS_SOURCE:-"GitHub"} # TODO: required?
 }
 
 function makeDeployment() {
@@ -249,6 +274,9 @@ function makeDeployment() {
         --arg deployment_env "$deployment_env" \
         --arg application_name "$application_name" \
         --arg application_platform "$APPLICATION_PLATFORM" \
+        --arg build_uid "$BUILD_UID" \
+        --arg pipeline_uid "$pipeline_uid" \
+        --arg ci_org_uid "$ci_org_uid" \
         '{
             "cicd_Deployment": {
                 "uid": $deployment_uid,
@@ -266,6 +294,16 @@ function makeDeployment() {
                 "application" : {
                     "name": $application_name,
                     "platform": $application_platform
+                },
+                "build": {
+                    "uid": $build_uid,
+                    "pipeline": {
+                        "uid": $pipeline_uid,
+                        "organization": {
+                            "uid": $ci_org_uid,
+                            "source": $s
+                        }
+                    }
                 }
             }
         }'
@@ -280,13 +318,13 @@ function makeBuild() {
         --arg start_time "$BUILD_START_TIME" \
         --arg end_time "$BUILD_END_TIME" \
         --arg build_status_detail "$BUILD_STATUS_DETAIL" \
-        --arg pipeline_uid "$PIPELINE_UID" \
-        --arg ci_org_uid "$CI_ORG_UID" \
+        --arg pipeline_uid "$pipeline_uid" \
+        --arg ci_org_uid "$ci_org_uid" \
         '{
             "cicd_Build": {
                 "uid": $build_uid,
-                "startedAt": $start_time,
-                "endedAt": $end_time,
+                "startedAt": $start_time|tonumber,
+                "endedAt": $end_time|tonumber,
                 "status": {
                     "category": $build_status,
                     "detail": $build_status_detail
@@ -307,9 +345,10 @@ function makeBuildCommitAssociation() {
     cicd_BuildCommitAssociation=$( jq -n \
         --arg s "$SOURCE" \
         --arg build_uid "$BUILD_UID" \
-        --arg pipeline_uid "$PIPELINE_UID" \
-        --arg ci_org_uid "$CI_ORG_UID" \
-        --arg vcs_org_uid "$VCS_ORG_UID" \
+        --arg pipeline_uid "$pipeline_uid" \
+        --arg ci_org_uid "$ci_org_uid" \
+        --arg vcs_org_uid "$vcs_org_uid" \
+        --arg vcs_source "$vcs_source" \
         --arg commit_sha "$commit_sha" \
         --arg repo  "$repository" \
         '{
@@ -328,7 +367,7 @@ function makeBuildCommitAssociation() {
                 "repository": {
                     "organization": {
                         "uid": $vcs_org_uid,
-                        "source": "GitHub"
+                        "source": $vcs_source
                     },
                     "name": $repo
                 },
@@ -342,8 +381,8 @@ function makeBuildCommitAssociation() {
 function makePipeline() {
     cicd_Pipeline=$( jq -n \
         --arg s "$SOURCE" \
-        --arg pipeline_uid "$PIPELINE_UID" \
-        --arg ci_org_uid "$CI_ORG_UID" \
+        --arg pipeline_uid "$pipeline_uid" \
+        --arg ci_org_uid "$ci_org_uid" \
         '{
             "cicd_Pipeline": {
                 "uid": $pipeline_uid,
@@ -371,21 +410,29 @@ function makeApplication() {
 
 function makeBuildEvent() {
     makeBuild
-    # makeBuildCommitAssociation
-
+    makeBuildCommitAssociation
+    makePipeline
+    makeApplication
     request_body=$( jq -n \
         --arg origin "$ORIGIN" \
         --argjson build "$cicd_Build" \
+        --argjson buildCommit "$cicd_BuildCommitAssociation" \
+        --argjson pipeline "$cicd_Pipeline" \
+        --argjson application "$compute_Application" \
         '{ 
             "origin": $origin,
             "entries": [
-                $build
+                $build,
+                $buildCommit,
+                $pipeline,
+                $application
             ]
         }')
 }
 
 function makeDeploymentEvent() {
     makeDeployment
+    makeApplication
     request_body=$( jq -n \
         --arg origin "$ORIGIN" \
         --argjson deployment "$cicd_Deployment" \
