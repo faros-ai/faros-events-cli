@@ -226,7 +226,7 @@ function validateDeploymentInput() {
 function validateBuildInput() {
     # Required fields:
     build_status=${build_status:-$BUILD_STATUS}
-    repository=${repository:-REPOSITORY}
+    repository=${repository:-$REPOSITORY}
 
     # Optional fields (no flag offered): If unset use default
     BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
