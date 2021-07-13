@@ -466,6 +466,4 @@ function emitToFaros() {
     -d "$request_body"
 }
 
-FAROS_API_URL="https://dev.api.faros.ai"
-FAROS_GRAPH="will-test"
 main "$@"; exit
