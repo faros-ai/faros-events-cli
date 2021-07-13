@@ -42,6 +42,7 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # Flag                  | Env Var                  | Default
 # -----------------------------------------------------------------------------
 # -g / --graph <graph>  | FAROS_GRAPH              | "default"
+# -url                  | FAROS_API_URL            | https://prod.api.faros.ai
 #                       | ORIGIN                   | "Faros_Script_Event"
 #                       | SOURCE                   | "Faros_Script"
 #                       | START_TIME               | Now (e.g. 1549932180000)
