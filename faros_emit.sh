@@ -336,7 +336,7 @@ function makeBuildCommitAssociation() {
         --arg vcs_org_uid "$vcs_org_uid" \
         --arg vcs_source "$vcs_source" \
         --arg commit_sha "$commit_sha" \
-        --arg repo  "$repository" \
+        --arg repo "$repository" \
         '{
             "cicd_BuildCommitAssociation": {
                 "build": {
