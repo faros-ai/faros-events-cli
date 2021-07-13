@@ -77,7 +77,7 @@ main() {
 
     if ((debug))
     then
-        echo "Faros url: $FAROS_API_URL"
+        echo "Faros url: $faros_api_url"
         echo "Faros graph: $faros_graph"
         echo "Dry run: $dry_run"
         echo "Print event: $print_event"
