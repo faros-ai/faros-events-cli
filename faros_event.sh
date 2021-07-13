@@ -20,35 +20,35 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # arg1 | Emit type: "deployment", "build", "full" (must be first arg)
 # 
 # Required fields:
-# Flag                          | Env Var
+# Flag                           | Env Var
 # -----------------------------------------------------------------------------
-# -k / --api_key <api_key>      | FAROS_API_KEY
-# -a / --application <app_name> | APPLICATION_NAME
-# -c / --commit <commit_sha>    | COMMIT_SHA
-# -p / --pipeline <pipeline>    | PIPELINE_UID
-# --ci_org                      | CI_ORG_UID
+# -k / --api_key <api_key>       | FAROS_API_KEY
+# -a / --application <app_name>  | APPLICATION_NAME
+# -c / --commit <commit_sha>     | COMMIT_SHA
+# -p / --pipeline <pipeline>     | PIPELINE_UID
+# --ci_org <ci_org>              | CI_ORG_UID
 #
-# (Required Deployment Fields)
-# -e / --environment <env>      | DEPLOYMENT_ENV
-# -ds / --deploy_status         | DEPLOYMENT_STATUS (e.g. Success, Failed, etc)
+# (Required deployment fields)
+# -e / --environment <env>       | DEPLOYMENT_ENV
+# -ds / --deploy_status <status> | DEPLOYMENT_STATUS (e.g. Success, Failed, etc)
 #
-# (Required Build Fields)
-# -bs / --build_status          | BUILD_STATUS (e.g. Success, Failed, etc)
-# -r / --repo                   | REPOSITORY
-# --vcs_org                     | VCS_ORG_UID
-# --vcs_source                  | VCS_SOURCE
+# (Required build fields)
+# -bs / --build_status <status>  | BUILD_STATUS (e.g. Success, Failed, etc)
+# -r / --repo <repo>             | REPOSITORY
+# --vcs_org <vcs_org>            | VCS_ORG_UID
+# --vcs_source <vcs_source>      | VCS_SOURCE
 #
 # Optional fields:
 # Flag                  | Env Var                  | Default
 # -----------------------------------------------------------------------------
 # -g / --graph <graph>  | FAROS_GRAPH              | "default"
-# -url                  | FAROS_API_URL            | https://prod.api.faros.ai
+# -url <url>            | FAROS_API_URL            | https://prod.api.faros.ai
 #                       | ORIGIN                   | "Faros_Script_Event"
 #                       | SOURCE                   | "Faros_Script"
 #                       | START_TIME               | Now (e.g. 1549932180000)
 #                       | END_TIME                 | Now (e.g. 1549932180000)
 #
-# (Optional Deployment Fields)
+# (Optional deployment fields)
 #                       | DEPLOYMENT_UID           | Random UUID
 #                       | APPLICATION_PLATFORM     | "NA"
 #                       | DEPLOYMENT_ENV_DETAIL    | ""
@@ -56,7 +56,7 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 #                       | DEPLOYMENT_START_TIME    | START_TIME
 #                       | DEPLOYMENT_END_TIME      | END_TIME
 #
-# (Optional Build Fields)
+# (Optional build fields)
 #                       | BUILD_UID                | Commit Sha
 #                       | BUILD_STATUS_DETAIL      | ""
 #                       | BUILD_START_TIME         | START_TIME
