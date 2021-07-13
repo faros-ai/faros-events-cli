@@ -67,20 +67,6 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # --dry_run     | If present, the event will be printed instead of emitted.
 # --print_event | If present, the event will be printed.
 # --debug       | If present, helpful information will be printed.
-#
-# Example full emit:
-# ./faros_emit.sh full -k <api_key> \
-#   -a <app_name> \
-#   -e <environment> \
-#   -c <commit_sha> \
-#   --build_status <build_status> \ 
-#   --deploy_status <deploy_status> \
-#   --repo <vcs_repo> \ 
-#   -p <ci_pipeline> \ 
-#   --ci_org <ci_organization> \
-#   --vcs_source <vcs_source> \
-#   --vcs_org <vcs_organization> \
-#   --dry_run
 main() {
     EMIT_TYPE=$1
     shift
