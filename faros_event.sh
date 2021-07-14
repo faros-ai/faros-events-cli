@@ -75,8 +75,18 @@ fi
 # --print_event | If present, the event will be printed.
 # --debug       | If present, helpful information will be printed.
 main() {
-    EVENT_TYPE=$1
-    shift
+    if (($#))
+    then
+        if [ $1 == "help" ]
+        then
+            showHelp
+        fi
+
+        EVENT_TYPE=$1
+        shift
+    else
+        showHelp
+    fi
 
     parseArgs "$@"  
     validateInput
@@ -501,10 +511,30 @@ function sendEventToFaros() {
     -d "$request_body") 
 
     # extract the status
-    http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    http_response_status=$(echo $http_response 
+        | tr -d '\n' 
+        | sed -e 's/.*HTTPSTATUS://')
 
     # extract the body
-    http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
+    http_response_body=$(echo $http_response 
+        | sed -e 's/HTTPSTATUS\:.*//g')
+}
+
+function showHelp() {
+    RED='\033[0;31m'
+    BLUE='\033[0;34m'
+    NC='\033[0m' # No Color
+
+    printf "${BLUE}  _____                          ${RED}  _     ___ \\n"
+    printf "${BLUE} |  ___|__ _  _ __  ___   ___    ${RED} / \\   |_ _|\\n"
+    printf "${BLUE} | |_  / _\` || '__|/ _ \\ / __| ${RED}  / _ \\   | |\\n"
+    printf "${BLUE} |  _|| (_| || |  | (_) |\\__ \\ ${RED} / ___ \\  | |\\n"
+    printf "${BLUE} |_|   \\__,_||_|   \\___/ |___/ ${RED}/_/   \\_\\|___|\\n"
+    printf "${NC}\\n"
+
+    github_url="https://github.com/faros-ai/faros-events-cli"
+    echo "For usage information please visit: $github_url"
+    exit 0
 }
 
 main "$@"; exit
