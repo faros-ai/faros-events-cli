@@ -32,6 +32,73 @@ VCS_ORG_UID="<vcs_org>" \
 ./faros_event.sh build --print_event
 ```
 
+#### Event that is sent to Faros
+
+```json
+{
+  "origin": "Faros_Script_Event",
+  "entries": [
+    {
+      "cicd_Build": {
+        "uid": "<commit_sha>",
+        "startedAt": 1626290254000,
+        "endedAt": 1626290254000,
+        "status": {
+          "category": "<build_status>",
+          "detail": ""
+        },
+        "pipeline": {
+          "uid": "<ci_pipeline>",
+          "organization": {
+            "uid": "<ci_organization>",
+            "source": "Faros_Script"
+          }
+        }
+      }
+    },
+    {
+      "cicd_BuildCommitAssociation": {
+        "build": {
+          "uid": "<commit_sha>",
+          "pipeline": {
+            "uid": "<ci_pipeline>",
+            "organization": {
+              "uid": "<ci_organization>",
+              "source": "Faros_Script"
+            }
+          }
+        },
+        "commit": {
+          "repository": {
+            "organization": {
+              "uid": "<vcs_organization>",
+              "source": "<vcs_source>"
+            },
+            "name": "<vcs_repo>"
+          },
+          "sha": "<commit_sha>"
+        }
+      }
+    },
+    {
+      "cicd_Pipeline": {
+        "uid": "<ci_pipeline>",
+        "organization": {
+          "uid": "<ci_organization>",
+          "source": "Faros_Script"
+        }
+      }
+    },
+    {
+      "compute_Application": {
+        "name": "<app_name>",
+        "platform": "NA"
+      }
+    }
+  ]
+}
+```
+
 ### Sending a Deployment Event
 
 ```sh
@@ -56,7 +123,7 @@ PIPELINE_UID="<pipeline>" \
 ./faros_event.sh deployment --print_event
 ```
 
-### Sending a Full (Build + Deploy) Event
+### Sending a Full (Build + Deployment) Event
 
 ```sh
 # Using flags

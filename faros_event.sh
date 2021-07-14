@@ -23,7 +23,7 @@ fi
 # Required args:
 # Arg  | Description
 # -----------------------------------------------------------------------------
-# arg1 | Emit type: "deployment", "build", "full" (must be first arg)
+# arg1 | Event type: "deployment", "build", "full" (must be first arg)
 # 
 # Required fields:
 # Flag                           | Env Var
@@ -71,7 +71,7 @@ fi
 # Optional Script Flags:
 # Flag          | Description
 # -----------------------------------------------------------------------------
-# --dry_run     | If present, the event will be printed instead of emitted.
+# --dry_run     | If present, the event will be printed instead of sent.
 # --print_event | If present, the event will be printed.
 # --debug       | If present, helpful information will be printed.
 main() {
@@ -119,7 +119,8 @@ main() {
     then
         sendEventToFaros
 
-        if [ ! $http_status -eq 200  ]; then
+        if [ ! $http_status -eq 200 ]
+        then
             echo "Error [HTTP status: $http_status]"
             http_error=1
         else
@@ -138,7 +139,7 @@ main() {
             fi
         fi
 
-        # Fail if event was not successfully sent
+        # Fail if event failed to send
         if ((${http_error:-0}))
         then
             exit 1
