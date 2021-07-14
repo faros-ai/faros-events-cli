@@ -119,12 +119,12 @@ main() {
     then
         sendEventToFaros
 
-        if [ ! $http_status -eq 200 ]
+        if [ ! $http_response_status -eq 200 ]
         then
-            echo "Error [HTTP status: $http_status]"
+            echo "Error [HTTP status: $http_response_status]"
             http_error=1
         else
-            echo "Ok [HTTP status: $http_status]"
+            echo "Ok [HTTP status: $http_response_status]"
         fi
 
         if (($print_event))
@@ -501,7 +501,7 @@ function sendEventToFaros() {
     -d "$request_body") 
 
     # extract the status
-    http_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
 
     # extract the body
     http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
