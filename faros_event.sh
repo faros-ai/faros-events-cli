@@ -2,13 +2,19 @@
 
 set -euo pipefail
 
-# Requires curl
-which curl &> /dev/null || { echo "curl required" & exit 1; }
-# Requires jq
-which jq &> /dev/null || { echo "jq required" & exit 1; }
+which curl &> /dev/null || 
+    { echo "Error: curl is required." && missing_require=1; }
+which jq &> /dev/null || 
+    { echo "Error: jq is required." && missing_require=1; }
 
-# Emits deployment or build information to Faros.
-# Depending on if you are emitting a deployment or a build, different flags
+if ((${missing_require:-0}))
+then
+    echo "Please ensure curl, and jq are available before running the script."
+    exit 1
+fi
+
+# Sends deployment and/or build information to Faros.
+# Depending on if you are sending a deployment, build, or both different flags
 # will be required.
 #
 # Canonical Model Version: v0.8.9
@@ -69,7 +75,7 @@ which jq &> /dev/null || { echo "jq required" & exit 1; }
 # --print_event | If present, the event will be printed.
 # --debug       | If present, helpful information will be printed.
 main() {
-    EMIT_TYPE=$1
+    EVENT_TYPE=$1
     shift
 
     parseArgs "$@"  
@@ -84,42 +90,51 @@ main() {
         echo "Debug: $debug"
     fi
 
-    if [ $EMIT_TYPE = "deployment" ]
+    if [ $EVENT_TYPE = "deployment" ]
     then
         validateDeploymentInput
         makeDeploymentEvent
-    elif [ $EMIT_TYPE = "build" ]
+    elif [ $EVENT_TYPE = "build" ]
     then
         validateBuildInput
         makeBuildEvent
-    elif [ $EMIT_TYPE = "full" ]
+    elif [ $EVENT_TYPE = "full" ]
     then
         validateBuildInput
         validateDeploymentInput
         makeFullEvent
     else
-        echo "Unrecognized emit type: $EMIT_TYPE"
-        echo "Valid types: deployment, build, full"
+        echo "Unrecognized event type: $EVENT_TYPE"
+        echo "Valid event types: deployment, build, full."
         exit 1
     fi
 
     if (($print_event)) || (($dry_run))
     then
-        echo $request_body | jq .
+        echo "Request:"
+        echo $request_body | jq
     fi
 
     if !(($dry_run))
     then
-        emitToFaros
+        sendEventToFaros
     else
-        echo "Dry run: Event NOT emitted to Faros"
+        echo "Dry run: Event NOT sent to Faros."
     fi
+
+    if (($print_event))
+    then
+        echo "Response:"
+        echo $response_json | jq
+    fi
+
+    echo "Done."
     exit 0
 }
 
 function parseArgs() {
     # Loop through arguments and process them
-    while (($#));
+    while (($#))
     do
         case "$1" in
             -k|--api_key)
@@ -226,7 +241,7 @@ function validateDeploymentInput() {
     deployment_env=${deployment_env:-$DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$DEPLOYMENT_STATUS}
     
-    # Some build fields required
+    # A build field needed
     BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
 
     # Optional fields (No flag offered): If unset use default
@@ -456,15 +471,14 @@ function makeFullEvent() {
         }')
 }
 
-function emitToFaros() {
-    echo "Emitting event to Faros..."
-
-    curl -s $faros_api_url/graphs/$faros_graph/revisions \
-    --retry 5 --retry-delay 5 \
+function sendEventToFaros() {
+    echo "Sending event to Faros..."
+    response_json=$(curl -s --show-error --retry 5 --retry-delay 5 \
+    $faros_api_url/graphs/$faros_graph/revisions \
     -X POST \
     -H "authorization: $faros_api_key" \
     -H "content-type: application/json" \
-    -d "$request_body"
+    -d "$request_body") 
 }
 
 main "$@"; exit
