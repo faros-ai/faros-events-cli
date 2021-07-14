@@ -111,21 +111,40 @@ main() {
 
     if (($print_event)) || (($dry_run))
     then
-        echo "Request:"
+        echo "Request Body:"
         echo $request_body | jq
     fi
 
     if !(($dry_run))
     then
         sendEventToFaros
+
+        if [ ! $http_status -eq 200  ]; then
+            echo "Error [HTTP status: $http_status]"
+            http_error=1
+        else
+            echo "Ok [HTTP status: $http_status]"
+        fi
+
+        if (($print_event))
+        then
+            echo "Response Body:"
+            # If response is valid json then echo using jq
+            if jq -e . >/dev/null 2>&1 <<< "$http_response_body"
+            then
+                echo $http_response_body | jq
+            else
+                echo $http_response_body
+            fi
+        fi
+
+        # Fail if event was not successfully sent
+        if ((${http_error:-0}))
+        then
+            exit 1
+        fi
     else
         echo "Dry run: Event NOT sent to Faros."
-    fi
-
-    if (($print_event))
-    then
-        echo "Response:"
-        echo $response_json | jq
     fi
 
     echo "Done."
@@ -473,12 +492,18 @@ function makeFullEvent() {
 
 function sendEventToFaros() {
     echo "Sending event to Faros..."
-    response_json=$(curl -s --show-error --retry 5 --retry-delay 5 \
+    http_response=$(curl --retry 5 --retry-delay 5 \
+    --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
     $faros_api_url/graphs/$faros_graph/revisions \
-    -X POST \
     -H "authorization: $faros_api_key" \
     -H "content-type: application/json" \
     -d "$request_body") 
+
+    # extract the status
+    http_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+    # extract the body
+    http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
 }
 
 main "$@"; exit
