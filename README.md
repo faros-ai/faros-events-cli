@@ -24,6 +24,13 @@ FAROS_REPO="<vcs_repo>" \
     --vcs_org "<vcs_organization>"
 ```
 
+### Usage
+
+Download and invoke the script in one line:
+```sh
+$(curl https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_events.sh) | bash -s deployment --help
+```
+
 ### Usage Examples
 
 #### Sending a Build Event
