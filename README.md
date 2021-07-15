@@ -2,88 +2,109 @@
 
 CLI for reporting events to Faros platform
 
-## `faros_event.sh` Usage Examples
+## `faros_event.sh`
 
-### Sending a Build Event
+The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. Now when attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
+
+### Arguments passing
+
+There are two ways that arguments can be passed into the script. The first is via flags. The second, is via environment variables. If both are set, flags will take precedence over environment variables. By convention, you can switch between using a flag or an environment variable by simple capitalizing the argument name and prefixing it with `FAROS_`. E.g. `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
+
+Example with mixed argument input:
+
+```sh
+FAROS_CI_ORG="<ci_org>" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_REPO="<vcs_repo>" \
+./faros_event.sh build -k "<api_key>" \
+    --app "<app_name>" \
+    --build_status "<build_status>" \
+    --pipeline "<ci_pipeline>" \
+    --vcs_source "<vcs_source>" \
+    --vcs_org "<vcs_organization>"
+```
+
+### Usage Examples
+
+#### Sending a Build Event
 
 ```sh
 # Using flags
 ./faros_event.sh build -k "<api_key>" \
-    --application "<app_name>" \
+    --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
-    --commit "<commit_sha>" \
+    --commit_sha "<commit_sha>" \
     --repo "<vcs_repo>" \
     --pipeline "<ci_pipeline>" \
     --vcs_source "<vcs_source>" \
-    --vcs_org "<vcs_organization>" \
-    --print_event
+    --vcs_org "<vcs_organization>"
 
 # Using environment variables
 FAROS_API_KEY="<api_key>" \
-APPLICATION_NAME="<app_name>" \
-BUILD_STATUS="<build_status>" \
-CI_ORG_UID="<ci_org>" \
-COMMIT_SHA="<commit_sha>" \
-REPOSITORY="<vcs_repo>" \
-PIPELINE_UID="<ci_pipeline>" \
-VCS_SOURCE="<vcs_source>" \
-VCS_ORG_UID="<vcs_org>" \
-./faros_event.sh build --print_event
+FAROS_APP="<app_name>" \
+FAROS_BUILD_STATUS="<build_status>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_REPO="<vcs_repo>" \
+FAROS_PIPELINE="<ci_pipeline>" \
+FAROS_VCS_SOURCE="<vcs_source>" \
+FAROS_VCS_ORG="<vcs_org>" \
+./faros_event.sh build
 ```
 
-### Sending a Deployment Event
+#### Sending a Deployment Event
 
 ```sh
 # Using flags
 ./faros_event.sh deployment -k "<api_key>" \
-    --application "<app_name>" \
+    --app "<app_name>" \
     --ci_org "<ci_organization>" \
-    --commit "<commit_sha>" \
-    --deploy_status "<deploy_status>" \
-    --environment "<environment>" \
+    --commit_sha "<commit_sha>" \
+    --deployment_status "<deploy_status>" \
+    --deployment_env "<environment>" \
     --pipeline "<ci_pipeline>" \
-    --print_event
+    --build "<build>"
 
 # Using environment variables
 FAROS_API_KEY="<api_key>" \
-APPLICATION_NAME="<app_name>" \
-CI_ORG_UID="<ci_org>" \
-COMMIT_SHA="<commit_sha>" \
-DEPLOYMENT_STATUS="<deploy_status>" \
-DEPLOYMENT_ENV="<environment>" \
-PIPELINE_UID="<pipeline>" \
-./faros_event.sh deployment --print_event
+FAROS_APP="<app_name>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
+FAROS_DEPLOYMENT_ENV="<environment>" \
+FAROS_PIPELINE="<pipeline>" \
+FAROS_BUILD="<build>" \
+./faros_event.sh deployment
 ```
 
-### Sending a Full (Build + Deployment) Event
+#### Sending a Full (Build + Deployment) Event
 
 ```sh
 # Using flags
 ./faros_event.sh full -k "<api_key>" \
-    --application "<app_name>" \
+    --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
-    --commit "<commit_sha>" \
-    --deploy_status "<deploy_status>" \
-    --environment "<environment>" \
+    --commit_sha "<commit_sha>" \
+    --deployment_status "<deploy_status>" \
+    --deployment_env "<environment>" \
     --pipeline "<ci_pipeline>" \
     --repo "<vcs_repo>" \
     --vcs_source "<vcs_source>" \
-    --vcs_org "<vcs_organization>" \
-    --print_event
+    --vcs_org "<vcs_organization>"
 
 # Using environment variables
 FAROS_API_KEY="<api_key>" \
-APPLICATION_NAME="<app_name>" \
-BUILD_STATUS="<build_status>" \
-CI_ORG_UID="<ci_org>" \
-COMMIT_SHA="<commit_sha>" \
-DEPLOYMENT_STATUS="<deploy_status>" \
-DEPLOYMENT_ENV="<environment>" \
-REPOSITORY="<vcs_repo>" \
-PIPELINE_UID="<pipeline>" \
-VCS_SOURCE="<vcs_source>" \
-VCS_ORG_UID="<vcs_org>" \
-./faros_event.sh full --print_event
+FAROS_APP="<app_name>" \
+FAROS_BUILD_STATUS="<build_status>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
+FAROS_DEPLOYMENT_ENV="<environment>" \
+FAROS_REPO="<vcs_repo>" \
+FAROS_PIPELINE="<pipeline>" \
+FAROS_VCS_SOURCE="<vcs_source>" \
+FAROS_VCS_ORG="<vcs_org>" \
+./faros_event.sh full
 ```

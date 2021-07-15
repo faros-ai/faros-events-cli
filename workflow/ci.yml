@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - '**.md'
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - '**.md'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        # - windows-latest
+        include:
+        - os: ubuntu-latest
+        # - os: windows-latest
+          # TEMP: 'D:\tmp'
+    steps:
+    - name: Check out
+      uses: actions/checkout@v2
+
+    # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
+    - name: Install Shellspec - non-windows
+      if: ${{ matrix.os != 'windows' }}
+      run: |
+        curl -fsSL https://git.io/shellspec | sh -s -- -y
+        sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
+        ls -la ${HOME}/.local/lib/shellspec
+        echo "shellspec symlink:"
+        ls -la /usr/local/bin/shellspec
+        /usr/local/bin/shellspec --version
+        which shellspec
+        shellspec --version
+
+    - name: Install jq on Ubuntu
+      if: ${{ matrix.os == 'ubuntu' && matrix.snyk_install_method != 'alpine-binary' && matrix.snyk_install_method != 'npm-root-user' }}
+      run: |
+        sudo apt-get install jq
+        sudo apt install curl
+
+    - name: Run shellspec tests - non-Windows
+      if: ${{ matrix.os != 'windows' }}
+      working-directory: ./
+      shell: bash -l {0} # run bash with --login flag to load .bash_profile that's used by yarn install method
+      run: shellspec -f d

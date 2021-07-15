@@ -7,332 +7,423 @@ which curl &> /dev/null ||
 which jq &> /dev/null || 
     { echo "Error: jq is required." && missing_require=1; }
 
-if ((${missing_require:-0}))
-then
-    echo "Please ensure curl, and jq are available before running the script."
+if ((${missing_require:-0})); then
+    echo "Please ensure curl and jq are available before running the script."
     exit 1
 fi
 
-# Sends deployment and/or build information to Faros.
-# Depending on if you are sending a deployment, build, or both different flags
-# will be required.
-#
-# Canonical Model Version: v0.8.9
-# https://github.com/faros-ai/canonical-models/tree/v0.8.9
-#
-# Required args:
-# Arg  | Description
-# -----------------------------------------------------------------------------
-# arg1 | Event type: "deployment", "build", "full" (must be first arg)
-# 
-# Required fields:
-# Flag                           | Env Var
-# -----------------------------------------------------------------------------
-# -k / --api_key <api_key>       | FAROS_API_KEY
-# -a / --application <app_name>  | APPLICATION_NAME
-# -c / --commit <commit_sha>     | COMMIT_SHA
-# -p / --pipeline <pipeline>     | PIPELINE_UID
-# --ci_org <ci_org>              | CI_ORG_UID
-#
-# (Required deployment fields)
-# -e / --environment <env>       | DEPLOYMENT_ENV
-# -ds / --deploy_status <status> | DEPLOYMENT_STATUS (e.g. Success, Failed, etc)
-#
-# (Required build fields)
-# -bs / --build_status <status>  | BUILD_STATUS (e.g. Success, Failed, etc)
-# -r / --repo <repo>             | REPOSITORY
-# --vcs_org <vcs_org>            | VCS_ORG_UID
-# --vcs_source <vcs_source>      | VCS_SOURCE
-#
-# Optional fields:
-# Flag                  | Env Var                  | Default
-# -----------------------------------------------------------------------------
-# -g / --graph <graph>  | FAROS_GRAPH              | "default"
-# -url <url>            | FAROS_API_URL            | https://prod.api.faros.ai
-#                       | ORIGIN                   | "Faros_Script_Event"
-#                       | SOURCE                   | "Faros_Script"
-#                       | START_TIME               | Now (e.g. 1549932180000)
-#                       | END_TIME                 | Now (e.g. 1549932180000)
-#
-# (Optional deployment fields)
-#                       | DEPLOYMENT_UID           | Random UUID
-#                       | APPLICATION_PLATFORM     | "NA"
-#                       | DEPLOYMENT_ENV_DETAIL    | ""
-#                       | DEPLOYMENT_STATUS_DETAIL | ""
-#                       | DEPLOYMENT_START_TIME    | START_TIME
-#                       | DEPLOYMENT_END_TIME      | END_TIME
-#
-# (Optional build fields)
-#                       | BUILD_UID                | Commit Sha
-#                       | BUILD_STATUS_DETAIL      | ""
-#                       | BUILD_START_TIME         | START_TIME
-#                       | BUILD_END_TIME           | END_TIME
-#
-# Optional Script Flags:
-# Flag          | Description
-# -----------------------------------------------------------------------------
-# --dry_run     | If present, the event will be printed instead of sent.
-# --print_event | If present, the event will be printed.
-# --debug       | If present, helpful information will be printed.
+
+version="0.0.1"
+canonical_model_version="0.8.9"
+github_url="https://github.com/faros-ai/faros-events-cli"
+
+# Defaults
+FAROS_GRAPH_DEFAULT="default"
+FAROS_URL_DEFAULT="https://prod.api.faros.ai"
+FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
+FAROS_SOURCE_DEFAULT="Faros_Script"
+FAROS_APP_PLATFORM_DEFAULT="NA"
+FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT=""
+FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT=""
+FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
+print_event=0
+dry_run=0
+silent=0
+debug=0
+
+function help() {
+    RED='\033[0;31m'
+    BLUE='\033[0;34m'
+    NC='\033[0m' # No Color
+
+    printf "${BLUE}  _____                          ${RED}  _     ___\\n"
+    printf "${BLUE} |  ___|__ _  _ __  ___   ___    ${RED} / \\   |_ _| (v$version)\\n"
+    printf "${BLUE} | |_  / _\` || '__|/ _ \\ / __| ${RED}  / _ \\   | |\\n"
+    printf "${BLUE} |  _|| (_| || |  | (_) |\\__ \\ ${RED} / ___ \\  | |\\n"
+    printf "${BLUE} |_|   \\__,_||_|   \\___/ |___/ ${RED}/_/   \\_\\|___|\\n"
+    printf "${NC}\\n"
+
+    echo
+    echo "Sends deployment and/or build information to Faros."
+    echo "Depending on if you are sending a deployment, build, or both, different flags will"
+    echo "be required."
+    echo
+    printf "${RED}Canonical Model Version: v$canonical_model_version ${NC}\\n"
+    echo
+    printf "${RED}Required Args:${NC}\\n"
+    echo "Event type (i.e. \"deployment\", \"build\", \"full\")"
+    echo 
+    printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
+    echo "---------------------------------------------------------------------------------------------------"
+    echo "Flag                                  | Environment Variable"
+    echo "---------------------------------------------------------------------------------------------------"
+    printf "${RED}(Required fields)${NC}\\n"
+    echo "-k / --api_key <api_key>              | FAROS_API_KEY"
+    echo "--app <app>                           | FAROS_APP"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA"
+    echo "--pipeline <pipeline>                 | FAROS_PIPELINE"
+    echo "--ci_org <ci_org>                     | FAROS_CI_ORG"
+    printf "${RED}(Required deployment fields)${NC}\\n"
+    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV"
+    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS"
+    echo "--build <build>                       | FAROS_BUILD"
+    printf "${RED}(Required build fields)${NC}\\n"
+    echo "--build_status <status>               | FAROS_BUILD_STATUS"
+    echo "--repo <repo>                         | FAROS_REPO"
+    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG"
+    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE"
+    echo "                                      |"
+    echo "---------------------------------------------------------------------------------------------------"
+    echo "Flag                                  | Environment Variable            | Default"
+    echo "---------------------------------------------------------------------------------------------------"
+    printf "${BLUE}(Optional fields)${NC}\\n"
+    echo "-u / --url <url>                      | FAROS_URL                       | $FAROS_URL_DEFAULT"
+    echo "-g / --graph <graph>                  | FAROS_GRAPH                     | \"$FAROS_GRAPH_DEFAULT\""
+    echo "--origin <origin>                     | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "--source <source>                     | FAROS_SOURCE                    | \"$FAROS_SOURCE_DEFAULT\""
+    echo "--start_time <start>                  | FAROS_START_TIME                | Now"
+    echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
+    printf "${BLUE}(Optional deployment fields)${NC}\\n"
+    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID "
+    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
+    echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
+    echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
+    echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
+    echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
+    printf "${BLUE}(Optional build fields)${NC}\\n"
+    echo "--build <build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA"
+    echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
+    echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
+    echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
+    echo
+    printf "${BLUE}Additional settings flags:${NC}\\n"
+    echo "--dry_run     Print the event instead of sending."
+    echo "--silent      Unexceptional output will be silenced."
+    echo "--debug       Helpful information will be printed."
+    echo
+    echo "For more usage information please visit:"
+    printf "${RED}$github_url"
+    echo
+    exit 0
+}
+
 main() {
-    if (($#))
-    then
-        if [ $1 == "help" ]
-        then
-            showHelp
-        fi
+    parseFlags "$@"
+    set -- ${POSITIONAL[@]:-} # restore positional parameters
+    parsePositionalArgs "$@"
+    resolveInput
 
-        EVENT_TYPE=$1
-        shift
-    else
-        showHelp
-    fi
-
-    parseArgs "$@"  
-    validateInput
-
-    if ((debug))
-    then
-        echo "Faros url: $faros_api_url"
-        echo "Faros graph: $faros_graph"
+    if ((debug)); then
+        echo "Faros url: $api_url"
+        echo "Faros graph: $graph"
         echo "Dry run: $dry_run"
-        echo "Print event: $print_event"
+        echo "Silent: $print_event"
         echo "Debug: $debug"
     fi
 
-    if [ $EVENT_TYPE = "deployment" ]
-    then
-        validateDeploymentInput
+    if [ $EVENT_TYPE = "deployment" ]; then
+        resolveDeploymentInput
         makeDeploymentEvent
-    elif [ $EVENT_TYPE = "build" ]
-    then
-        validateBuildInput
+    elif [ $EVENT_TYPE = "build" ]; then
+        resolveBuildInput
         makeBuildEvent
-    elif [ $EVENT_TYPE = "full" ]
-    then
-        validateBuildInput
-        validateDeploymentInput
+    elif [ $EVENT_TYPE = "full" ]; then
+        resolveBuildInput
+        resolveDeploymentInput
         makeFullEvent
     else
-        echo "Unrecognized event type: $EVENT_TYPE"
+        echo "Error: Unrecognized event type: $EVENT_TYPE"
         echo "Valid event types: deployment, build, full."
         exit 1
     fi
 
-    if (($print_event)) || (($dry_run))
-    then
-        echo "Request Body:"
-        echo $request_body | jq
-    fi
+    log "Request Body:"
+    log "$request_body"
 
-    if !(($dry_run))
-    then
+    if !(($dry_run)); then
         sendEventToFaros
 
-        if [ ! $http_response_status -eq 200 ]
-        then
-            echo "Error [HTTP status: $http_response_status]"
+        if [ ! $http_response_status -eq 200 ]; then
+            echo "Error: [HTTP status: $http_response_status]"
             http_error=1
         else
-            echo "Ok [HTTP status: $http_response_status]"
+            log "[HTTP status: $http_response_status]"
         fi
 
-        if (($print_event))
-        then
-            echo "Response Body:"
-            # If response is valid json then echo using jq
-            if jq -e . >/dev/null 2>&1 <<< "$http_response_body"
-            then
-                echo $http_response_body | jq
-            else
-                echo $http_response_body
-            fi
-        fi
+        log "Response Body:"
+        log "$http_response_body"
 
         # Fail if event failed to send
-        if ((${http_error:-0}))
-        then
+        if ((${http_error:-0})); then
             exit 1
         fi
     else
-        echo "Dry run: Event NOT sent to Faros."
+        log "Dry run: Event NOT sent to Faros."
     fi
 
-    echo "Done."
+    log "Done."
     exit 0
 }
 
-function parseArgs() {
-    # Loop through arguments and process them
-    while (($#))
-    do
+function parseFlags() {
+    # Loop through flags and process them
+    while (($#)); do
         case "$1" in
             -k|--api_key)
-                faros_api_key="$2"
-                shift 2
-                ;;
-            -a|--application)
-                application_name="$2"
-                shift 2
-                ;;
-            -c|--commit)
+                api_key="$2"
+                shift 2 ;;
+            --app)
+                app="$2"
+                shift 2 ;;
+            --app_platform)
+                app_platform="$2"
+                shift 2 ;;
+            --commit_sha)
                 commit_sha="$2"
-                shift 2 
-                ;;
-            -p|--pipeline)
-                pipeline_uid="$2"
-                shift 2
-                ;;
-            -e|--environment)
+                shift 2 ;;
+            --pipeline)
+                pipeline="$2"
+                shift 2 ;;
+            --deployment)
+                deployment="$2"
+                shift 2 ;;
+            --deployment_env)
                 deployment_env="$2"
-                shift 2
-                ;;
-            -ds|--deploy_status)
+                shift 2 ;;
+            --deployment_env_details)
+                deployment_env_details="$2"
+                shift 2 ;;
+            --deployment_status)
                 deployment_status="$2"
-                shift 2
-                ;;
-            -bs|--build_status)
+                shift 2 ;;
+            --deployment_status_details)
+                deployment_status_details="$2"
+                shift 2 ;;
+            --deployment_start_time)
+                deployment_start_time="$2"
+                shift 2 ;;
+            --deployment_end_time)
+                deployment_end_time="$2"
+                shift 2 ;;
+            --build)
+                build="$2"
+                shift 2 ;;
+            --build_status)
                 build_status="$2"
-                shift 2
-                ;;
+                shift 2 ;;
+            --build_status_details)
+                build_status_details="$2"
+                shift 2 ;;
+            --build_start_time)
+                build_start_time="$2"
+                shift 2 ;;
+            --build_end_time)
+                build_end_time="$2"
+                shift 2 ;;
+            --start_time)
+                start_time="$2"
+                shift 2 ;;
+            --end_time)
+                end_time="$2"
+                shift 2 ;;
             --ci_org)
-                ci_org_uid="$2"
-                shift 2
-                ;;
+                ci_org="$2"
+                shift 2 ;;
             --vcs_source)
                 vcs_source="$2"
-                shift 2
-                ;;
+                shift 2 ;;
             --vcs_org)
-                vcs_org_uid="$2"
-                shift 2
-                ;;
-            -r|--repo)
-                repository="$2"
-                shift 2
-                ;;
+                vcs_org="$2"
+                shift 2 ;;
+            --repo)
+                repo="$2"
+                shift 2 ;;
             -g|--graph)
-                faros_graph="$2"
-                shift 2
-                ;;
-            --url)
-                faros_api_url="$2"
-                shift 2
-                ;;
+                graph="$2"
+                shift 2 ;;
+            --origin)
+                origin="$2"
+                shift 2 ;;
+            --source)
+                source="$2"
+                shift 2 ;;
+            -u|--url)
+                url="$2"
+                shift 2 ;;
             --dry_run)
                 dry_run=1
-                shift
-                ;;
-            --print_event)
-                print_event=1
-                shift
-                ;;
+                shift ;;
+            -s|--silent)
+                silent=1
+                shift ;;
             --debug)
                 debug=1
-                shift
-                ;;
+                shift ;;
+            --help)
+                help ;;
             *)
-                echo "Unrecognized flag: $1"
-                exit 1
+                POSITIONAL+=("$1") # save it in an array for later
+                shift ;;
         esac
     done
 }
 
-function validateInput() {
-    # Required fields: If flag missing fall back to env var
-    faros_api_key=${faros_api_key:-$FAROS_API_KEY}
-    application_name=${application_name:-$APPLICATION_NAME}
-    commit_sha=${commit_sha:-$COMMIT_SHA}
-    pipeline_uid=${pipeline_uid:-$PIPELINE_UID}
-    ci_org_uid=${ci_org_uid:-$CI_ORG_UID}
+function parsePositionalArgs() {
+    # No positional arg passed - show help
+    if !(($#)); then
+        help
+        exit 0
+    fi
 
-    # Optional fields: If flag missing fall back to env var then defualt
-    FAROS_GRAPH=${FAROS_GRAPH:-"default"}
-    faros_graph=${faros_graph:-$FAROS_GRAPH}
+    # Loop through positional arguments and process them
+    while (($#)); do
+        case "$1" in
+            deployment)
+                EVENT_TYPE="deployment"
+                shift 1 ;;
+            build)
+                EVENT_TYPE="build"
+                shift 1 ;;
+            full)
+                EVENT_TYPE="full"
+                shift 1 ;;
+            help)
+                help
+                exit 0 ;;
+            *)
+                UNRECOGNIZED+=("$1")
+                shift 1 ;;
+        esac
+    done
 
-    FAROS_API_URL=${FAROS_API_URL:-"https://prod.api.faros.ai"}
-    faros_api_url=${faros_api_url:-$FAROS_API_URL}
+    if [ ! -z "${UNRECOGNIZED:-}" ]; then
+        echo "Error: Unrecognized arg(s): ${UNRECOGNIZED[@]}"
+        exit 1
+    fi
+}
 
-    # Optional fields (No flag offered): If unset use default
-    ORIGIN=${ORIGIN:-"Faros_Script_Event"}
-    SOURCE=${SOURCE:-"Faros_Script"}
-    APPLICATION_PLATFORM=${APPLICATION_PLATFORM:-"NA"}
-    START_TIME=${START_TIME:-$( date +%s000000000 | cut -b1-13 )} # default now
-    END_TIME=${END_TIME:-$( date +%s000000000 | cut -b1-13 )} # default now
+function resolveInput() {
+    # Required fields:
+    api_key=${api_key:-$FAROS_API_KEY}
+    app=${app:-$FAROS_APP}
+    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+    pipeline=${pipeline:-$FAROS_PIPELINE}
+    ci_org=${ci_org:-$FAROS_CI_ORG}
 
-    # Optional script settings: If unset use default
+    # Optional fields:
+    resolveDefaults
+    graph=${graph:-$FAROS_GRAPH}
+    url=${url:-$FAROS_URL}
+    origin=${origin:-$FAROS_ORIGIN}
+    source=${source:-$FAROS_SOURCE}
+    app_platform=${app_platform:-$FAROS_APP_PLATFORM}
+    start_time=${start_time:-$FAROS_START_TIME}
+    end_time=${end_time:-$FAROS_END_TIME}
+    
+    # Optional script settings: If unset then false
     print_event=${print_event:-0}
     dry_run=${dry_run:-0}
+    silent=${silent:-0}
     debug=${debug:-0}
 }
 
-function validateDeploymentInput() {
-    # Required fields:
-    deployment_env=${deployment_env:-$DEPLOYMENT_ENV}
-    deployment_status=${deployment_status:-$DEPLOYMENT_STATUS}
-    
-    # A build field needed
-    BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
-
-    # Optional fields (No flag offered): If unset use default
-    DEPLOYMENT_UID=${DEPLOYMENT_UID:-$(uuidgen)} # default Random UUID
-    DEPLOYMENT_ENV_DETAIL=${DEPLOYMENT_ENV_DETAIL:-""}
-    DEPLOYMENT_STATUS_DETAIL=${DEPLOYMENT_STATUS_DETAIL:-""}
-    DEPLOYMENT_START_TIME=${DEPLOYMENT_START_TIME:-$START_TIME}
-    DEPLOYMENT_END_TIME=${DEPLOYMENT_END_TIME:-$END_TIME}
+function resolveDefaults() {
+    FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
+    FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
+    FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
+    FAROS_SOURCE=${FAROS_SOURCE:-$FAROS_SOURCE_DEFAULT}
+    FAROS_APP_PLATFORM=${FAROS_APP_PLATFORM:-$FAROS_APP_PLATFORM_DEFAULT}
+    # Default start time and end time to now
+    FAROS_START_TIME=${FAROS_START_TIME:-$(date +%s000000000 | cut -b1-13)}
+    FAROS_END_TIME=${FAROS_END_TIME:-$(date +%s000000000 | cut -b1-13)}
 }
 
-function validateBuildInput() {
+function resolveDeploymentInput() {
     # Required fields:
-    build_status=${build_status:-$BUILD_STATUS}
-    repository=${repository:-$REPOSITORY}
-    vcs_source=${vcs_source:-$VCS_SOURCE}
-    vcs_org_uid=${vcs_org_uid:-$VCS_ORG_UID}
+    deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
+    deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
+    
+    # build required for deployment (Allow build to resolve input first)
+    build=${build:-$FAROS_BUILD}
 
-    # Optional fields (no flag offered): If unset use default
-    BUILD_UID=${BUILD_UID:-$commit_sha} # default Commit Sha
-    BUILD_START_TIME=${BUILD_START_TIME:-$START_TIME}
-    BUILD_END_TIME=${BUILD_END_TIME:-$END_TIME}
-    BUILD_STATUS_DETAIL=${BUILD_STATUS_DETAIL:-""}
+    # Optional fields:
+    resolveDeploymentDefaults
+    deployment=${deployment:-$FAROS_DEPLOYMENT}
+    deployment_env_details=${deployment_env_details:-$FAROS_DEPLOYMENT_ENV_DETAILS}
+    deployment_status_details=${deploymant_status_details:-$FAROS_DEPLOYMENT_STATUS_DETAILS}
+    deployment_start_time=${deployment_start_time:-$FAROS_DEPLOYMENT_START_TIME}
+    deployment_end_time=${deployment_end_time:-$FAROS_DEPLOYMENT_END_TIME}
+}
+
+function resolveDeploymentDefaults() {
+    FAROS_DEPLOYMENT=${FAROS_DEPLOYMENT:-$(uuidgen)} # default Random UUID
+    FAROS_DEPLOYMENT_ENV_DETAILS=${FAROS_DEPLOYMENT_ENV_DETAILS:-$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT}
+    FAROS_DEPLOYMENT_STATUS_DETAILS=${FAROS_DEPLOYMENT_STATUS_DETAILS:-$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT}
+    FAROS_DEPLOYMENT_START_TIME=${FAROS_DEPLOYMENT_START_TIME:-$start_time}
+    FAROS_DEPLOYMENT_END_TIME=${FAROS_DEPLOYMENT_END_TIME:-$end_time}
+}
+
+function resolveBuildInput() {
+    # Required fields:
+    build_status=${build_status:-$FAROS_BUILD_STATUS}
+    repo=${repo:-$FAROS_REPO}
+    vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
+    vcs_org=${vcs_org:-$FAROS_VCS_ORG}
+
+    # Optional fields:
+    resolveBuildDefaults
+    build=${build:-$FAROS_BUILD}
+    build_status_details=${build_status_details:-$FAROS_BUILD_STATUS_DETAILS}
+    build_start_time=${build_start_time:-$FAROS_BUILD_START_TIME}
+    build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
+}
+
+function resolveBuildDefaults() {
+    FAROS_BUILD=${FAROS_BUILD:-$commit_sha} # default to commit sha
+    FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
+    FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$start_time}
+    FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$end_time}
 }
 
 function makeDeployment() {
     cicd_Deployment=$( jq -n \
-        --arg s "$SOURCE" \
-        --arg deployment_uid "$DEPLOYMENT_UID" \
+        --arg s "$source" \
+        --arg deployment "$deployment" \
         --arg deployment_status "$deployment_status" \
-        --arg start_time "$START_TIME" \
-        --arg end_time "$END_TIME" \
+        --arg deployment_status_details "$deployment_status_details" \
+        --arg start_time "$deployment_start_time" \
+        --arg end_time "$deployment_end_time" \
         --arg deployment_env "$deployment_env" \
-        --arg application_name "$application_name" \
-        --arg application_platform "$APPLICATION_PLATFORM" \
-        --arg build_uid "$BUILD_UID" \
-        --arg pipeline_uid "$pipeline_uid" \
-        --arg ci_org_uid "$ci_org_uid" \
+        --arg deployment_env_details "$deployment_env_details" \
+        --arg app "$app" \
+        --arg app_platform "$app_platform" \
+        --arg build "$build" \
+        --arg pipeline "$pipeline" \
+        --arg ci_org "$ci_org" \
         '{
             "cicd_Deployment": {
-                "uid": $deployment_uid,
+                "uid": $deployment,
                 "source": $s,
                 "status": {
                     "category": $deployment_status,
-                    "detail": ""
+                    "detail": $deployment_status_details
                 },
                 "startedAt": $start_time|tonumber,
                 "endedAt": $end_time|tonumber,
                 "env": {
                     "category": $deployment_env,
-                    "detail": ""
+                    "detail": $deployment_env_details
                 },
                 "application" : {
-                    "name": $application_name,
-                    "platform": $application_platform
+                    "name": $app,
+                    "platform": $app_platform
                 },
                 "build": {
-                    "uid": $build_uid,
+                    "uid": $build,
                     "pipeline": {
-                        "uid": $pipeline_uid,
+                        "uid": $pipeline,
                         "organization": {
-                            "uid": $ci_org_uid,
+                            "uid": $ci_org,
                             "source": $s
                         }
                     }
@@ -344,27 +435,27 @@ function makeDeployment() {
 
 function makeBuild() {
     cicd_Build=$( jq -n \
-        --arg s "$SOURCE" \
-        --arg build_uid "$BUILD_UID" \
+        --arg s "$source" \
+        --arg build "$build" \
         --arg build_status "$build_status" \
-        --arg start_time "$BUILD_START_TIME" \
-        --arg end_time "$BUILD_END_TIME" \
-        --arg build_status_detail "$BUILD_STATUS_DETAIL" \
-        --arg pipeline_uid "$pipeline_uid" \
-        --arg ci_org_uid "$ci_org_uid" \
+        --arg start_time "$build_start_time" \
+        --arg end_time "$build_end_time" \
+        --arg build_status_details "$build_status_details" \
+        --arg pipeline "$pipeline" \
+        --arg ci_org "$ci_org" \
         '{
             "cicd_Build": {
-                "uid": $build_uid,
+                "uid": $build,
                 "startedAt": $start_time|tonumber,
                 "endedAt": $end_time|tonumber,
                 "status": {
                     "category": $build_status,
-                    "detail": $build_status_detail
+                    "detail": $build_status_details
                 },
                 "pipeline": {
-                    "uid": $pipeline_uid,
+                    "uid": $pipeline,
                     "organization": {
-                        "uid": $ci_org_uid,
+                        "uid": $ci_org,
                         "source": $s
                     }
                 }
@@ -375,35 +466,35 @@ function makeBuild() {
 
 function makeBuildCommitAssociation() {
     cicd_BuildCommitAssociation=$( jq -n \
-        --arg s "$SOURCE" \
-        --arg build_uid "$BUILD_UID" \
-        --arg pipeline_uid "$pipeline_uid" \
-        --arg ci_org_uid "$ci_org_uid" \
-        --arg vcs_org_uid "$vcs_org_uid" \
+        --arg s "$source" \
+        --arg build "$build" \
+        --arg pipeline "$pipeline" \
+        --arg ci_org "$ci_org" \
+        --arg vcs_org "$vcs_org" \
         --arg vcs_source "$vcs_source" \
         --arg commit_sha "$commit_sha" \
-        --arg repo "$repository" \
+        --arg repo "$repo" \
         '{
             "cicd_BuildCommitAssociation": {
                 "build": {
-                    "uid": $build_uid,
+                    "uid": $build,
                     "pipeline": {
-                        "uid": $pipeline_uid,
+                        "uid": $pipeline,
                         "organization": {
-                            "uid": $ci_org_uid,
+                            "uid": $ci_org,
                             "source": $s
                         }
                     }
                 },
                 "commit": {
-                "repository": {
-                    "organization": {
-                        "uid": $vcs_org_uid,
-                        "source": $vcs_source
-                    },
-                    "name": $repo
-                },
-                "sha": $commit_sha
+                    "sha": $commit_sha,
+                    "repository": {
+                        "name": $repo,
+                        "organization": {
+                            "uid": $vcs_org,
+                            "source": $vcs_source
+                        }
+                    }
                 }
             }
         }'
@@ -412,14 +503,14 @@ function makeBuildCommitAssociation() {
 
 function makePipeline() {
     cicd_Pipeline=$( jq -n \
-        --arg s "$SOURCE" \
-        --arg pipeline_uid "$pipeline_uid" \
-        --arg ci_org_uid "$ci_org_uid" \
+        --arg s "$source" \
+        --arg pipeline "$pipeline" \
+        --arg ci_org "$ci_org" \
         '{
             "cicd_Pipeline": {
-                "uid": $pipeline_uid,
+                "uid": $pipeline,
                 "organization": {
-                    "uid": $ci_org_uid,
+                    "uid": $ci_org,
                     "source": $s
                 }
             }
@@ -429,11 +520,11 @@ function makePipeline() {
 
 function makeApplication() {
     compute_Application=$( jq -n \
-        --arg app_name "$application_name" \
-        --arg app_platform "$APPLICATION_PLATFORM" \
+        --arg app "$app" \
+        --arg app_platform "$app_platform" \
         '{
             "compute_Application": {
-                "name": $app_name,
+                "name": $app,
                 "platform": $app_platform
             }
         }'
@@ -446,7 +537,7 @@ function makeBuildEvent() {
     makePipeline
     makeApplication
     request_body=$( jq -n \
-        --arg origin "$ORIGIN" \
+        --arg origin "$origin" \
         --argjson build "$cicd_Build" \
         --argjson buildCommit "$cicd_BuildCommitAssociation" \
         --argjson pipeline "$cicd_Pipeline" \
@@ -459,21 +550,23 @@ function makeBuildEvent() {
                 $pipeline,
                 $application
             ]
-        }')
+        }'
+    )
 }
 
 function makeDeploymentEvent() {
     makeDeployment
     makeApplication
     request_body=$( jq -n \
-        --arg origin "$ORIGIN" \
+        --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
         '{ 
             "origin": $origin,
             "entries": [
                 $deployment
             ]
-        }')
+        }'
+    )
 }
 
 function makeFullEvent() {
@@ -483,7 +576,7 @@ function makeFullEvent() {
     makePipeline
     makeApplication
     request_body=$( jq -n \
-        --arg origin "$ORIGIN" \
+        --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
         --argjson build "$cicd_Build" \
         --argjson buildCommit "$cicd_BuildCommitAssociation" \
@@ -498,43 +591,36 @@ function makeFullEvent() {
                 $pipeline,
                 $application
             ]
-        }')
+        }'
+    )
 }
 
 function sendEventToFaros() {
-    echo "Sending event to Faros..."
+    log "Sending event to Faros..."
+
     http_response=$(curl --retry 5 --retry-delay 5 \
-    --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-    $faros_api_url/graphs/$faros_graph/revisions \
-    -H "authorization: $faros_api_key" \
-    -H "content-type: application/json" \
-    -d "$request_body") 
+        --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
+        $url/graphs/$graph/revisions \
+        -H "authorization: $api_key" \
+        -H "content-type: application/json" \
+        -d "$request_body") 
 
     # extract the status
-    http_response_status=$(echo $http_response 
-        | tr -d '\n' 
-        | sed -e 's/.*HTTPSTATUS://')
+    http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
 
     # extract the body
-    http_response_body=$(echo $http_response 
-        | sed -e 's/HTTPSTATUS\:.*//g')
+    http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
 }
 
-function showHelp() {
-    RED='\033[0;31m'
-    BLUE='\033[0;34m'
-    NC='\033[0m' # No Color
-
-    printf "${BLUE}  _____                          ${RED}  _     ___ \\n"
-    printf "${BLUE} |  ___|__ _  _ __  ___   ___    ${RED} / \\   |_ _|\\n"
-    printf "${BLUE} | |_  / _\` || '__|/ _ \\ / __| ${RED}  / _ \\   | |\\n"
-    printf "${BLUE} |  _|| (_| || |  | (_) |\\__ \\ ${RED} / ___ \\  | |\\n"
-    printf "${BLUE} |_|   \\__,_||_|   \\___/ |___/ ${RED}/_/   \\_\\|___|\\n"
-    printf "${NC}\\n"
-
-    github_url="https://github.com/faros-ai/faros-events-cli"
-    echo "For usage information please visit: $github_url"
-    exit 0
+function log() {
+    if !((silent)); then
+         # If arg is valid json then echo using jq
+        if jq -e . >/dev/null 2>&1 <<< "$1"; then
+            echo $1 | jq
+        else
+            echo $1
+        fi
+    fi
 }
 
 main "$@"; exit
