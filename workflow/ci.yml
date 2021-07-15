@@ -21,11 +21,9 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        # - windows-latest
+        # TODO: Add more
         include:
         - os: ubuntu-latest
-        # - os: windows-latest
-          # TEMP: 'D:\tmp'
     steps:
     - name: Check out
       uses: actions/checkout@v2
@@ -43,14 +41,13 @@ jobs:
         which shellspec
         shellspec --version
 
-    - name: Install jq on Ubuntu
-      if: ${{ matrix.os == 'ubuntu' && matrix.snyk_install_method != 'alpine-binary' && matrix.snyk_install_method != 'npm-root-user' }}
+    - name: Install jq and curl on Ubuntu
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         sudo apt-get install jq
-        sudo apt install curl
+        sudo apt-get install curl
 
-    - name: Run shellspec tests - non-Windows
-      if: ${{ matrix.os != 'windows' }}
+    - name: Run shellspec tests
       working-directory: ./
-      shell: bash -l {0} # run bash with --login flag to load .bash_profile that's used by yarn install method
+      shell: bash -l {0}
       run: shellspec -f d
