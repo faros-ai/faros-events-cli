@@ -630,9 +630,9 @@ function fmtLog(){
     else 
         fmtTime="[$(date +"%Y-%m-%d %T"])"
         if [ $1 == "error" ]; then
-            fmtLog="$fmtTime ${RED}ERROR${NC}"
+            fmtLog="$fmtTime ${RED}ERROR${NC} "
         else
-            fmtLog="$fmtTime ${BLUE}INFO${NC}"
+            fmtLog="$fmtTime ${BLUE}INFO${NC} "
         fi
     fi
 }
@@ -647,7 +647,7 @@ function log() {
             fi
             echo "$*" | jq
         else
-            printf "$fmtLog "
+            printf "$fmtLog"
             printf "$* \n"
         fi
     fi
@@ -655,7 +655,7 @@ function log() {
 
 function err(){
     fmtLog "error"
-    printf "$fmtLog "
+    printf "$fmtLog"
     printf "$* \n"
 }
 
