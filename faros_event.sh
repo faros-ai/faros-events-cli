@@ -2,20 +2,21 @@
 
 set -euo pipefail
 
+version="0.0.0"
+canonical_model_version="0.8.9"
+github_url="https://github.com/faros-ai/faros-events-cli"
+
 which curl &> /dev/null || 
     { echo "Error: curl is required." && missing_require=1; }
 which jq &> /dev/null || 
     { echo "Error: jq is required." && missing_require=1; }
+which uuidgen &> /dev/null ||
+    { echo "Error: uuidgen is required" && missing_require=1; }
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl and jq are available before running the script."
+    echo "Please ensure curl, jq and uuidgen are available before running the script."
     exit 1
 fi
-
-
-version="0.0.1"
-canonical_model_version="0.8.9"
-github_url="https://github.com/faros-ai/faros-events-cli"
 
 # Defaults
 FAROS_GRAPH_DEFAULT="default"
@@ -26,16 +27,21 @@ FAROS_APP_PLATFORM_DEFAULT="NA"
 FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT=""
 FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT=""
 FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
+FAROS_START_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
+FAROS_END_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
+FAROS_DEPLOYMENT_DEFAULT=$(uuidgen)  # Random UUID
 print_event=0
 dry_run=0
 silent=0
 debug=0
+no_format=0
+
+# Theme
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
 function help() {
-    RED='\033[0;31m'
-    BLUE='\033[0;34m'
-    NC='\033[0m' # No Color
-
     printf "${BLUE}  _____                          ${RED}  _     ___\\n"
     printf "${BLUE} |  ___|__ _  _ __  ___   ___    ${RED} / \\   |_ _| (v$version)\\n"
     printf "${BLUE} | |_  / _\` || '__|/ _ \\ / __| ${RED}  / _ \\   | |\\n"
@@ -84,7 +90,7 @@ function help() {
     echo "--start_time <start>                  | FAROS_START_TIME                | Now"
     echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
     printf "${BLUE}(Optional deployment fields)${NC}\\n"
-    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID "
+    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID"
     echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
     echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
@@ -132,8 +138,8 @@ main() {
         resolveDeploymentInput
         makeFullEvent
     else
-        echo "Error: Unrecognized event type: $EVENT_TYPE"
-        echo "Valid event types: deployment, build, full."
+        err "Unrecognized event type: $EVENT_TYPE \n
+            Valid event types: deployment, build, full."
         exit 1
     fi
 
@@ -144,7 +150,7 @@ main() {
         sendEventToFaros
 
         if [ ! $http_response_status -eq 200 ]; then
-            echo "Error: [HTTP status: $http_response_status]"
+            err "[HTTP status: $http_response_status]"
             http_error=1
         else
             log "[HTTP status: $http_response_status]"
@@ -259,8 +265,14 @@ function parseFlags() {
             --debug)
                 debug=1
                 shift ;;
+            --no_format)
+                no_format=1
+                shift ;;
             --help)
                 help ;;
+            -v)
+                echo "version: $version"
+                exit 0 ;;
             *)
                 POSITIONAL+=("$1") # save it in an array for later
                 shift ;;
@@ -280,24 +292,24 @@ function parsePositionalArgs() {
         case "$1" in
             deployment)
                 EVENT_TYPE="deployment"
-                shift 1 ;;
+                shift ;;
             build)
                 EVENT_TYPE="build"
-                shift 1 ;;
+                shift ;;
             full)
                 EVENT_TYPE="full"
-                shift 1 ;;
+                shift ;;
             help)
                 help
                 exit 0 ;;
             *)
                 UNRECOGNIZED+=("$1")
-                shift 1 ;;
+                shift ;;
         esac
     done
 
     if [ ! -z "${UNRECOGNIZED:-}" ]; then
-        echo "Error: Unrecognized arg(s): ${UNRECOGNIZED[@]}"
+        err "Unrecognized arg(s): ${UNRECOGNIZED[@]}"
         exit 1
     fi
 }
@@ -334,8 +346,8 @@ function resolveDefaults() {
     FAROS_SOURCE=${FAROS_SOURCE:-$FAROS_SOURCE_DEFAULT}
     FAROS_APP_PLATFORM=${FAROS_APP_PLATFORM:-$FAROS_APP_PLATFORM_DEFAULT}
     # Default start time and end time to now
-    FAROS_START_TIME=${FAROS_START_TIME:-$(date +%s000000000 | cut -b1-13)}
-    FAROS_END_TIME=${FAROS_END_TIME:-$(date +%s000000000 | cut -b1-13)}
+    FAROS_START_TIME=${FAROS_START_TIME:-$FAROS_START_TIME_DEFAULT}
+    FAROS_END_TIME=${FAROS_END_TIME:-$FAROS_END_TIME_DEFAULT}
 }
 
 function resolveDeploymentInput() {
@@ -356,7 +368,7 @@ function resolveDeploymentInput() {
 }
 
 function resolveDeploymentDefaults() {
-    FAROS_DEPLOYMENT=${FAROS_DEPLOYMENT:-$(uuidgen)} # default Random UUID
+    FAROS_DEPLOYMENT=${FAROS_DEPLOYMENT:-$FAROS_DEPLOYMENT_DEFAULT}
     FAROS_DEPLOYMENT_ENV_DETAILS=${FAROS_DEPLOYMENT_ENV_DETAILS:-$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_STATUS_DETAILS=${FAROS_DEPLOYMENT_STATUS_DETAILS:-$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_START_TIME=${FAROS_DEPLOYMENT_START_TIME:-$start_time}
@@ -612,15 +624,39 @@ function sendEventToFaros() {
     http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
 }
 
-function log() {
-    if !((silent)); then
-         # If arg is valid json then echo using jq
-        if jq -e . >/dev/null 2>&1 <<< "$1"; then
-            echo $1 | jq
+function fmtLog(){
+    if ((no_format)); then
+        fmtLog=""
+    else 
+        fmtTime="[$(date +"%Y-%m-%d %T"])"
+        if [ $1 == "error" ]; then
+            fmtLog="$fmtTime ${RED}ERROR${NC}"
         else
-            echo $1
+            fmtLog="$fmtTime ${BLUE}INFO${NC}"
         fi
     fi
+}
+
+function log() {
+    if !((silent)); then
+        fmtLog "info"
+         # If arg is valid json then echo using jq
+        if jq -e . >/dev/null 2>&1 <<< "$1"; then
+            if ((no_format)); then
+                printf "$fmtLog \n"
+            fi
+            echo "$*" | jq
+        else
+            printf "$fmtLog "
+            printf "$* \n"
+        fi
+    fi
+}
+
+function err(){
+    fmtLog "error"
+    printf "$fmtLog "
+    printf "$* \n"
 }
 
 main "$@"; exit

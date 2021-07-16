@@ -1,4 +1,4 @@
-faros_deployment_event_test() {
+deployment_event_test() {
     echo $(
         FAROS_DEPLOYMENT="<deployment_uid>" \
         FAROS_START_TIME=10 \
@@ -11,10 +11,11 @@ faros_deployment_event_test() {
         --deployment_env "<environment>" \
         --pipeline "<ci_pipeline>" \
         --build "<build_uid>" \
-        --dry_run)
+        --dry_run \
+        --no_format)
 }
 
-faros_build_event_test() {
+build_event_test() {
     echo $(
         FAROS_START_TIME=10 \
         FAROS_END_TIME=10 \
@@ -27,10 +28,11 @@ faros_build_event_test() {
         --pipeline "<ci_pipeline>" \
         --vcs_source "<vcs_source>" \
         --vcs_org "<vcs_organization>" \
-        --dry_run)
+        --dry_run \
+        --no_format)
 }
 
-faros_full_event_test() {
+full_event_test() {
     echo $(
         FAROS_DEPLOYMENT="<deployment_uid>" \
         FAROS_START_TIME=10 \
@@ -46,5 +48,13 @@ faros_full_event_test() {
         --repo "<vcs_repo>" \
         --vcs_source "<vcs_source>" \
         --vcs_org "<vcs_organization>" \
-        --dry_run)
+        --dry_run \
+        --no_format)
+}
+
+bad_input_test() {
+    echo $(
+        ../faros_event.sh $1 \
+        --no_format
+    )
 }
