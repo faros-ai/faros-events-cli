@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-version="0.0.0"
+version="0.0.1"
 canonical_model_version="0.8.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -48,7 +48,6 @@ function help() {
     printf "${BLUE} |  _|| (_| || |  | (_) |\\__ \\ ${RED} / ___ \\  | |\\n"
     printf "${BLUE} |_|   \\__,_||_|   \\___/ |___/ ${RED}/_/   \\_\\|___|\\n"
     printf "${NC}\\n"
-
     echo
     echo "Sends deployment and/or build information to Faros."
     echo "Depending on if you are sending a deployment, build, or both, different flags will"
@@ -78,7 +77,7 @@ function help() {
     echo "--repo <repo>                         | FAROS_REPO"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG"
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE"
-    echo "                                      |"
+    echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                  | Environment Variable            | Default"
     echo "---------------------------------------------------------------------------------------------------"
@@ -106,6 +105,7 @@ function help() {
     echo "--dry_run     Print the event instead of sending."
     echo "--silent      Unexceptional output will be silenced."
     echo "--debug       Helpful information will be printed."
+    echo "--no_format   Log formatting will be turned off."
     echo
     echo "For more usage information please visit:"
     printf "${RED}$github_url"
@@ -133,10 +133,10 @@ main() {
     elif [ $EVENT_TYPE = "build" ]; then
         resolveBuildInput
         makeBuildEvent
-    elif [ $EVENT_TYPE = "full" ]; then
+    elif [ $EVENT_TYPE = "build_deployment" ]; then
         resolveBuildInput
         resolveDeploymentInput
-        makeFullEvent
+        makeBuildDeploymentEvent
     else
         err "Unrecognized event type: $EVENT_TYPE \n
             Valid event types: deployment, build, full."
@@ -151,17 +151,13 @@ main() {
 
         if [ ! $http_response_status -eq 200 ]; then
             err "[HTTP status: $http_response_status]"
-            http_error=1
+            err "Response Body:"
+            err "$http_response_body"
+            fail
         else
             log "[HTTP status: $http_response_status]"
-        fi
-
-        log "Response Body:"
-        log "$http_response_body"
-
-        # Fail if event failed to send
-        if ((${http_error:-0})); then
-            fail
+            log "Response Body:"
+            log "$http_response_body"
         fi
     else
         log "Dry run: Event NOT sent to Faros."
@@ -270,8 +266,8 @@ function parseFlags() {
                 shift ;;
             --help)
                 help ;;
-            -v)
-                echo "version: $version"
+            -v|--version)
+                echo "$version"
                 exit 0 ;;
             *)
                 POSITIONAL+=("$1") # save it in an array for later
@@ -296,8 +292,8 @@ function parsePositionalArgs() {
             build)
                 EVENT_TYPE="build"
                 shift ;;
-            full)
-                EVENT_TYPE="full"
+            build_deployment)
+                EVENT_TYPE="build_deployment"
                 shift ;;
             help)
                 help
@@ -581,7 +577,7 @@ function makeDeploymentEvent() {
     )
 }
 
-function makeFullEvent() {
+function makeBuildDeploymentEvent() {
     makeDeployment
     makeBuild
     makeBuildCommitAssociation
@@ -637,26 +633,30 @@ function fmtLog(){
     fi
 }
 
-function log() {
-    if !((silent)); then
-        fmtLog "info"
-         # If arg is valid json then echo using jq
-        if jq -e . >/dev/null 2>&1 <<< "$1"; then
-            if !((no_format)); then
-                printf "$fmtLog \n"
-            fi
+function printLog() {
+    if jq -e . >/dev/null 2>&1 <<< "$1"; then
+        if !((no_format)); then
+            printf "$fmtLog \n"
             echo "$*" | jq
         else
-            printf "$fmtLog"
-            printf "$* \n"
+            echo "$*"
         fi
+    else
+        printf "$fmtLog"
+        printf "$* \n"
     fi
 }
 
-function err(){
+function log() {
+    if !((silent)); then
+        fmtLog "info"
+        printLog "$*"
+    fi
+}
+
+function err() {
     fmtLog "error"
-    printf "$fmtLog"
-    printf "$* \n"
+    printLog "$*"
 }
 
 function fail() {

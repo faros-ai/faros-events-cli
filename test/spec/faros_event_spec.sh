@@ -14,9 +14,9 @@ Describe 'faros_event.sh'
     End
   End
 
-  Describe 'faros_event full'
-    It 'Constructs correct full event'
-        When call full_event_test
+  Describe 'faros_event build_deployment'
+    It 'Constructs correct build_deployment event'
+        When call build_deployment_event_test
         The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "Faros_Script", "status": { "category": "<deploy_status>", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "<environment>", "detail": "" }, "application": { "name": "<app_name>", "platform": "NA" }, "build": { "uid": "<commit_sha>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } } } }, { "cicd_Build": { "uid": "<commit_sha>", "startedAt": 10, "endedAt": 10, "status": { "category": "<build_status>", "detail": "" }, "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } } }, { "cicd_BuildCommitAssociation": { "build": { "uid": "<commit_sha>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } }, { "cicd_Pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } }, { "compute_Application": { "name": "<app_name>", "platform": "NA" } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End

@@ -6,12 +6,33 @@ CLI for reporting events to Faros platform
 
 The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. Now when attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
 
+### Requirements
+
+Please make sure the following are installed before running the script:
+
+- curl
+- jq
+- uuidgen
+
 ### Usage
 
 Download and invoke the script in one line:
 
 ```text
-curl https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_events.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s help
+```
+
+```sh
+# Deployment example
+export FAROS_API_KEY="<api_key>"; \
+export FAROS_APP="<app_name>"; \
+export FAROS_CI_ORG="<ci_org>"; \
+export FAROS_COMMIT_SHA="<commit_sha>"; \
+export FAROS_DEPLOYMENT_STATUS="<deploy_status>"; \
+export FAROS_DEPLOYMENT_ENV="<environment>"; \
+export FAROS_PIPELINE="<pipeline>"; \
+export FAROS_BUILD="<build>"; \
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s deployment
 ```
 
 ### Arguments passing
@@ -53,24 +74,24 @@ FAROS_REPO="<vcs_repo>" \
 
 #### Optional Arguments
 
-| Flag                                   | Environment Variable            | Default                   | Used By    |
-| -------------------------------------- | ------------------------------- | ------------------------- | ---------- |
-| -u / --url \<url>                      | FAROS_URL                       | https://prod.api.faros.ai | all        |
-| -g / --graph \<graph>                  | FAROS_GRAPH                     | "default"                 | all        |
-| --origin \<origin>                     | FAROS_ORIGIN                    | Faros_Script_Event        | all        |
-| --source \<source>                     | FAROS_SOURCE                    | Faros_Script              | all        |
-| --start_time \<start>                  | FAROS_START_TIME                | Now                       | all        |
-| --end_time \<end>                      | FAROS_END_TIME                  | Now                       | all        |
-| --app_platform \<platform>             | FAROS_APP_PLATFORM              | "NA"                      | all        |
-| --deployment \<deployment>             | FAROS_DEPLOYMENT                | Random UUID               | deployment |
-| --deployment_env_details \<details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | ""                        | deployment |
-| --deployment_status_details \<details> | FAROS_DEPLOYMENT_STATUS_DETAILS | ""                        | deployment |
-| --deployment_start_time \<start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME          | deployment |
-| --deployment_end_time \<end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME            | deployment |
-| --build \<build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA          | build      |
-| --build_status_details \<details>      | FAROS_BUILD_STATUS_DETAILS      | ""                        | build      |
-| --build_start_time \<start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME          | build      |
-| --build_end_time \<end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME            | build      |
+| Flag                                   | Environment Variable            | Default                     | Used By    |
+| -------------------------------------- | ------------------------------- | --------------------------- | ---------- |
+| -u / --url \<url>                      | FAROS_URL                       | <https://prod.api.faros.ai> | all        |
+| -g / --graph \<graph>                  | FAROS_GRAPH                     | "default"                   | all        |
+| --origin \<origin>                     | FAROS_ORIGIN                    | Faros_Script_Event          | all        |
+| --source \<source>                     | FAROS_SOURCE                    | Faros_Script                | all        |
+| --start_time \<start>                  | FAROS_START_TIME                | Now                         | all        |
+| --end_time \<end>                      | FAROS_END_TIME                  | Now                         | all        |
+| --app_platform \<platform>             | FAROS_APP_PLATFORM              | "NA"                        | all        |
+| --deployment \<deployment>             | FAROS_DEPLOYMENT                | Random UUID                 | deployment |
+| --deployment_env_details \<details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | ""                          | deployment |
+| --deployment_status_details \<details> | FAROS_DEPLOYMENT_STATUS_DETAILS | ""                          | deployment |
+| --deployment_start_time \<start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME            | deployment |
+| --deployment_end_time \<end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME              | deployment |
+| --build \<build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA            | build      |
+| --build_status_details \<details>      | FAROS_BUILD_STATUS_DETAILS      | ""                          | build      |
+| --build_start_time \<start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME            | build      |
+| --build_end_time \<end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME              | build      |
 
 #### Additional Settings Flags
 
@@ -82,7 +103,7 @@ FAROS_REPO="<vcs_repo>" \
 
 ### Usage Examples
 
-#### Sending a Build Event
+#### Sending a build event
 
 ```sh
 # Using flags
@@ -109,7 +130,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh build
 ```
 
-#### Sending a Deployment Event
+#### Sending a deployment event
 
 ```sh
 # Using flags
@@ -134,11 +155,11 @@ FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
 ```
 
-#### Sending a Full (Build + Deployment) Event
+#### Sending a build_deployment (build + deployment) event
 
 ```sh
 # Using flags
-./faros_event.sh full -k "<api_key>" \
+./faros_event.sh build_deployment -k "<api_key>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
@@ -162,7 +183,7 @@ FAROS_REPO="<vcs_repo>" \
 FAROS_PIPELINE="<pipeline>" \
 FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_VCS_ORG="<vcs_org>" \
-./faros_event.sh full
+./faros_event.sh build_deployment
 ```
 
 ## Testing

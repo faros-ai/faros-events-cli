@@ -32,12 +32,12 @@ build_event_test() {
         --no_format)
 }
 
-full_event_test() {
+build_deployment_event_test() {
     echo $(
         FAROS_DEPLOYMENT="<deployment_uid>" \
         FAROS_START_TIME=10 \
         FAROS_END_TIME=10 \
-        ../faros_event.sh full -k "<api_key>" \
+        ../faros_event.sh build_deployment -k "<api_key>" \
         --app "<app_name>" \
         --build_status "<build_status>" \
         --ci_org "<ci_organization>" \
