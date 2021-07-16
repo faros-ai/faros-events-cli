@@ -10,8 +10,8 @@ The purpose of this script is to abstract away the schema structure of the vario
 
 Download and invoke the script in one line:
 
-```sh
-$(curl https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_events.sh) | bash -s deployment --help
+```text
+curl https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_events.sh | bash -s help
 ```
 
 ### Arguments passing
