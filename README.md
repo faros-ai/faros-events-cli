@@ -2,7 +2,7 @@
 
 CLI for reporting events to Faros platform.
 
-The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. Now when attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
+The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. When attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
 
 ## :zap: Usage
 
@@ -18,7 +18,7 @@ Please make sure the following are installed before running the script:
 
 ```sh
 # Show help
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s build --help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s build --help
 ```
 
 ```sh
@@ -31,7 +31,7 @@ export FAROS_DEPLOYMENT_STATUS="<deploy_status>"; \
 export FAROS_DEPLOYMENT_ENV="<environment>"; \
 export FAROS_PIPELINE="<pipeline>"; \
 export FAROS_BUILD="<build>"; \
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s deployment
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s deployment
 ```
 
 ### :pencil2: Arguments
