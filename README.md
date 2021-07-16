@@ -16,13 +16,15 @@ Please make sure the following are installed before running the script:
 
 ### :sparkles: Download and invoke in one line
 
+##### Show help
+
 ```sh
-# Show help
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s build --help
 ```
 
+##### Deployment example
+
 ```sh
-# Deployment example
 export FAROS_API_KEY="<api_key>"; \
 export FAROS_APP="<app_name>"; \
 export FAROS_CI_ORG="<ci_org>"; \
@@ -38,8 +40,9 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_e
 
 There are two ways that arguments can be passed into the script. The first is via flags. The second, is via environment variables. If both are set, flags will take precedence over environment variables. By convention, you can switch between using a flag or an environment variable by simple capitalizing the argument name and prefixing it with `FAROS_`. E.g. `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
 
+##### Example with mixed argument input
+
 ```sh
-# Example with mixed argument input
 FAROS_CI_ORG="<ci_org>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
@@ -101,8 +104,9 @@ FAROS_REPO="<vcs_repo>" \
 
 #### :mega: Sending a build event
 
+##### Using flags
+
 ```sh
-# Using flags
 ./faros_event.sh build -k "<api_key>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
@@ -112,8 +116,11 @@ FAROS_REPO="<vcs_repo>" \
     --pipeline "<ci_pipeline>" \
     --vcs_source "<vcs_source>" \
     --vcs_org "<vcs_organization>"
+```
 
-# Or using environment variables
+##### Or using environment variables
+
+```sh
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
@@ -128,8 +135,9 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 #### :mega: Sending a deployment event
 
+##### Using flags
+
 ```sh
-# Using flags
 ./faros_event.sh deployment -k "<api_key>" \
     --app "<app_name>" \
     --ci_org "<ci_organization>" \
@@ -139,7 +147,11 @@ FAROS_VCS_ORG="<vcs_org>" \
     --pipeline "<ci_pipeline>" \
     --build "<build>"
 
-# Or using environment variables
+```
+
+##### Or using environment variables
+
+```sh
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_CI_ORG="<ci_org>" \
@@ -153,8 +165,9 @@ FAROS_BUILD="<build>" \
 
 #### :mega: Sending a build_deployment (build + deployment) event
 
+##### Using flags
+
 ```sh
-# Using flags
 ./faros_event.sh build_deployment -k "<api_key>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
@@ -166,8 +179,11 @@ FAROS_BUILD="<build>" \
     --repo "<vcs_repo>" \
     --vcs_source "<vcs_source>" \
     --vcs_org "<vcs_organization>"
+```
 
-# Or using environment variables
+##### Or using environment variables
+
+```sh
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
