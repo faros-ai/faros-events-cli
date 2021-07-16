@@ -140,7 +140,7 @@ main() {
     else
         err "Unrecognized event type: $EVENT_TYPE \n
             Valid event types: deployment, build, full."
-        exit 1
+        fail
     fi
 
     log "Request Body:"
@@ -161,7 +161,7 @@ main() {
 
         # Fail if event failed to send
         if ((${http_error:-0})); then
-            exit 1
+            fail
         fi
     else
         log "Dry run: Event NOT sent to Faros."
@@ -310,7 +310,7 @@ function parsePositionalArgs() {
 
     if [ ! -z "${UNRECOGNIZED:-}" ]; then
         err "Unrecognized arg(s): ${UNRECOGNIZED[@]}"
-        exit 1
+        fail
     fi
 }
 
@@ -642,7 +642,7 @@ function log() {
         fmtLog "info"
          # If arg is valid json then echo using jq
         if jq -e . >/dev/null 2>&1 <<< "$1"; then
-            if ((no_format)); then
+            if !((no_format)); then
                 printf "$fmtLog \n"
             fi
             echo "$*" | jq
@@ -657,6 +657,11 @@ function err(){
     fmtLog "error"
     printf "$fmtLog"
     printf "$* \n"
+}
+
+function fail() {
+    err "Failed."
+    exit 1
 }
 
 main "$@"; exit
