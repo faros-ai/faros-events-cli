@@ -25,29 +25,29 @@ jobs:
         include:
           - os: ubuntu-latest
     steps:
-    - name: Check out
-      uses: actions/checkout@v2
+      - name: Check out
+        uses: actions/checkout@v2
 
-    # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
-    - name: Install Shellspec - non-windows
-      if: ${{ matrix.os != 'windows' }}
-      run: |
-        curl -fsSL https://git.io/shellspec | sh -s -- -y
-        sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
-        ls -la ${HOME}/.local/lib/shellspec
-        echo "shellspec symlink:"
-        ls -la /usr/local/bin/shellspec
-        /usr/local/bin/shellspec --version
-        which shellspec
-        shellspec --version
+      # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
+      - name: Install Shellspec - non-windows
+        if: ${{ matrix.os != 'windows' }}
+        run: |
+          curl -fsSL https://git.io/shellspec | sh -s -- -y
+          sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
+          ls -la ${HOME}/.local/lib/shellspec
+          echo "shellspec symlink:"
+          ls -la /usr/local/bin/shellspec
+          /usr/local/bin/shellspec --version
+          which shellspec
+          shellspec --version
 
-    - name: Install jq and curl on Ubuntu
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        sudo apt-get install jq
-        sudo apt-get install curl
+      - name: Install jq and curl on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get install jq
+          sudo apt-get install curl
 
-    - name: Run shellspec tests
-      working-directory: ./
-      shell: bash -l {0}
-      run: shellspec -f d
+      - name: Run shellspec tests
+        working-directory: ./
+        shell: bash -l {0}
+        run: shellspec -f d
