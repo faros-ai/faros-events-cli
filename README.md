@@ -184,7 +184,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 ## :white_check_mark: Testing
 
-We use [shellspec](https://github.com/shellspec/shellspec) to test our scripts.
+We use [ShellSpec](https://github.com/shellspec/shellspec) to test our scripts.
 
 ### Install using Homebrew
 
@@ -197,6 +197,5 @@ brew install shellspec
 Move to the `/test` directory and execute `shellspec`
 
 ```sh
-cd test
-shellspec
+cd test && shellspec
 ```
