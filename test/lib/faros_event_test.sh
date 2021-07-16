@@ -3,7 +3,7 @@ faros_deployment_event_test() {
         FAROS_DEPLOYMENT="<deployment_uid>" \
         FAROS_START_TIME=10 \
         FAROS_END_TIME=10 \
-        ./faros_event.sh deployment -k "<api_key>" \
+        ../faros_event.sh deployment -k "<api_key>" \
         --app "<app_name>" \
         --ci_org "<ci_organization>" \
         --commit_sha "<commit_sha>" \
@@ -18,7 +18,7 @@ faros_build_event_test() {
     echo $(
         FAROS_START_TIME=10 \
         FAROS_END_TIME=10 \
-        ./faros_event.sh build -k "<api_key>" \
+        ../faros_event.sh build -k "<api_key>" \
         --app "<app_name>" \
         --build_status "<build_status>" \
         --ci_org "<ci_organization>" \
@@ -35,7 +35,7 @@ faros_full_event_test() {
         FAROS_DEPLOYMENT="<deployment_uid>" \
         FAROS_START_TIME=10 \
         FAROS_END_TIME=10 \
-        ./faros_event.sh full -k "<api_key>" \
+        ../faros_event.sh full -k "<api_key>" \
         --app "<app_name>" \
         --build_status "<build_status>" \
         --ci_org "<ci_organization>" \
