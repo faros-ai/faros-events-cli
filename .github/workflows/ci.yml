@@ -44,4 +44,5 @@ jobs:
         sudo apt-get install jq
         sudo apt-get install curl
     - name: Run shellspec tests
+      working-directory: test
       run: shellspec -f d
