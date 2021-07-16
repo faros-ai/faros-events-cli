@@ -20,10 +20,9 @@ jobs:
     env:
       FORCE_COLOR: true
     steps:
-    - uses: actions/checkout@v2s
+    - uses: actions/checkout@v2
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
-    - name: Install Shellspec - non-windows
-      if: ${{ matrix.os != 'windows' }}
+    - name: Install Shellspec
       run: |
         curl -fsSL https://git.io/shellspec | sh -s -- -y
         sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
