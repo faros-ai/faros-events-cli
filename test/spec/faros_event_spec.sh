@@ -24,7 +24,7 @@ Describe 'faros_event.sh'
   Describe 'faros_event bad input'
     It 'Responds with bad input'
         When call bad_input_test "Bad_Input"
-        The output should equal 'Unrecognized arg(s): Bad_Input'
+        The output should equal 'Unrecognized arg(s): Bad_Input Failed.'
     End
   End
 End

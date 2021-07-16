@@ -168,3 +168,18 @@ FAROS_VCS_ORG="<vcs_org>" \
 ## Testing
 
 We use [shellspec](https://github.com/shellspec/shellspec) to test our scripts.
+
+### Install using Homebrew
+
+```sh
+brew install shellspec
+```
+
+### Running the tests
+
+Move to the `/test` directory and execute `shellspec`
+
+```sh
+cd test
+shellspec
+```
