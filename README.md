@@ -197,6 +197,5 @@ brew install shellspec
 Move to the `/test` directory and execute `shellspec`
 
 ```sh
-cd test
-shellspec
+cd test && shellspec
 ```
