@@ -6,12 +6,11 @@ version="0.0.1"
 canonical_model_version="0.8.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
-which curl &> /dev/null || 
-    { echo "Error: curl is required." && missing_require=1; }
-which jq &> /dev/null || 
-    { echo "Error: jq is required." && missing_require=1; }
-which uuidgen &> /dev/null ||
-    { echo "Error: uuidgen is required" && missing_require=1; }
+declare -a arr=("curl" "jq" "uuidgen")
+for i in "${arr[@]}"; do
+    which $i &> /dev/null || 
+        { echo "Error: $i is required." && missing_require=1; }
+done
 
 if ((${missing_require:-0})); then
     echo "Please ensure curl, jq and uuidgen are available before running the script."
@@ -56,7 +55,7 @@ function help() {
     printf "${RED}Canonical Model Version: v$canonical_model_version ${NC}\\n"
     echo
     printf "${RED}Required Args:${NC}\\n"
-    echo "Event type (i.e. \"deployment\", \"build\", \"full\")"
+    echo "Event type (i.e. \"deployment\", \"build\", \"build_deployment\")"
     echo 
     printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
     echo "---------------------------------------------------------------------------------------------------"

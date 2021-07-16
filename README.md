@@ -1,12 +1,12 @@
-# Faros Events CLI
+# :computer: Faros Events CLI
 
-CLI for reporting events to Faros platform
-
-## `faros_event.sh`
+CLI for reporting events to Faros platform.
 
 The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. Now when attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
 
-### Requirements
+## :zap: Usage
+
+### :exclamation: Requirements
 
 Please make sure the following are installed before running the script:
 
@@ -14,12 +14,11 @@ Please make sure the following are installed before running the script:
 - jq
 - uuidgen
 
-### Usage
+### :sparkles: Download and invoke in one line
 
-Download and invoke the script in one line:
-
-```text
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s help
+```sh
+# Show help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s build --help
 ```
 
 ```sh
@@ -35,13 +34,12 @@ export FAROS_BUILD="<build>"; \
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s deployment
 ```
 
-### Arguments passing
+### :pencil2: Arguments
 
 There are two ways that arguments can be passed into the script. The first is via flags. The second, is via environment variables. If both are set, flags will take precedence over environment variables. By convention, you can switch between using a flag or an environment variable by simple capitalizing the argument name and prefixing it with `FAROS_`. E.g. `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
 
-Example with mixed argument input:
-
 ```sh
+# Example with mixed argument input
 FAROS_CI_ORG="<ci_org>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
@@ -53,9 +51,7 @@ FAROS_REPO="<vcs_repo>" \
     --vcs_org "<vcs_organization>"
 ```
 
-### Arguments
-
-#### Required Arguments
+#### :exclamation: Required Arguments
 
 | Flag                          | Environment Variable    | Required By |
 | ----------------------------- | ----------------------- | ----------- |
@@ -72,7 +68,7 @@ FAROS_REPO="<vcs_repo>" \
 | --vcs_org \<vcs_org>          | FAROS_VCS_ORG           | build       |
 | --vcs_source \<vcs_source>    | FAROS_VCS_SOURCE        | build       |
 
-#### Optional Arguments
+#### :grey_question: Optional Arguments
 
 | Flag                                   | Environment Variable            | Default                     | Used By    |
 | -------------------------------------- | ------------------------------- | --------------------------- | ---------- |
@@ -93,7 +89,7 @@ FAROS_REPO="<vcs_repo>" \
 | --build_start_time \<start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME            | build      |
 | --build_end_time \<end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME              | build      |
 
-#### Additional Settings Flags
+#### :wrench: Additional Settings Flags
 
 | Flag          | Description                            |
 | ------------- | -------------------------------------- |
@@ -103,7 +99,7 @@ FAROS_REPO="<vcs_repo>" \
 
 ### Usage Examples
 
-#### Sending a build event
+#### :mega: Sending a build event
 
 ```sh
 # Using flags
@@ -117,7 +113,7 @@ FAROS_REPO="<vcs_repo>" \
     --vcs_source "<vcs_source>" \
     --vcs_org "<vcs_organization>"
 
-# Using environment variables
+# Or using environment variables
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
@@ -130,7 +126,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh build
 ```
 
-#### Sending a deployment event
+#### :mega: Sending a deployment event
 
 ```sh
 # Using flags
@@ -143,7 +139,7 @@ FAROS_VCS_ORG="<vcs_org>" \
     --pipeline "<ci_pipeline>" \
     --build "<build>"
 
-# Using environment variables
+# Or using environment variables
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_CI_ORG="<ci_org>" \
@@ -155,7 +151,7 @@ FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
 ```
 
-#### Sending a build_deployment (build + deployment) event
+#### :mega: Sending a build_deployment (build + deployment) event
 
 ```sh
 # Using flags
@@ -171,7 +167,7 @@ FAROS_BUILD="<build>" \
     --vcs_source "<vcs_source>" \
     --vcs_org "<vcs_organization>"
 
-# Using environment variables
+# Or using environment variables
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
@@ -186,7 +182,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh build_deployment
 ```
 
-## Testing
+## :white_check_mark: Testing
 
 We use [shellspec](https://github.com/shellspec/shellspec) to test our scripts.
 
