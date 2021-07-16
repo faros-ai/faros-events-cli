@@ -164,3 +164,7 @@ FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh full
 ```
+
+## Testing
+
+We use [shellspec](https://github.com/shellspec/shellspec) to test our scripts.

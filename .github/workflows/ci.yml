@@ -15,17 +15,12 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       FORCE_COLOR: true
-    strategy:
-      matrix:
-        os:
-        - ubuntu-latest
-        include:
-        - os: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2s
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
     - name: Install Shellspec - non-windows
       if: ${{ matrix.os != 'windows' }}
@@ -39,7 +34,6 @@ jobs:
         which shellspec
         shellspec --version
     - name: Install jq and curl on Ubuntu
-      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         sudo apt-get install jq
         sudo apt-get install curl
