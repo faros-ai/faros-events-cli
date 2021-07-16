@@ -18,7 +18,7 @@ Please make sure the following are installed before running the script:
 
 ```sh
 # Show help
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s build --help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s build --help
 ```
 
 ```sh
@@ -31,7 +31,7 @@ export FAROS_DEPLOYMENT_STATUS="<deploy_status>"; \
 export FAROS_DEPLOYMENT_ENV="<environment>"; \
 export FAROS_PIPELINE="<pipeline>"; \
 export FAROS_BUILD="<build>"; \
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/faros_event.sh | bash -s deployment
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s deployment
 ```
 
 ### :pencil2: Arguments
