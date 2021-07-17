@@ -204,6 +204,7 @@ We use [ShellSpec](https://github.com/shellspec/shellspec) to test our scripts.
 ### Install using Homebrew
 
 ```sh
+brew tap shellspec/shellspec
 brew install shellspec
 ```
 

@@ -7,8 +7,8 @@ deployment_event_test() {
         --app "<app_name>" \
         --ci_org "<ci_organization>" \
         --commit_sha "<commit_sha>" \
-        --deployment_status "<deploy_status>" \
-        --deployment_env "<environment>" \
+        --deployment_status Success \
+        --deployment_env QA \
         --pipeline "<ci_pipeline>" \
         --build "<build_uid>" \
         --dry_run \
@@ -21,7 +21,7 @@ build_event_test() {
         FAROS_END_TIME=10 \
         ../faros_event.sh build -k "<api_key>" \
         --app "<app_name>" \
-        --build_status "<build_status>" \
+        --build_status Success \
         --ci_org "<ci_organization>" \
         --commit_sha "<commit_sha>" \
         --repo "<vcs_repo>" \
@@ -39,11 +39,11 @@ build_deployment_event_test() {
         FAROS_END_TIME=10 \
         ../faros_event.sh build_deployment -k "<api_key>" \
         --app "<app_name>" \
-        --build_status "<build_status>" \
+        --build_status Success \
         --ci_org "<ci_organization>" \
         --commit_sha "<commit_sha>" \
-        --deployment_status "<deploy_status>" \
-        --deployment_env "<environment>" \
+        --deployment_status Failed \
+        --deployment_env QA \
         --pipeline "<ci_pipeline>" \
         --repo "<vcs_repo>" \
         --vcs_source "<vcs_source>" \
