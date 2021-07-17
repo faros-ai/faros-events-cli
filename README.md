@@ -19,7 +19,7 @@ Please make sure the following are installed before running the script:
 ##### Show help
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s build --help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s help
 ```
 
 ##### Deployment example
@@ -146,7 +146,6 @@ FAROS_VCS_ORG="<vcs_org>" \
     --deployment_env "<environment>" \
     --pipeline "<ci_pipeline>" \
     --build "<build>"
-
 ```
 
 ##### Or using environment variables
@@ -163,7 +162,7 @@ FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
 ```
 
-#### :mega: Sending a build_deployment (build + deployment) event
+#### :mega: Sending a build_deployment (build and deployment) event
 
 ##### Using flags
 
