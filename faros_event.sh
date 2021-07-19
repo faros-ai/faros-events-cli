@@ -369,12 +369,12 @@ function resolveDeploymentInput() {
     deployment_end_time=${deployment_end_time:-$FAROS_DEPLOYMENT_END_TIME}
 
     if ! [[ ${ENVS[*]} =~ (^|[[:space:]])"$deployment_env"($|[[:space:]]) ]] ; then
-      echo "Invalid deployment environment $deployment_env. Allowed values: ${envs}";
-      exit 1
+      err "Invalid deployment environment $deployment_env. Allowed values: ${envs}";
+      fail
     fi
     if ! [[ ${DEPLOYMENT_STATUSES[*]} =~ (^|[[:space:]])"$deployment_status"($|[[:space:]]) ]] ; then
-      echo "Invalid deployment status $deployment_status. Allowed values: ${deployment_statuses}";
-      exit 1
+      err "Invalid deployment status $deployment_status. Allowed values: ${deployment_statuses}";
+      fail
     fi
 }
 
@@ -401,8 +401,8 @@ function resolveBuildInput() {
     build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
 
     if ! [[ ${BUILD_STATUSES[*]} =~ (^|[[:space:]])"$build_status"($|[[:space:]]) ]] ; then
-      echo "Invalid build status $build_status. Allowed values: ${build_statuses}";
-      exit 1
+      err "Invalid build status $build_status. Allowed values: ${build_statuses}";
+      fail
     fi
 }
 
