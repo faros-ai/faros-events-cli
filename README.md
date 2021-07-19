@@ -19,7 +19,7 @@ Please make sure the following are installed before running the script:
 ##### Show help
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s build --help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s help
 ```
 
 ##### Deployment example
@@ -56,17 +56,17 @@ FAROS_REPO="<vcs_repo>" \
 
 #### :exclamation: Required Arguments
 
-| Flag                          | Environment Variable    | Required By |
-| ----------------------------- | ----------------------- | ----------- |
+| Flag                          | Environment Variable    | Required By | Allowed Values|
+| ----------------------------- | ----------------------- | ----------- |---------------
 | -k / --api_key \<api_key>     | FAROS_API_KEY           | all         |
 | --app \<app>                  | FAROS_APP               | all         |
 | --commit_sha \<commit_sha>    | FAROS_COMMIT_SHA        | all         |
 | --pipeline \<pipeline>        | FAROS_PIPELINE          | all         |
 | --ci_org \<ci_org>            | FAROS_CI_ORG            | all         |
-| --deployment_env \<env>       | FAROS_DEPLOYMENT_ENV    | deployment  |
-| --deployment_status \<status> | FAROS_DEPLOYMENT_STATUS | deployment  |
+| --deployment_env \<env>       | FAROS_DEPLOYMENT_ENV    | deployment  | Prod,Staging,QA,Dev,Sandbox,Custom
+| --deployment_status \<status> | FAROS_DEPLOYMENT_STATUS | deployment  | Success,Failed,Canceled,Queued,Running,RolledBack,Custom
 | --build \<build>              | FAROS_BUILD             | deployment  |
-| --build_status \<status>      | FAROS_BUILD_STATUS      | build       |
+| --build_status \<status>      | FAROS_BUILD_STATUS      | build       | Success,Failed,Canceled,Queued,Running,Unknown,Custom
 | --repo \<repo>                | FAROS_REPO              | build       |
 | --vcs_org \<vcs_org>          | FAROS_VCS_ORG           | build       |
 | --vcs_source \<vcs_source>    | FAROS_VCS_SOURCE        | build       |
@@ -146,7 +146,6 @@ FAROS_VCS_ORG="<vcs_org>" \
     --deployment_env "<environment>" \
     --pipeline "<ci_pipeline>" \
     --build "<build>"
-
 ```
 
 ##### Or using environment variables
@@ -163,7 +162,7 @@ FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
 ```
 
-#### :mega: Sending a build_deployment (build + deployment) event
+#### :mega: Sending a build_deployment (build and deployment) event
 
 ##### Using flags
 
@@ -205,6 +204,7 @@ We use [ShellSpec](https://github.com/shellspec/shellspec) to test our scripts.
 ### Install using Homebrew
 
 ```sh
+brew tap shellspec/shellspec
 brew install shellspec
 ```
 

@@ -29,6 +29,14 @@ FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
 FAROS_START_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_END_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_DEPLOYMENT_DEFAULT=$(uuidgen)  # Random UUID
+
+declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
+envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
+declare -a BUILD_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "Unknown" "Custom")
+build_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
+declare -a DEPLOYMENT_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
+deployment_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOYMENT_STATUSES[*]}")")
+
 print_event=0
 dry_run=0
 silent=0
@@ -59,23 +67,23 @@ function help() {
     echo 
     printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
     echo "---------------------------------------------------------------------------------------------------"
-    echo "Flag                                  | Environment Variable"
+    echo "Flag                                  | Environment Variable            | Allowed Values"
     echo "---------------------------------------------------------------------------------------------------"
     printf "${RED}(Required fields)${NC}\\n"
-    echo "-k / --api_key <api_key>              | FAROS_API_KEY"
-    echo "--app <app>                           | FAROS_APP"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA"
-    echo "--pipeline <pipeline>                 | FAROS_PIPELINE"
-    echo "--ci_org <ci_org>                     | FAROS_CI_ORG"
+    echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
+    echo "--app <app>                           | FAROS_APP                       |"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
+    echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
+    echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
     printf "${RED}(Required deployment fields)${NC}\\n"
-    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV"
-    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS"
-    echo "--build <build>                       | FAROS_BUILD"
+    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
+    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
+    echo "--build <build>                       | FAROS_BUILD                     |"
     printf "${RED}(Required build fields)${NC}\\n"
-    echo "--build_status <status>               | FAROS_BUILD_STATUS"
-    echo "--repo <repo>                         | FAROS_REPO"
-    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG"
-    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE"
+    echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
+    echo "--repo <repo>                         | FAROS_REPO                      |"
+    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
+    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                  | Environment Variable            | Default"
@@ -106,8 +114,7 @@ function help() {
     echo "--debug       Helpful information will be printed."
     echo "--no_format   Log formatting will be turned off."
     echo
-    echo "For more usage information please visit:"
-    printf "${RED}$github_url"
+    echo "For more usage information please visit: $github_url"
     echo
     exit 0
 }
@@ -138,7 +145,7 @@ main() {
         makeBuildDeploymentEvent
     else
         err "Unrecognized event type: $EVENT_TYPE \n
-            Valid event types: deployment, build, full."
+            Valid event types: deployment, build, build_deployment."
         fail
     fi
 
@@ -360,6 +367,15 @@ function resolveDeploymentInput() {
     deployment_status_details=${deploymant_status_details:-$FAROS_DEPLOYMENT_STATUS_DETAILS}
     deployment_start_time=${deployment_start_time:-$FAROS_DEPLOYMENT_START_TIME}
     deployment_end_time=${deployment_end_time:-$FAROS_DEPLOYMENT_END_TIME}
+
+    if ! [[ ${ENVS[*]} =~ (^|[[:space:]])"$deployment_env"($|[[:space:]]) ]] ; then
+      err "Invalid deployment environment $deployment_env. Allowed values: ${envs}";
+      fail
+    fi
+    if ! [[ ${DEPLOYMENT_STATUSES[*]} =~ (^|[[:space:]])"$deployment_status"($|[[:space:]]) ]] ; then
+      err "Invalid deployment status $deployment_status. Allowed values: ${deployment_statuses}";
+      fail
+    fi
 }
 
 function resolveDeploymentDefaults() {
@@ -383,6 +399,11 @@ function resolveBuildInput() {
     build_status_details=${build_status_details:-$FAROS_BUILD_STATUS_DETAILS}
     build_start_time=${build_start_time:-$FAROS_BUILD_START_TIME}
     build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
+
+    if ! [[ ${BUILD_STATUSES[*]} =~ (^|[[:space:]])"$build_status"($|[[:space:]]) ]] ; then
+      err "Invalid build status $build_status. Allowed values: ${build_statuses}";
+      fail
+    fi
 }
 
 function resolveBuildDefaults() {
