@@ -659,7 +659,7 @@ function printLog() {
     if jq -e . >/dev/null 2>&1 <<< "$1"; then
         if !((no_format)); then
             printf "$fmtLog \n"
-            echo "$*" | jq
+            echo "$*" | jq .
         else
             echo "$*"
         fi
