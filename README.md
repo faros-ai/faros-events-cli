@@ -45,7 +45,7 @@ There are two ways that arguments can be passed into the script. The first is vi
 
 ```sh
 FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>"; \
+FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
 ./faros_event.sh build -k "<api_key>" \
