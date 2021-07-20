@@ -28,6 +28,7 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_e
 export FAROS_API_KEY="<api_key>"; \
 export FAROS_APP="<app_name>"; \
 export FAROS_CI_ORG="<ci_org>"; \
+export FAROS_CI_SOURCE="<ci_source>"; \
 export FAROS_COMMIT_SHA="<commit_sha>"; \
 export FAROS_DEPLOYMENT_STATUS="<deploy_status>"; \
 export FAROS_DEPLOYMENT_ENV="<environment>"; \
@@ -44,6 +45,7 @@ There are two ways that arguments can be passed into the script. The first is vi
 
 ```sh
 FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
 ./faros_event.sh build -k "<api_key>" \
@@ -112,6 +114,7 @@ FAROS_REPO="<vcs_repo>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>" \
     --commit_sha "<commit_sha>" \
     --repo "<vcs_repo>" \
     --pipeline "<ci_pipeline>" \
@@ -126,6 +129,7 @@ FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
 FAROS_PIPELINE="<ci_pipeline>" \
@@ -142,6 +146,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh deployment -k "<api_key>" \
     --app "<app_name>" \
     --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>" \
     --commit_sha "<commit_sha>" \
     --deployment_status "<deploy_status>" \
     --deployment_env "<environment>" \
@@ -155,6 +160,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
 FAROS_DEPLOYMENT_ENV="<environment>" \
@@ -172,6 +178,7 @@ FAROS_BUILD="<build>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>" \
     --commit_sha "<commit_sha>" \
     --deployment_status "<deploy_status>" \
     --deployment_env "<environment>" \
@@ -188,6 +195,7 @@ FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
 FAROS_DEPLOYMENT_ENV="<environment>" \
