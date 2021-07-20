@@ -63,6 +63,7 @@ FAROS_REPO="<vcs_repo>" \
 | --commit_sha \<commit_sha>    | FAROS_COMMIT_SHA        | all         |
 | --pipeline \<pipeline>        | FAROS_PIPELINE          | all         |
 | --ci_org \<ci_org>            | FAROS_CI_ORG            | all         |
+| --ci_source \<ci_source>      | FAROS_CI_SOURCE         | all         |
 | --deployment_env \<env>       | FAROS_DEPLOYMENT_ENV    | deployment  | Prod,Staging,QA,Dev,Sandbox,Custom
 | --deployment_status \<status> | FAROS_DEPLOYMENT_STATUS | deployment  | Success,Failed,Canceled,Queued,Running,RolledBack,Custom
 | --build \<build>              | FAROS_BUILD             | deployment  |
