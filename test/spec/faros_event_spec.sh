@@ -3,7 +3,7 @@ Describe 'faros_event.sh'
   Describe 'faros_event.sh deployment'
     It 'Constructs correct deployment event'
         When call deployment_event_test
-        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "Faros_Script", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "NA" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } } } } ] } Dry run: Event NOT sent to Faros. Done.'
+        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "Faros_Script", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "NA" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "Faros_Script" } } } } }, { "compute_Application": { "name": "<app_name>", "platform": "NA" } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End
 

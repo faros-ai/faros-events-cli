@@ -588,10 +588,12 @@ function makeDeploymentEvent() {
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
+        --argjson application "$compute_Application" \
         '{ 
             "origin": $origin,
             "entries": [
-                $deployment
+                $deployment,
+                $application
             ]
         }'
     )
