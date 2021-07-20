@@ -588,10 +588,12 @@ function makeDeploymentEvent() {
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
+        --argjson application "$compute_Application" \
         '{ 
             "origin": $origin,
             "entries": [
-                $deployment
+                $deployment,
+                $application
             ]
         }'
     )
@@ -657,7 +659,7 @@ function printLog() {
     if jq -e . >/dev/null 2>&1 <<< "$1"; then
         if !((no_format)); then
             printf "$fmtLog \n"
-            echo "$*" | jq
+            echo "$*" | jq .
         else
             echo "$*"
         fi
