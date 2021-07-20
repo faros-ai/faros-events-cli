@@ -75,6 +75,7 @@ function help() {
     echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
     echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
+    echo "--ci_source <ci_source>               | FAROS_CI_SOURCE                 |"
     printf "${RED}(Required deployment fields)${NC}\\n"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
@@ -237,6 +238,9 @@ function parseFlags() {
             --ci_org)
                 ci_org="$2"
                 shift 2 ;;
+            --ci_source)
+                ci_source="$2"
+                shift 2 ;;
             --vcs_source)
                 vcs_source="$2"
                 shift 2 ;;
@@ -323,6 +327,7 @@ function resolveInput() {
     commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
     pipeline=${pipeline:-$FAROS_PIPELINE}
     ci_org=${ci_org:-$FAROS_CI_ORG}
+    ci_source=${ci_source:-$FAROS_CI_SOURCE}
 
     # Optional fields:
     resolveDefaults
@@ -428,6 +433,7 @@ function makeDeployment() {
         --arg build "$build" \
         --arg pipeline "$pipeline" \
         --arg ci_org "$ci_org" \
+        --arg ci_source "$ci_source" \
         '{
             "cicd_Deployment": {
                 "uid": $deployment,
@@ -452,7 +458,7 @@ function makeDeployment() {
                         "uid": $pipeline,
                         "organization": {
                             "uid": $ci_org,
-                            "source": $s
+                            "source": $ci_source
                         }
                     }
                 }
@@ -463,7 +469,6 @@ function makeDeployment() {
 
 function makeBuild() {
     cicd_Build=$( jq -n \
-        --arg s "$source" \
         --arg build "$build" \
         --arg build_status "$build_status" \
         --arg start_time "$build_start_time" \
@@ -471,6 +476,7 @@ function makeBuild() {
         --arg build_status_details "$build_status_details" \
         --arg pipeline "$pipeline" \
         --arg ci_org "$ci_org" \
+        --arg ci_source "$ci_source" \
         '{
             "cicd_Build": {
                 "uid": $build,
@@ -484,7 +490,7 @@ function makeBuild() {
                     "uid": $pipeline,
                     "organization": {
                         "uid": $ci_org,
-                        "source": $s
+                        "source": $ci_source
                     }
                 }
             }
@@ -494,7 +500,6 @@ function makeBuild() {
 
 function makeBuildCommitAssociation() {
     cicd_BuildCommitAssociation=$( jq -n \
-        --arg s "$source" \
         --arg build "$build" \
         --arg pipeline "$pipeline" \
         --arg ci_org "$ci_org" \
@@ -502,6 +507,7 @@ function makeBuildCommitAssociation() {
         --arg vcs_source "$vcs_source" \
         --arg commit_sha "$commit_sha" \
         --arg repo "$repo" \
+        --arg ci_source "$ci_source" \
         '{
             "cicd_BuildCommitAssociation": {
                 "build": {
@@ -510,7 +516,7 @@ function makeBuildCommitAssociation() {
                         "uid": $pipeline,
                         "organization": {
                             "uid": $ci_org,
-                            "source": $s
+                            "source": $ci_source
                         }
                     }
                 },
@@ -531,15 +537,15 @@ function makeBuildCommitAssociation() {
 
 function makePipeline() {
     cicd_Pipeline=$( jq -n \
-        --arg s "$source" \
         --arg pipeline "$pipeline" \
         --arg ci_org "$ci_org" \
+        --arg ci_source "$ci_source" \
         '{
             "cicd_Pipeline": {
                 "uid": $pipeline,
                 "organization": {
                     "uid": $ci_org,
-                    "source": $s
+                    "source": $ci_source
                 }
             }
         }'

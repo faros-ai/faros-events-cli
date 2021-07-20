@@ -6,6 +6,7 @@ deployment_event_test() {
         ../faros_event.sh deployment -k "<api_key>" \
         --app "<app_name>" \
         --ci_org "<ci_organization>" \
+        --ci_source "<ci_source>" \
         --commit_sha "<commit_sha>" \
         --deployment_status Success \
         --deployment_env QA \
@@ -23,6 +24,7 @@ build_event_test() {
         --app "<app_name>" \
         --build_status Success \
         --ci_org "<ci_organization>" \
+        --ci_source "<ci_source>" \
         --commit_sha "<commit_sha>" \
         --repo "<vcs_repo>" \
         --pipeline "<ci_pipeline>" \
@@ -41,6 +43,7 @@ build_deployment_event_test() {
         --app "<app_name>" \
         --build_status Success \
         --ci_org "<ci_organization>" \
+        --ci_source "<ci_source>" \
         --commit_sha "<commit_sha>" \
         --deployment_status Failed \
         --deployment_env QA \
