@@ -14,27 +14,20 @@ Please make sure the following are installed before running the script:
 - jq
 - uuidgen
 
-### :sparkles: Download and invoke in one line
+### :sparkles: Execution
 
-##### Show help
+Download and execute the script:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s help
+./faros_event.sh help
 ```
 
-##### Deployment example
+Or with `curl`:
 
 ```sh
-export FAROS_API_KEY="<api_key>"; \
-export FAROS_APP="<app_name>"; \
-export FAROS_CI_ORG="<ci_org>"; \
-export FAROS_CI_SOURCE="<ci_source>"; \
-export FAROS_COMMIT_SHA="<commit_sha>"; \
-export FAROS_DEPLOYMENT_STATUS="<deploy_status>"; \
-export FAROS_DEPLOYMENT_ENV="<environment>"; \
-export FAROS_PIPELINE="<pipeline>"; \
-export FAROS_BUILD="<build>"; \
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/main/faros_event.sh | bash -s deployment
+# set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest 
+export FAROS_CLI_VERSION="v0.0.1" 
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
 ### :pencil2: Arguments
