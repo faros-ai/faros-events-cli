@@ -4,9 +4,10 @@ CLI for reporting events to Faros platform.
 
 The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. When attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
 
+
 ## :zap: Usage
 
-### :exclamation: Requirements
+### Requirements
 
 Please make sure the following are installed before running the script:
 
@@ -14,9 +15,9 @@ Please make sure the following are installed before running the script:
 - jq
 - uuidgen
 
-### :sparkles: Execution
+### Execution
 
-Download and execute the script:
+You can download and execute the script:
 
 ```sh
 ./faros_event.sh help
@@ -30,77 +31,97 @@ export FAROS_CLI_VERSION="v0.0.1"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
-### :pencil2: Arguments
+### :book: Event Types
 
-There are two ways that arguments can be passed into the script. The first is via flags. The second, is via environment variables. If both are set, flags will take precedence over environment variables. By convention, you can switch between using a flag or an environment variable by simple capitalizing the argument name and prefixing it with `FAROS_`. E.g. `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
+An event type (i.e. `deployment`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields. 
 
-##### Example with mixed argument input
+> :exclamation: Important: Every event type requires the general required fields and can optionally set the general optional fields.
 
-```sh
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
-FAROS_COMMIT_SHA="<commit_sha>" \
-FAROS_REPO="<vcs_repo>" \
-./faros_event.sh build -k "<api_key>" \
-    --app "<app_name>" \
-    --build_status "<build_status>" \
-    --pipeline "<ci_pipeline>" \
-    --vcs_source "<vcs_source>" \
-    --vcs_org "<vcs_organization>"
-```
+There are two ways that fields can be passed into the script. The first, is via environment variables. The second is via flags. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
-#### :exclamation: Required Arguments
+By convention, you can switch between using a flag or an environment variable by simple capitalizing the argument name and prefixing it with FAROS_. For example, --commit_sha becomes FAROS_COMMIT_SHA, --vcs_org becomes FAROS_VCS_ORG.
 
-| Flag                          | Environment Variable    | Required By | Allowed Values|
-| ----------------------------- | ----------------------- | ----------- |---------------
-| -k / --api_key \<api_key>     | FAROS_API_KEY           | all         |
-| --app \<app>                  | FAROS_APP               | all         |
-| --commit_sha \<commit_sha>    | FAROS_COMMIT_SHA        | all         |
-| --pipeline \<pipeline>        | FAROS_PIPELINE          | all         |
-| --ci_org \<ci_org>            | FAROS_CI_ORG            | all         |
-| --ci_source \<ci_source>      | FAROS_CI_SOURCE         | all         |
-| --deployment_env \<env>       | FAROS_DEPLOYMENT_ENV    | deployment  | Prod,Staging,QA,Dev,Sandbox,Custom
-| --deployment_status \<status> | FAROS_DEPLOYMENT_STATUS | deployment  | Success,Failed,Canceled,Queued,Running,RolledBack,Custom
-| --build \<build>              | FAROS_BUILD             | deployment  |
-| --build_status \<status>      | FAROS_BUILD_STATUS      | build       | Success,Failed,Canceled,Queued,Running,Unknown,Custom
-| --repo \<repo>                | FAROS_REPO              | build       |
-| --vcs_org \<vcs_org>          | FAROS_VCS_ORG           | build       |
-| --vcs_source \<vcs_source>    | FAROS_VCS_SOURCE        | build       |
+> General Required Fields
 
-#### :grey_question: Optional Arguments
+1. `FAROS_API_KEY` / `--api_key "<api_key>"` / `-k "<api_key>"`
+    Your Faros api key. See TODO: api key documentation
+    <br/>
+1. `FAROS_APP` / `--app "<app>"`
+    The name of the application that is being built. If this application does not already exist within Faros it will be created. TODO: Link to application page in the UI.
+    <br/>
+1. `FAROS_CI_SOURCE` / `--ci_source "<ci_source>"`
+    The CI source system that contains the build. (i.e. `Jenkins`) TODO: Check semantics
+    <br/>
+1. `FAROS_CI_ORG` / `ci_org "<ci_org>"`
+    The unique organization within the CI source system that contains the build. TODO: Is it always called an org in the other systems. Add a table for equivalences across CI/CD systems
+    <br/>
+1. `FAROS_PIPELINE` / `--pipeline "<pipeline>"`
+    The name of the pipeline that contains the build. If this pipeline does not already exist within Faros it will be created.
 
-| Flag                                   | Environment Variable            | Default                     | Used By    |
-| -------------------------------------- | ------------------------------- | --------------------------- | ---------- |
-| -u / --url \<url>                      | FAROS_URL                       | <https://prod.api.faros.ai> | all        |
-| -g / --graph \<graph>                  | FAROS_GRAPH                     | "default"                   | all        |
-| --origin \<origin>                     | FAROS_ORIGIN                    | Faros_Script_Event          | all        |
-| --source \<source>                     | FAROS_SOURCE                    | Faros_Script                | all        |
-| --start_time \<start>                  | FAROS_START_TIME                | Now                         | all        |
-| --end_time \<end>                      | FAROS_END_TIME                  | Now                         | all        |
-| --app_platform \<platform>             | FAROS_APP_PLATFORM              | "NA"                        | all        |
-| --deployment \<deployment>             | FAROS_DEPLOYMENT                | Random UUID                 | deployment |
-| --deployment_env_details \<details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | ""                          | deployment |
-| --deployment_status_details \<details> | FAROS_DEPLOYMENT_STATUS_DETAILS | ""                          | deployment |
-| --deployment_start_time \<start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME            | deployment |
-| --deployment_end_time \<end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME              | deployment |
-| --build \<build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA            | build      |
-| --build_status_details \<details>      | FAROS_BUILD_STATUS_DETAILS      | ""                          | build      |
-| --build_start_time \<start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME            | build      |
-| --build_end_time \<end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME              | build      |
+> General Optional Fields
 
-#### :wrench: Additional Settings Flags
+7. `FAROS_URL` / `--url "<url>"` / `-u "<url>"`
+    The Faros url to send the event to.
+    __Default__: <https://prod.api.faros.ai>
+    <br/>
+1.  `FAROS_GRAPH` / `--graph "<graph>"` / `-g "<graph>"`
+    The graph that the event should be sent to.
+    __Default__: "default"
+    <br/>
+1.  `FAROS_ORIGIN` / `--origin "<origin>"`
+    The origin of the event that is sent to faros.
+    __Default__: Faros_Script_Event
+    <br/>
+1. `FAROS_START_TIME` / `--start_time "<start_time>"`
+    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: Now
+    <br/>
+1. `FAROS_END_TIME` / `--end_time "<end_time>"`
+    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: Now
+    <br/>
+1. `FAROS_APP_PLATFORM` / `--app_platform "<platform>"`
+    The compute platform that runs the application.
+    __Default__: "NA"
 
-| Flag          | Description                            |
-| ------------- | -------------------------------------- |
-| --dry_run     | Print the event instead of sending.    |
-| -s / --silent | Unexceptional output will be silenced. |
-| --debug       | Helpful information will be printed.   |
+---
 
-### Usage Examples
+#### Build - `build`
 
-#### :mega: Sending a build event
+A build event is used to communicate a specific builds status, the code being built, and where the build is taking place.
 
-##### Using flags
+> Build Required Fields
+
+1. `FAROS_BUILD_STATUS` / `--build_status "<build_status>"`
+    The status of the build.
+    __Allowed Values:__ Success, Failed, Canceled, Queued, Running, Unknown, Custom
+    <br/>
+1. `FAROS_VCS_SOURCE` / `--vcs_source "<vcs_source>"`
+    The version control source system that stores the code that is being built (i.e. GitHub) TODO: Check semantics
+    <br/>
+1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`
+    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems
+    <br/>
+1. `FAROS_REPO` / `--repo "<repo>"`
+    The repository within the version control organization that stores the code associated to the provided commit sha.
+    <br/>
+1. `FAROS_COMMIT_SHA` / `--commit_sha "<commit_sha>"`
+    The commit sha of the code that is being built.
+
+> Build Optional Fields
+
+5. `FAROS_BUILD` / `--build "<build>"`
+    The unique id for the build.
+    __Default__: Random UUID
+    <br/>
+1. `FAROS_BUILD_STATUS_DETAILS` / `--build_status_details "<details>"`
+    Any additional details about the status of the build that you wish to provide.
+    __Default__: ""
+    <br/>
+
+##### :mega: Sending a build event examples
+
+Using flags
 
 ```sh
 ./faros_event.sh build -k "<api_key>" \
@@ -115,7 +136,7 @@ FAROS_REPO="<vcs_repo>" \
     --vcs_org "<vcs_organization>"
 ```
 
-##### Or using environment variables
+Or using environment variables
 
 ```sh
 FAROS_API_KEY="<api_key>" \
@@ -123,7 +144,6 @@ FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
-FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_REPO="<vcs_repo>" \
 FAROS_PIPELINE="<ci_pipeline>" \
 FAROS_VCS_SOURCE="<vcs_source>" \
@@ -131,30 +151,65 @@ FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh build
 ```
 
-#### :mega: Sending a deployment event
+---
 
-##### Using flags
+#### Deployment - `deployment`
+
+A deployment event communicates a deployments status, destination environment as well as the build to associate with to Faros.
+
+> Deployment Required Fields
+
+1. `FAROS_DEPLOYMENT_ENV` / `--deployment_env "<environment>"`
+    The environment that the application is being deployed to.
+    __Allowed Values:__ Prod, Staging, QA, Dev, Sandbox, Custom
+    <br/>
+1. `FAROS_DEPLOYMENT_STATUS` / `--deployment_status "<status>"`
+    The status of the deployment.
+    __Allowed Values:__ Success, Failed, Canceled, Queued, Running, RolledBack, Custom
+    <br/>
+1.  `FAROS_BUILD` / `--build <build>`
+    The unique identifier of the build that constructed the artifact being deployed.
+
+> Deployment sOptional Fields
+
+4. `FAROS_DEPLOYMENT` / `--deployment "<deployment>"`
+    The unique id of the deployment.
+    __Default__: Random UUID
+    <br/>
+1.  `FAROS_DEPLOYMENT_ENV_DETAILS` / `--deployment_env_details "<details>"`
+    Any additional details about the deployment environment that you wish to provide.
+    __Default__: ""
+    <br/>
+1. `FAROS_DEPLOYMENT_STATUS_DETAILS` / `--deployment_status_details "<details>"`
+    Any additional details about the status of the deployment that you wish to provide.
+    __Default__: ""
+    <br/>
+1.  `FAROS_SOURCE` / `--source "<source>"`
+    The source that will be associate with the deployment
+    __Default__: "Faros_Script"
+
+##### :mega: Sending a deployment event example
+
+Using flags
 
 ```sh
 ./faros_event.sh deployment -k "<api_key>" \
     --app "<app_name>" \
     --ci_org "<ci_organization>" \
     --ci_source "<ci_source>" \
-    --commit_sha "<commit_sha>" \
     --deployment_status "<deploy_status>" \
     --deployment_env "<environment>" \
     --pipeline "<ci_pipeline>" \
     --build "<build>"
 ```
 
-##### Or using environment variables
+Or using environment variables
 
 ```sh
 FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
-FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
 FAROS_DEPLOYMENT_ENV="<environment>" \
 FAROS_PIPELINE="<pipeline>" \
@@ -162,9 +217,81 @@ FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
 ```
 
-#### :mega: Sending a build_deployment (build and deployment) event
+---
 
-##### Using flags
+#### Build and Deployment - `build_deployment`
+
+> Build and Deployment Required Fields
+
+1. `FAROS_DEPLOYMENT_ENV` / `--deployment_env "<environment>"`
+    The environment that the application is being deployed to.
+    __Allowed Values:__ Prod, Staging, QA, Dev, Sandbox, Custom
+    <br/>
+1. `FAROS_DEPLOYMENT_STATUS` / `--deployment_status "<status>"`
+    The status of the deployment.
+    __Allowed Values:__ Success, Failed, Canceled, Queued, Running, RolledBack, Custom
+    <br/>
+1. `FAROS_BUILD_STATUS` / `--build_status "<build_status>"`
+    The status of the build.
+    __Allowed Values:__ Success, Failed, Canceled, Queued, Running, Unknown, Custom
+    <br/>
+1. `FAROS_VCS_SOURCE` / `--vcs_source "<vcs_source>"`
+    The version control source system that stores the code that is being built (i.e. GitHub) TODO: Check semantics
+    <br/>
+1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`
+    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems
+    <br/>
+1. `FAROS_REPO` / `--repo "<repo>"`
+    The repository within the version control organization that stores the code associated to the provided commit sha.
+    <br/>
+1. `FAROS_COMMIT_SHA` / `--commit_sha "<commit_sha>"`
+    The commit sha of the code that is being built.
+
+> Build and Deployment Optional Fields
+
+8. `FAROS_DEPLOYMENT_START_TIME` / `--deployment_start_time "<start_time>"`
+    That start time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: FAROS_START_TIME
+    <br/>
+1. `FAROS_DEPLOYMENT_END_TIME` / `--deployment_end_time "<end_time>"`
+    That end time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: FAROS_END_TIME
+    <br/>
+1. `FAROS_BUILD_START_TIME` / `--build_start_time "<start_time>"`
+    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: FAROS_START_TIME
+    <br/>
+1. `FAROS_BUILD_END_TIME` / `--build_end_time "<end_time>"`
+    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
+    __Default__: FAROS_END_TIME
+    <br/>
+1. `FAROS_DEPLOYMENT` / `--deployment "<deployment>"`
+    The unique id of the deployment.
+    __Default__: Random UUID
+    <br/>
+1.  `FAROS_DEPLOYMENT_ENV_DETAILS` / `--deployment_env_details "<details>"`
+    Any additional details about the deployment environment that you wish to provide.
+    __Default__: ""
+    <br/>
+1. `FAROS_DEPLOYMENT_STATUS_DETAILS` / `--deployment_status_details "<details>"`
+    Any additional details about the status of the deployment that you wish to provide.
+    __Default__: ""
+    <br/>
+1.  `FAROS_SOURCE` / `--source "<source>"`
+    The source that will be associate with the deployment
+    __Default__: "Faros_Script"
+    <br/>
+1. `FAROS_BUILD` / `--build "<build>"`
+    The unique id for the build.
+    __Default__: Random UUID
+    <br/>
+1. `FAROS_BUILD_STATUS_DETAILS` / `--build_status_details "<details>"`
+    Any additional details about the status of the build that you wish to provide.
+    __Default__: ""
+
+#### :mega: Sending a build_deployment (build and deployment) event examples
+
+Using flags
 
 ```sh
 ./faros_event.sh build_deployment -k "<api_key>" \
@@ -181,7 +308,7 @@ FAROS_BUILD="<build>" \
     --vcs_org "<vcs_organization>"
 ```
 
-##### Or using environment variables
+Or using environment variables
 
 ```sh
 FAROS_API_KEY="<api_key>" \
@@ -198,6 +325,15 @@ FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_VCS_ORG="<vcs_org>" \
 ./faros_event.sh build_deployment
 ```
+
+#### :wrench: Additional Settings Flags
+
+| Flag          | Description                            |
+| ------------- | -------------------------------------- |
+| --dry_run     | Print the event instead of sending.    |
+| -s / --silent | Unexceptional output will be silenced. |
+| --debug       | Helpful information will be printed.   |
+
 
 ## :white_check_mark: Testing
 
