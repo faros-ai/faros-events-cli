@@ -226,15 +226,15 @@ The `build_deployment` should be used when there is not a distinct build that cr
 > Build and Deployment Required Fields
 
 1. `FAROS_DEPLOYMENT_ENV` / `--deployment_env "<environment>"`  
-    The environment that the application is being deployed to.
+    The environment that the application is being deployed to.  
     __Allowed Values:__ Prod, Staging, QA, Dev, Sandbox, Custom
   
 1. `FAROS_DEPLOYMENT_STATUS` / `--deployment_status "<status>"`  
-    The status of the deployment.
+    The status of the deployment.  
     __Allowed Values:__ Success, Failed, Canceled, Queued, Running, RolledBack, Custom
   
 1. `FAROS_BUILD_STATUS` / `--build_status "<build_status>"`  
-    The status of the build.
+    The status of the build.  
     __Allowed Values:__ Success, Failed, Canceled, Queued, Running, Unknown, Custom
   
 1. `FAROS_VCS_SOURCE` / `--vcs_source "<vcs_source>"`  
@@ -252,44 +252,44 @@ The `build_deployment` should be used when there is not a distinct build that cr
 > Build and Deployment Optional Fields
 
 8. `FAROS_DEPLOYMENT_START_TIME` / `--deployment_start_time "<start_time>"`  
-    That start time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: FAROS_START_TIME
+    That start time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: FAROS_START_TIME  
   
 1. `FAROS_DEPLOYMENT_END_TIME` / `--deployment_end_time "<end_time>"`  
-    That end time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: FAROS_END_TIME
+    That end time of the deployment in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: FAROS_END_TIME  
   
 1. `FAROS_BUILD_START_TIME` / `--build_start_time "<start_time>"`  
-    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: FAROS_START_TIME
+    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: FAROS_START_TIME  
   
 1. `FAROS_BUILD_END_TIME` / `--build_end_time "<end_time>"`  
-    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: FAROS_END_TIME
+    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: FAROS_END_TIME  
   
 1. `FAROS_DEPLOYMENT` / `--deployment "<deployment>"`  
-    The unique id of the deployment.
-    __Default__: Random UUID
+    The unique id of the deployment.  
+    __Default__: Random UUID  
   
-1.  `FAROS_DEPLOYMENT_ENV_DETAILS` / `--deployment_env_details "<details>"`  
-    Any additional details about the deployment environment that you wish to provide.
-    __Default__: ""
+1. `FAROS_DEPLOYMENT_ENV_DETAILS` / `--deployment_env_details "<details>"`  
+    Any additional details about the deployment environment that you wish to provide.  
+    __Default__: ""  
   
 1. `FAROS_DEPLOYMENT_STATUS_DETAILS` / `--deployment_status_details "<details>"`  
     Any additional details about the status of the deployment that you wish to provide.
     __Default__: ""
   
-1.  `FAROS_SOURCE` / `--source "<source>"`  
-    The source that will be associate with the deployment
-    __Default__: "Faros_Script"
+1. `FAROS_SOURCE` / `--source "<source>"`  
+    The source that will be associate with the deployment.  
+    __Default__: "Faros_Script"  
   
 1. `FAROS_BUILD` / `--build "<build>"`  
-    The unique id for the build.
-    __Default__: Random UUID
+    The unique id for the build.  
+    __Default__: Random UUID  
   
 1. `FAROS_BUILD_STATUS_DETAILS` / `--build_status_details "<details>"`  
-    Any additional details about the status of the build that you wish to provide.
-    __Default__: ""
+    Any additional details about the status of the build that you wish to provide.  
+    __Default__: ""  
 
 ##### :mega: Sending a build_deployment event examples
 
