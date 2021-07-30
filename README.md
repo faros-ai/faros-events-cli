@@ -59,7 +59,7 @@ By convention, you can switch between using a flag or an environment variable by
 
 > General Optional Fields
 
-7. `FAROS_URL` / `--url "<url>"`   / `-u "<url>"`  
+6. `FAROS_URL` / `--url "<url>"`   / `-u "<url>"`  
     The Faros url to send the event to.  
     __Default__: <https://prod.api.faros.ai>  
   
@@ -109,7 +109,7 @@ A `build` event is used to communicate a specific builds status, the code being 
 
 > Build Optional Fields
 
-5. `FAROS_BUILD` / `--build "<build>"`  
+6. `FAROS_BUILD` / `--build "<build>"`  
     The unique id for the build.  
     __Default__: Random UUID  
   
@@ -243,7 +243,7 @@ The `build_deployment` should be used when there is not a distinct build that cr
     The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai)
   
 1. `FAROS_REPO` / `--repo "<repo>"`  
-    The repository within the version control organization that stores the code associated to the provided commit sha.
+    The repository within the version control organization that stores the code associated to the provided commit sha.  
   
 1. `FAROS_COMMIT_SHA` / `--commit_sha "<commit_sha>"`  
     The commit sha of the code that is being built.
