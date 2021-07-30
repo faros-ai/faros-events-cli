@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-version="0.0.1"
+version="0.0.2"
 canonical_model_version="0.8.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -73,7 +73,6 @@ function help() {
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
     echo "--app <app>                           | FAROS_APP                       |"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
     echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
     echo "--ci_source <ci_source>               | FAROS_CI_SOURCE                 |"
@@ -86,6 +85,7 @@ function help() {
     echo "--repo <repo>                         | FAROS_REPO                      |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                  | Environment Variable            | Default"
@@ -97,9 +97,9 @@ function help() {
     echo "--source <source>                     | FAROS_SOURCE                    | \"$FAROS_SOURCE_DEFAULT\""
     echo "--start_time <start>                  | FAROS_START_TIME                | Now"
     echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
+    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     printf "${BLUE}(Optional deployment fields)${NC}\\n"
     echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID"
-    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
     echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
     echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"

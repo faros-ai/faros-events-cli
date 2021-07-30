@@ -34,7 +34,7 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 
 An event type (i.e. `deployment`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields.
 
-> :exclamation: Important: Every event type requires the general required fields and can optionally set the general optional fields.
+> :exclamation: Important: Every event type requires the "General Required Fields" and can optionally set the "General Optional Fields".
 
 There are two ways that fields can be passed into the script. The first, is via environment variables. The second is via flags. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
@@ -96,7 +96,7 @@ A `build` event is used to communicate a specific builds status, the code being 
     __Allowed Values:__ Success, Failed, Canceled, Queued, Running, Unknown, Custom
   
 1. `FAROS_VCS_SOURCE` / `--vcs_source "<vcs_source>"`  
-    The version control source system that stores the code that is being built (i.e. GitHub) TODO: Check semantics  
+    The version control source system that stores the code that is being built. (i.e. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated.
   
 1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`  
     The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems  
@@ -187,7 +187,7 @@ A `deployment` event communicates a deployments status, destination environment 
     The source that will be associate with the deployment  
     __Default__: "Faros_Script"  
 
-##### :mega: Sending a deployment event example
+##### :mega: Sending a deployment event examples
 
 Using flags
 
@@ -237,7 +237,7 @@ The `build_deployment` should be used when there is not a distinct build that cr
     __Allowed Values:__ Success, Failed, Canceled, Queued, Running, Unknown, Custom
   
 1. `FAROS_VCS_SOURCE` / `--vcs_source "<vcs_source>"`  
-    The version control source system that stores the code that is being built (i.e. GitHub) TODO: Check semantics
+    The version control source system that stores the code that is being built (i.e. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated.
   
 1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`  
     The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems
