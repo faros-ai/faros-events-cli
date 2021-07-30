@@ -99,7 +99,7 @@ A `build` event is used to communicate a specific builds status, the code being 
     The version control source system that stores the code that is being built. (i.e. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated.
   
 1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`  
-    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems  
+    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai)
   
 1. `FAROS_REPO` / `--repo "<repo>"`  
     The repository within the version control organization that stores the code associated to the provided commit sha.  
@@ -240,7 +240,7 @@ The `build_deployment` should be used when there is not a distinct build that cr
     The version control source system that stores the code that is being built (i.e. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated.
   
 1. `FAROS_VCS_ORG` / `--vcs_org "<vcs_org>"`  
-    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai) TODO: Is it always called an org in the other systems. Add a table for equivalences across VCS systems
+    The unique organization within the version control source system that contains the code that is being built. (i.e. faros-ai)
   
 1. `FAROS_REPO` / `--repo "<repo>"`  
     The repository within the version control organization that stores the code associated to the provided commit sha.
