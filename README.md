@@ -4,7 +4,6 @@ CLI for reporting events to Faros platform.
 
 The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. When attempting to send a deployment or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
 
-
 ## :zap: Usage
 
 ### Requirements
@@ -33,7 +32,7 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 
 ### :book: Event Types
 
-An event type (i.e. `deployment`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields. 
+An event type (i.e. `deployment`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields.
 
 > :exclamation: Important: Every event type requires the general required fields and can optionally set the general optional fields.
 
@@ -61,34 +60,34 @@ By convention, you can switch between using a flag or an environment variable by
 > General Optional Fields
 
 7. `FAROS_URL` / `--url "<url>"`   / `-u "<url>"`  
-    The Faros url to send the event to.
-    __Default__: <https://prod.api.faros.ai>
+    The Faros url to send the event to.  
+    __Default__: <https://prod.api.faros.ai>  
   
-1.  `FAROS_GRAPH` / `--graph "<graph>"`   / `-g "<graph>"`  
-    The graph that the event should be sent to.
-    __Default__: "default"
+1. `FAROS_GRAPH` / `--graph "<graph>"`   / `-g "<graph>"`  
+    The graph that the event should be sent to.  
+    __Default__: "default"  
   
-1.  `FAROS_ORIGIN` / `--origin "<origin>"`  
-    The origin of the event that is sent to faros.
-    __Default__: Faros_Script_Event
+1. `FAROS_ORIGIN` / `--origin "<origin>"`  
+    The origin of the event that is sent to faros.  
+    __Default__: Faros_Script_Event  
   
 1. `FAROS_START_TIME` / `--start_time "<start_time>"`  
-    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: Now
+    That start time of the build in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: Now  
   
 1. `FAROS_END_TIME` / `--end_time "<end_time>"`  
-    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)
-    __Default__: Now
+    That end time of the build in milliseconds since the epoch. (i.e. `1626804346019`)  
+    __Default__: Now  
   
 1. `FAROS_APP_PLATFORM` / `--app_platform "<platform>"`  
-    The compute platform that runs the application.
-    __Default__: "NA"
+    The compute platform that runs the application.  
+    __Default__: "NA"  
 
 ---
 
 #### Build Event - `build`
 
-A build event is used to communicate a specific builds status, the code being built, and where the build is taking place.
+A `build` event is used to communicate a specific builds status, the code being built, and where the build is taking place.
 
 > Build Required Fields
 
@@ -111,12 +110,12 @@ A build event is used to communicate a specific builds status, the code being bu
 > Build Optional Fields
 
 5. `FAROS_BUILD` / `--build "<build>"`  
-    The unique id for the build.
-    __Default__: Random UUID
+    The unique id for the build.  
+    __Default__: Random UUID  
   
 1. `FAROS_BUILD_STATUS_DETAILS` / `--build_status_details "<details>"`  
-    Any additional details about the status of the build that you wish to provide.
-    __Default__: ""
+    Any additional details about the status of the build that you wish to provide.  
+    __Default__: ""  
   
 ##### :mega: Sending a build event examples
 
@@ -155,7 +154,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 #### Deployment Event - `deployment`
 
-A deployment event communicates a deployments status, destination environment as well as the associated build to Faros.
+A `deployment` event communicates a deployments status, destination environment as well as the associated build to Faros.
 
 > Deployment Required Fields
 
@@ -335,7 +334,6 @@ FAROS_VCS_ORG="<vcs_org>" \
 | --dry_run     | Print the event instead of sending.    |
 | -s / --silent | Unexceptional output will be silenced. |
 | --debug   | Helpful information will be printed.   |
-
 
 ## :white_check_mark: Testing
 
