@@ -43,10 +43,10 @@ By convention, you can switch between using a flag or an environment variable by
 > General Required Fields
 
 1. `FAROS_API_KEY` / `--api_key "<api_key>"`   / `-k "<api_key>"`  
-    Your Faros api key. See [documentation](https://docs.faros.ai/#/api?id=getting-access) for more information on obtaining an api key.
+    Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).
   
 1. `FAROS_APP` / `--app "<app>"`  
-    The name of the application that is being built. If this application does not already exist within Faros it will be created. [Here](https://app.faros.ai/default/teams/ownership/application) you can view your applications in Faros.
+    The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application) .
   
 1. `FAROS_CI_SOURCE` / `--ci_source "<ci_source>"`  
     The CI source system that contains the build. (i.e. `Jenkins`). Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated.
