@@ -22,7 +22,7 @@ FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
 FAROS_SOURCE_DEFAULT="Faros_Script"
-FAROS_APP_PLATFORM_DEFAULT="NA"
+FAROS_APP_PLATFORM_DEFAULT=""
 FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT=""
 FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT=""
 FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
@@ -375,11 +375,11 @@ function resolveDeploymentInput() {
     deployment_end_time=${deployment_end_time:-$FAROS_DEPLOYMENT_END_TIME}
 
     if ! [[ ${ENVS[*]} =~ (^|[[:space:]])"$deployment_env"($|[[:space:]]) ]] ; then
-      err "Invalid deployment environment $deployment_env. Allowed values: ${envs}";
+      err "Invalid deployment environment: $deployment_env. Allowed values: ${envs}";
       fail
     fi
     if ! [[ ${DEPLOYMENT_STATUSES[*]} =~ (^|[[:space:]])"$deployment_status"($|[[:space:]]) ]] ; then
-      err "Invalid deployment status $deployment_status. Allowed values: ${deployment_statuses}";
+      err "Invalid deployment status: $deployment_status. Allowed values: ${deployment_statuses}";
       fail
     fi
 }

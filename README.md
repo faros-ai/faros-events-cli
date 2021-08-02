@@ -81,7 +81,7 @@ By convention, you can switch between using a flag or an environment variable by
   
 1. `FAROS_APP_PLATFORM` / `--app_platform "<platform>"`  
     The compute platform that runs the application.  
-    __Default__: "NA"  
+    __Default__: ""  
 
 ---
 
