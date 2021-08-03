@@ -38,8 +38,6 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
 
-##### General Arguments
-
 | Argument                     | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
 | &#x2011;&#x2011;api_key      | Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                                                                                          | Yes      |                             |               |
