@@ -220,7 +220,7 @@ FAROS_VCS_ORG="<vcs_org>" \
 | Flag          | Description                            |
 | ------------- | -------------------------------------- |
 | --dry_run     | Print the event instead of sending.    |
-| -s / --silent | Unexceptional output will be silenced. |
+| --silent      | Unexceptional output will be silenced. |
 | --debug       | Helpful information will be printed.   |
 
 ## :white_check_mark: Testing
