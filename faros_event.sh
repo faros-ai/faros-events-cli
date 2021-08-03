@@ -109,8 +109,6 @@ function help() {
     echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
     echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
-    printf "${BLUE}(Optional build_deployment fields)${NC}\\n"
-    echo "--build <build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA"
     echo
     printf "${BLUE}Additional settings flags:${NC}\\n"
     echo "--dry_run     Print the event instead of sending."
