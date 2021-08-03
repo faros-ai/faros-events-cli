@@ -32,13 +32,13 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 
 ### :book: Event Types
 
-An event type (e.g. `deployment`, `build`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields.
+An event type (e.g. `deployment`, `build`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of arguments (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional arguments.
 
-There are two ways that fields can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
+There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
 
-##### General Fields
+##### General Arguments
 
 | Argument                     | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
@@ -58,9 +58,9 @@ There are two ways that fields can be passed into the script. The first, is via 
 
 #### Build Event - `build`
 
-A `build` event is used to communicate a specific builds status, the code being built, and where the build is taking place.
+A `build` event is used to communicate a specific build's status, the code being built, and where the build is taking place.
 
-##### Build Fields
+##### Build Arguments
 
 | Argument                             | Description                                                                                                                                                                                                                                                                    | Required | Default     | Allowed Value                                               |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ----------- | ----------------------------------------------------------- |
@@ -109,9 +109,9 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 #### Deployment Event - `deployment`
 
-A `deployment` event communicates a deployments status, destination environment as well as the associated build to Faros.
+A `deployment` event communicates a deployment's status, destination environment as well as the associated build to Faros.
 
-##### Deployment Fields
+##### Deployment Arguments
 
 | Argument                                  | Description                                                                         | Required | Default        | Allowed Value                                                  |
 | ----------------------------------------- | ----------------------------------------------------------------------------------- | -------- | -------------- | -------------------------------------------------------------- |
@@ -158,7 +158,7 @@ FAROS_BUILD="<build>" \
 
 The `build_deployment` should be used when there is not a distinct build that created the artifact that is being deployed. In order for Faros to associate the code that is being deployed, a build that links a commit sha to the deployment will be created.
 
-##### Build and Deployment Fields
+##### Build and Deployment Arguments
 
 | Argument                                  | Description                                                                                                                                                                                                                                                                             | Required | Default           | Allowed Value                                                  |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------- | -------------------------------------------------------------- |
