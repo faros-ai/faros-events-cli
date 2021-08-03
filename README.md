@@ -19,15 +19,15 @@ Please make sure the following are installed before running the script:
 You can download and execute the script:
 
 ```sh
-./faros_event.sh help
+$ ./faros_event.sh help
 ```
 
 Or with `curl`:
 
 ```sh
 # set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
-export FAROS_CLI_VERSION="v0.0.1"
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
+$ export FAROS_CLI_VERSION="v0.0.1"
+$ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
 ### :book: Event Types
