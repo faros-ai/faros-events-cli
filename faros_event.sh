@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-version="0.0.1"
+version="0.0.2"
 canonical_model_version="0.8.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -22,13 +22,14 @@ FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
 FAROS_SOURCE_DEFAULT="Faros_Script"
-FAROS_APP_PLATFORM_DEFAULT="NA"
+FAROS_APP_PLATFORM_DEFAULT=""
 FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT=""
 FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT=""
 FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
 FAROS_START_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_END_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_DEPLOYMENT_DEFAULT=$(uuidgen)  # Random UUID
+FAROS_BUILD_DEFAULT=$(uuidgen) # Random UUID
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -72,7 +73,6 @@ function help() {
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
     echo "--app <app>                           | FAROS_APP                       |"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
     echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
     echo "--ci_source <ci_source>               | FAROS_CI_SOURCE                 |"
@@ -85,6 +85,7 @@ function help() {
     echo "--repo <repo>                         | FAROS_REPO                      |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                  | Environment Variable            | Default"
@@ -96,15 +97,15 @@ function help() {
     echo "--source <source>                     | FAROS_SOURCE                    | \"$FAROS_SOURCE_DEFAULT\""
     echo "--start_time <start>                  | FAROS_START_TIME                | Now"
     echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
+    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     printf "${BLUE}(Optional deployment fields)${NC}\\n"
     echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID"
-    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
     echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
     echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
     echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     printf "${BLUE}(Optional build fields)${NC}\\n"
-    echo "--build <build>                       | FAROS_BUILD                     | FAROS_COMMIT_SHA"
+    echo "--build <build>                       | FAROS_BUILD                     | Random UUID"
     echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
     echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
@@ -324,7 +325,6 @@ function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
     app=${app:-$FAROS_APP}
-    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
     pipeline=${pipeline:-$FAROS_PIPELINE}
     ci_org=${ci_org:-$FAROS_CI_ORG}
     ci_source=${ci_source:-$FAROS_CI_SOURCE}
@@ -334,7 +334,6 @@ function resolveInput() {
     graph=${graph:-$FAROS_GRAPH}
     url=${url:-$FAROS_URL}
     origin=${origin:-$FAROS_ORIGIN}
-    source=${source:-$FAROS_SOURCE}
     app_platform=${app_platform:-$FAROS_APP_PLATFORM}
     start_time=${start_time:-$FAROS_START_TIME}
     end_time=${end_time:-$FAROS_END_TIME}
@@ -350,7 +349,6 @@ function resolveDefaults() {
     FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
     FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
     FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
-    FAROS_SOURCE=${FAROS_SOURCE:-$FAROS_SOURCE_DEFAULT}
     FAROS_APP_PLATFORM=${FAROS_APP_PLATFORM:-$FAROS_APP_PLATFORM_DEFAULT}
     # Default start time and end time to now
     FAROS_START_TIME=${FAROS_START_TIME:-$FAROS_START_TIME_DEFAULT}
@@ -362,11 +360,12 @@ function resolveDeploymentInput() {
     deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
     
-    # build required for deployment (Allow build to resolve input first)
+    # build required for deployment
     build=${build:-$FAROS_BUILD}
 
     # Optional fields:
     resolveDeploymentDefaults
+    source=${source:-$FAROS_SOURCE}
     deployment=${deployment:-$FAROS_DEPLOYMENT}
     deployment_env_details=${deployment_env_details:-$FAROS_DEPLOYMENT_ENV_DETAILS}
     deployment_status_details=${deploymant_status_details:-$FAROS_DEPLOYMENT_STATUS_DETAILS}
@@ -374,16 +373,17 @@ function resolveDeploymentInput() {
     deployment_end_time=${deployment_end_time:-$FAROS_DEPLOYMENT_END_TIME}
 
     if ! [[ ${ENVS[*]} =~ (^|[[:space:]])"$deployment_env"($|[[:space:]]) ]] ; then
-      err "Invalid deployment environment $deployment_env. Allowed values: ${envs}";
+      err "Invalid deployment environment: $deployment_env. Allowed values: ${envs}";
       fail
     fi
     if ! [[ ${DEPLOYMENT_STATUSES[*]} =~ (^|[[:space:]])"$deployment_status"($|[[:space:]]) ]] ; then
-      err "Invalid deployment status $deployment_status. Allowed values: ${deployment_statuses}";
+      err "Invalid deployment status: $deployment_status. Allowed values: ${deployment_statuses}";
       fail
     fi
 }
 
 function resolveDeploymentDefaults() {
+    FAROS_SOURCE=${FAROS_SOURCE:-$FAROS_SOURCE_DEFAULT}
     FAROS_DEPLOYMENT=${FAROS_DEPLOYMENT:-$FAROS_DEPLOYMENT_DEFAULT}
     FAROS_DEPLOYMENT_ENV_DETAILS=${FAROS_DEPLOYMENT_ENV_DETAILS:-$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_STATUS_DETAILS=${FAROS_DEPLOYMENT_STATUS_DETAILS:-$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT}
@@ -397,6 +397,7 @@ function resolveBuildInput() {
     repo=${repo:-$FAROS_REPO}
     vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
     vcs_org=${vcs_org:-$FAROS_VCS_ORG}
+    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
 
     # Optional fields:
     resolveBuildDefaults
@@ -412,7 +413,7 @@ function resolveBuildInput() {
 }
 
 function resolveBuildDefaults() {
-    FAROS_BUILD=${FAROS_BUILD:-$commit_sha} # default to commit sha
+    FAROS_BUILD=${FAROS_BUILD:-$FAROS_BUILD_DEFAULT}
     FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
     FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$start_time}
     FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$end_time}
