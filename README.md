@@ -34,11 +34,11 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 
 An event type (e.g. `deployment`, `build`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of fields (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional fields.
 
-> :exclamation: Important: Every event type requires the "General Required Fields" and can optionally set the "General Optional Fields".
-
-There are two ways that fields can be passed into the script. The first, is via environment variables. The second is via flags. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
+There are two ways that fields can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
+
+##### General Fields
 
 | Argument                     | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
@@ -128,7 +128,7 @@ A `deployment` event communicates a deployments status, destination environment 
 Using flags
 
 ```sh
-./faros_event.sh deployment -k "<api_key>" \
+$ ./faros_event.sh deployment -k "<api_key>" \
     --app "<app_name>" \
     --ci_org "<ci_organization>" \
     --ci_source "<ci_source>" \
@@ -141,7 +141,7 @@ Using flags
 Or using environment variables
 
 ```sh
-FAROS_API_KEY="<api_key>" \
+$ FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
@@ -185,7 +185,7 @@ The `build_deployment` should be used when there is not a distinct build that cr
 Using flags
 
 ```sh
-./faros_event.sh build_deployment -k "<api_key>" \
+$ ./faros_event.sh build_deployment -k "<api_key>" \
     --app "<app_name>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
@@ -202,7 +202,7 @@ Using flags
 Or using environment variables
 
 ```sh
-FAROS_API_KEY="<api_key>" \
+$ FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
