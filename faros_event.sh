@@ -160,7 +160,7 @@ main() {
         resolveBuildInput
         makeBuildEvent
     elif [ $EVENT_TYPE = "build_deployment" ]; then
-        # build is not required for build_deployment event
+        # build is optional for build_deployment event
         FAROS_BUILD=${FAROS_BUILD:-$FAROS_BUILD_DEFAULT}
         resolveBuildInput
         resolveDeploymentInput
