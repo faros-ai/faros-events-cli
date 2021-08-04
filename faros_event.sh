@@ -81,6 +81,15 @@ function help() {
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     echo "--build <build>                       | FAROS_BUILD                     |"
     printf "${RED}(Required build fields)${NC}\\n"
+    echo "--build <build>                       | FAROS_BUILD                     |"
+    echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
+    echo "--repo <repo>                         | FAROS_REPO                      |"
+    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
+    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
+    printf "${RED}(Required build_deployment fields)${NC}\\n"
+    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
+    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
     echo "--repo <repo>                         | FAROS_REPO                      |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
@@ -105,6 +114,15 @@ function help() {
     echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
     echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     printf "${BLUE}(Optional build fields)${NC}\\n"
+    echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
+    echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
+    echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
+    printf "${BLUE}(Optional build_deployment fields)${NC}\\n"
+    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID"
+    echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
+    echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
+    echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
+    echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     echo "--build <build>                       | FAROS_BUILD                     | Random UUID"
     echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
@@ -142,6 +160,8 @@ main() {
         resolveBuildInput
         makeBuildEvent
     elif [ $EVENT_TYPE = "build_deployment" ]; then
+        # build is not required for build_deployment event
+        FAROS_BUILD=${FAROS_BUILD:-$FAROS_BUILD_DEFAULT}
         resolveBuildInput
         resolveDeploymentInput
         makeBuildDeploymentEvent
@@ -398,10 +418,10 @@ function resolveBuildInput() {
     vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
     vcs_org=${vcs_org:-$FAROS_VCS_ORG}
     commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+    build=${build:-$FAROS_BUILD}
 
     # Optional fields:
     resolveBuildDefaults
-    build=${build:-$FAROS_BUILD}
     build_status_details=${build_status_details:-$FAROS_BUILD_STATUS_DETAILS}
     build_start_time=${build_start_time:-$FAROS_BUILD_START_TIME}
     build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
@@ -413,7 +433,6 @@ function resolveBuildInput() {
 }
 
 function resolveBuildDefaults() {
-    FAROS_BUILD=${FAROS_BUILD:-$FAROS_BUILD_DEFAULT}
     FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
     FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$start_time}
     FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$end_time}
