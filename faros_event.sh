@@ -585,24 +585,40 @@ function makeApplication() {
     )
 }
 
+function makeOrganization() {
+    cicd_Organization=$( jq -n \
+        --arg ci_org "$ci_org" \
+        --arg ci_source "$ci_source" \
+        '{
+            "cicd_Organization": {
+                "uid": $ci_org,
+                "source": $ci_source
+            }
+        }'
+    )
+}
+
 function makeBuildEvent() {
     makeBuild
     makeBuildCommitAssociation
     makePipeline
     makeApplication
+    makeOrganization
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson build "$cicd_Build" \
         --argjson buildCommit "$cicd_BuildCommitAssociation" \
         --argjson pipeline "$cicd_Pipeline" \
         --argjson application "$compute_Application" \
+        --argjson organization "$cicd_Organization" \
         '{ 
             "origin": $origin,
             "entries": [
                 $build,
                 $buildCommit,
                 $pipeline,
-                $application
+                $application,
+                $organization
             ]
         }'
     )
@@ -611,15 +627,18 @@ function makeBuildEvent() {
 function makeDeploymentEvent() {
     makeDeployment
     makeApplication
+    makeOrganization
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
         --argjson application "$compute_Application" \
+        --argjson organization "$cicd_Organization" \
         '{ 
             "origin": $origin,
             "entries": [
                 $deployment,
-                $application
+                $application,
+                $organization
             ]
         }'
     )
@@ -631,6 +650,7 @@ function makeBuildDeploymentEvent() {
     makeBuildCommitAssociation
     makePipeline
     makeApplication
+    makeOrganization
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson deployment "$cicd_Deployment" \
@@ -638,6 +658,7 @@ function makeBuildDeploymentEvent() {
         --argjson buildCommit "$cicd_BuildCommitAssociation" \
         --argjson pipeline "$cicd_Pipeline" \
         --argjson application "$compute_Application" \
+        --argjson organization "$cicd_Organization" \
         '{ 
             "origin": $origin,
             "entries": [
@@ -645,7 +666,8 @@ function makeBuildDeploymentEvent() {
                 $build,
                 $buildCommit,
                 $pipeline,
-                $application
+                $application,
+                $organization
             ]
         }'
     )
