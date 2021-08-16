@@ -41,7 +41,6 @@ There are two ways that arguments can be passed into the script. The first, is v
 | Argument                     | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
 | &#x2011;&#x2011;api_key      | Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                                                                                          | Yes      |                             |               |
-| &#x2011;&#x2011;app          | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |                             |               |
 | &#x2011;&#x2011;ci_source    | The CI source system that contains the build. (e.g. `Jenkins`). Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |                             |               |
 | &#x2011;&#x2011;ci_org       | The unique organization within the CI source system that contains the build.                                                                                                                                                      | Yes      |                             |               |
 | &#x2011;&#x2011;pipeline     | The name of the pipeline that contains the build. If this pipeline does not already exist within Faros it will be created.                                                                                                        | Yes      |                             |               |
@@ -111,15 +110,16 @@ A `deployment` event communicates a deployment's status, destination environment
 
 ##### Deployment Arguments
 
-| Argument                                  | Description                                                                         | Required | Default        | Allowed Value                                                  |
-| ----------------------------------------- | ----------------------------------------------------------------------------------- | -------- | -------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                          | Yes      |                | Prod, Staging, QA, Dev, Sandbox, Custom                        |
-| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                       | Yes      |                | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;build                     | The unique identifier of the build that constructed the artifact being deployed.    | Yes      |                |                                                                |
-| &#x2011;&#x2011;deployment                | The unique id of the deployment.                                                    |          | Random UUID    |                                                                |
-| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.   |          | ""             |                                                                |
-| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide. |          | ""             |                                                                |
-| &#x2011;&#x2011;source                    | The source that will be associate with the deployment.                              |          | "Faros_Script" |                                                                |
+| Argument                                  | Description                                                                                                                                                                                                                       | Required | Default        | Allowed Value                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;app                       | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |                |                                                                |
+| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                        | Yes      |                | Prod, Staging, QA, Dev, Sandbox, Custom                        |
+| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                     | Yes      |                | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
+| &#x2011;&#x2011;build                     | The unique identifier of the build that constructed the artifact being deployed.                                                                                                                                                  | Yes      |                |                                                                |
+| &#x2011;&#x2011;deployment                | The unique id of the deployment.                                                                                                                                                                                                  |          | Random UUID    |                                                                |
+| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                                                                                                 |          | ""             |                                                                |
+| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                                                                                               |          | ""             |                                                                |
+| &#x2011;&#x2011;source                    | The source that will be associate with the deployment.                                                                                                                                                                            |          | "Faros_Script" |                                                                |
 
 ##### :mega: Sending a deployment event examples
 
@@ -160,6 +160,7 @@ The `build_deployment` should be used when there is not a distinct build that cr
 
 | Argument                                  | Description                                                                                                                                                                                                                                                                             | Required | Default           | Allowed Value                                                  |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;app                       | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application).                                                       | Yes      |                   |                                                                |
 | &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                                                                              | Yes      |                   | Prod, Staging, QA, Dev, Sandbox, Custom                        |
 | &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                                                                           | Yes      |                   | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
 | &#x2011;&#x2011;build_status              | The status of the build.                                                                                                                                                                                                                                                                | Yes      |                   | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
@@ -217,11 +218,11 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 #### :wrench: Additional Settings Flags
 
-| Flag          | Description                            |
-| ------------- | -------------------------------------- |
-| --dry_run     | Print the event instead of sending.    |
-| --silent      | Unexceptional output will be silenced. |
-| --debug       | Helpful information will be printed.   |
+| Flag      | Description                            |
+| --------- | -------------------------------------- |
+| --dry_run | Print the event instead of sending.    |
+| --silent  | Unexceptional output will be silenced. |
+| --debug   | Helpful information will be printed.   |
 
 ## :white_check_mark: Testing
 
