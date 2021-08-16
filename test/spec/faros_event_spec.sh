@@ -65,7 +65,7 @@ Describe 'faros_event.sh'
       }
       When call build_event_test
       The output should eq ""
-      The stderr should eq "../faros_event.sh: line 421: FAROS_BUILD: unbound variable"
+      The stderr should eq "../faros_event.sh: line 422: FAROS_BUILD: unbound variable"
     End
   End
 
