@@ -72,11 +72,11 @@ function help() {
     echo "---------------------------------------------------------------------------------------------------"
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
-    echo "--app <app>                           | FAROS_APP                       |"
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
     echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
     echo "--ci_source <ci_source>               | FAROS_CI_SOURCE                 |"
     printf "${RED}(Required deployment fields)${NC}\\n"
+    echo "--app <app>                           | FAROS_APP                       |"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     echo "--build <build>                       | FAROS_BUILD                     |"
@@ -88,6 +88,7 @@ function help() {
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     printf "${RED}(Required build_deployment fields)${NC}\\n"
+    echo "--app <app>                           | FAROS_APP                       |"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
@@ -344,7 +345,6 @@ function parsePositionalArgs() {
 function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
-    app=${app:-$FAROS_APP}
     pipeline=${pipeline:-$FAROS_PIPELINE}
     ci_org=${ci_org:-$FAROS_CI_ORG}
     ci_source=${ci_source:-$FAROS_CI_SOURCE}
@@ -377,6 +377,7 @@ function resolveDefaults() {
 
 function resolveDeploymentInput() {
     # Required fields:
+    app=${app:-$FAROS_APP}
     deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
     
@@ -602,14 +603,12 @@ function makeBuildEvent() {
     makeBuild
     makeBuildCommitAssociation
     makePipeline
-    makeApplication
     makeOrganization
     request_body=$( jq -n \
         --arg origin "$origin" \
         --argjson build "$cicd_Build" \
         --argjson buildCommit "$cicd_BuildCommitAssociation" \
         --argjson pipeline "$cicd_Pipeline" \
-        --argjson application "$compute_Application" \
         --argjson organization "$cicd_Organization" \
         '{ 
             "origin": $origin,
@@ -617,7 +616,6 @@ function makeBuildEvent() {
                 $build,
                 $buildCommit,
                 $pipeline,
-                $application,
                 $organization
             ]
         }'
