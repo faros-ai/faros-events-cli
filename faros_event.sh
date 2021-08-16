@@ -88,6 +88,7 @@ function help() {
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     printf "${RED}(Required build_deployment fields)${NC}\\n"
+    echo "--app <app>                           | FAROS_APP                       |"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
