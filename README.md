@@ -75,7 +75,7 @@ Using flags
 
 ```sh
 $ ./faros_event.sh build -k "<api_key>" \
-    --app "<app_name>" \
+    --build "<build>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
     --ci_source "<ci_source>" \
@@ -90,7 +90,7 @@ Or using environment variables
 
 ```sh
 $ FAROS_API_KEY="<api_key>" \
-FAROS_APP="<app_name>" \
+FAROS_BUILD="<build>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
