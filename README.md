@@ -75,7 +75,7 @@ Using flags
 
 ```sh
 $ ./faros_event.sh build -k "<api_key>" \
-    --app "<app_name>" \
+    --build "<build>" \
     --build_status "<build_status>" \
     --ci_org "<ci_organization>" \
     --ci_source "<ci_source>" \
@@ -90,7 +90,7 @@ Or using environment variables
 
 ```sh
 $ FAROS_API_KEY="<api_key>" \
-FAROS_APP="<app_name>" \
+FAROS_BUILD="<build>" \
 FAROS_BUILD_STATUS="<build_status>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
@@ -112,7 +112,7 @@ A `deployment` event communicates a deployment's status, destination environment
 
 | Argument                                  | Description                                                                                                                                                                                                                       | Required | Default        | Allowed Value                                                  |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;app                       | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |                |                                                                |
+| &#x2011;&#x2011;app                       | The name of the application that is being deployed. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |                |                                                                |
 | &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                        | Yes      |                | Prod, Staging, QA, Dev, Sandbox, Custom                        |
 | &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                     | Yes      |                | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
 | &#x2011;&#x2011;build                     | The unique identifier of the build that constructed the artifact being deployed.                                                                                                                                                  | Yes      |                |                                                                |

@@ -51,7 +51,6 @@ Describe 'faros_event.sh'
             FAROS_START_TIME=10 \
             FAROS_END_TIME=10 \
             ../faros_event.sh build -k "<api_key>" \
-            --app "<app_name>" \
             --build_status Success \
             --ci_org "<ci_organization>" \
             --ci_source "<ci_source>" \
