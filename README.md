@@ -59,14 +59,10 @@ A `build` event is used to communicate a specific build's status, the code being
 
 #### Build Arguments
 
-| Argument                             | Description                                                                                                                                                                                                                                                                    | Required | Default | Allowed Value                                               |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ----------------------------------------------------------- |
-| &#x2011;&#x2011;build_status         | The status of the build.                                                                                                                                                                                                                                                       | Yes      |         | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
-| &#x2011;&#x2011;vcs_source           | The version control source system that stores the code that is being built. (e.g. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |         |                                                             |
-| &#x2011;&#x2011;vcs_org              | The unique organization within the version control source system that contains the code that is being built. (e.g. faros-ai)                                                                                                                                                   | Yes      |         |                                                             |
-| &#x2011;&#x2011;vcs_repo             | The repository within the version control organization that stores the code associated to the provided commit sha.                                                                                                                                                             | Yes      |         |                                                             |
-| &#x2011;&#x2011;commit_sha           | The commit sha of the code that is being built.                                                                                                                                                                                                                                | Yes      |         |                                                             |
-| &#x2011;&#x2011;build_status_details | Any additional details about the status of the build that you wish to provide.                                                                                                                                                                                                 |          | ""      |                                                             |
+| Argument                             | Description                                                                    | Required | Default | Allowed Value                                               |
+| ------------------------------------ | ------------------------------------------------------------------------------ | -------- | ------- | ----------------------------------------------------------- |
+| &#x2011;&#x2011;build_status         | The status of the build.                                                       | Yes      |         | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
+| &#x2011;&#x2011;build_status_details | Any additional details about the status of the build that you wish to provide. |          | ""      |                                                             |
 
 #### :mega: Sending a build event examples
 
@@ -75,10 +71,6 @@ Using flags
 ```sh
 $ ./faros_event.sh build -k "<api_key>" \
     --build_status "<build_status>" \
-    --commit_sha "<commit_sha>" \
-    --vcs_repo "<vcs_repo>" \
-    --vcs_org "<vcs_organization>"
-    --vcs_source "<vcs_source>" \
     --build "<build>" \
     --pipeline "<cicd_pipeline>" \
     --cicd_org "<cicd_organization>" \
@@ -90,10 +82,6 @@ Or using environment variables
 ```sh
 $ FAROS_API_KEY="<api_key>" \
 FAROS_BUILD_STATUS="<build_status>" \
-FAROS_COMMIT_SHA="<commit_sha>" \
-FAROS_VCS_REPO="<vcs_repo>" \
-FAROS_VCS_ORG="<vcs_org>" \
-FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<cicd_pipeline>" \
 FAROS_CICD_ORG="<cicd_org>" \
@@ -109,12 +97,16 @@ An `artifact` event communicates to Faros that an artifact has been created, whe
 
 #### Artifact Arguments
 
-| Argument                        | Description                                                | Required | Default | Allowed Value |
-| ------------------------------- | ---------------------------------------------------------- | -------- | ------- | ------------- |
-| &#x2011;&#x2011;artifact        | The unique identifier of the artifact.                     | Yes      |         |               |
-| &#x2011;&#x2011;artifact_repo   | The repository where the artifact is stored.               | Yes      |         |               |
-| &#x2011;&#x2011;artifact_org    | The organization in which the artifact repository resides. | Yes      |         |               |
-| &#x2011;&#x2011;artifact_source | The source system that stores the artifact.                | Yes      |         |               |
+| Argument                        | Description                                                                                                                                                                                                                                                                    | Required | Default | Allowed Value |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ------------- |
+| &#x2011;&#x2011;artifact        | The unique identifier of the artifact.                                                                                                                                                                                                                                         | Yes      |         |               |
+| &#x2011;&#x2011;artifact_repo   | The repository where the artifact is stored.                                                                                                                                                                                                                                   | Yes      |         |               |
+| &#x2011;&#x2011;artifact_org    | The organization in which the artifact repository resides.                                                                                                                                                                                                                     | Yes      |         |               |
+| &#x2011;&#x2011;artifact_source | The source system that stores the artifact.                                                                                                                                                                                                                                    | Yes      |         |               |
+| &#x2011;&#x2011;commit_sha      | The commit sha of the code that is being built.                                                                                                                                                                                                                                | Yes      |         |               |
+| &#x2011;&#x2011;vcs_repo        | The repository within the version control organization that stores the code associated to the provided commit sha.                                                                                                                                                             | Yes      |         |               |
+| &#x2011;&#x2011;vcs_org         | The unique organization within the version control source system that contains the code that is being built. (e.g. faros-ai)                                                                                                                                                   | Yes      |         |               |
+| &#x2011;&#x2011;vcs_source      | The version control source system that stores the code that is being built. (e.g. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |         |               |
 
 #### :mega: Sending an artifact event examples
 
@@ -126,6 +118,10 @@ $ ./faros_event.sh artifact -k "<api_key>" \
     --artifact_repo "<artifact_repo>" \
     --artifact_org "<artifact_org>" \
     --artifact_source "<artifact_source>" \
+    --commit_sha "<commit_sha>" \
+    --vcs_repo "<vcs_repo>" \
+    --vcs_org "<vcs_organization>"
+    --vcs_source "<vcs_source>" \
     --build "<build>" \
     --pipeline "<cicd_pipeline>" \
     --cicd_org "<cicd_organization>" \
@@ -140,6 +136,10 @@ FAROS_ARTIFACT="<artifact>" \
 FAROS_ARTIFACT_REPO="<artifact_repo>" \
 FAROS_ARTIFACT_ORG="<artifact_org>" \
 FAROS_ARTIFACT_SOURCE="artifact_source" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_VCS_REPO="<vcs_repo>" \
+FAROS_VCS_ORG="<vcs_org>" \
+FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<pipeline>" \
 FAROS_CICD_ORG="<cicd_org>" \

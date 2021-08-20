@@ -38,10 +38,6 @@ Describe 'faros_event.sh'
             ../faros_event.sh build -k "<api_key>" \
             --build_name "<build_name>" \
             --build_status Success \
-            --commit_sha "<commit_sha>" \
-            --vcs_repo "<vcs_repo>" \
-            --vcs_org "<vcs_organization>" \
-            --vcs_source "<vcs_source>" \
             --pipeline "<cicd_pipeline>" \
             --cicd_org "<cicd_organization>" \
             --cicd_source "<cicd_source>" \
@@ -49,7 +45,7 @@ Describe 'faros_event.sh'
             --no_format)
         }
         When call build_event_test
-        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Build": { "uid": "<build_uid>", "name": "<build_name>", "startedAt": 10, "endedAt": 10, "status": { "category": "Success", "detail": "" }, "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } }, { "cicd_BuildCommitAssociation": { "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] } Dry run: Event NOT sent to Faros. Done.'
+        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Build": { "uid": "<build_uid>", "name": "<build_name>", "startedAt": 10, "endedAt": 10, "status": { "category": "Success", "detail": "" }, "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
 
     It 'Requires --build'
@@ -85,18 +81,22 @@ Describe 'faros_event.sh'
           ../faros_event.sh artifact \
           -k "<api_key>" \
           --artifact "<artifact>" \
-          --pipeline "<cicd_pipeline>" \
-          --cicd_org "<cicd_organization>" \
-          --cicd_source "<cicd_source>" \
           --artifact_repo "<artifact_repo>" \
           --artifact_org "<artifact_org>" \
           --artifact_source "<artifact_source>" \
+          --commit_sha "<commit_sha>" \
+          --vcs_repo "<vcs_repo>" \
+          --vcs_org "<vcs_organization>" \
+          --vcs_source "<vcs_source>" \
+          --pipeline "<cicd_pipeline>" \
+          --cicd_org "<cicd_organization>" \
+          --cicd_source "<cicd_source>" \
           --dry_run \
           --no_format
         )
       }
       When call artifact_event_test
-      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } } ] } Dry run: Event NOT sent to Faros. Done.'
+      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End
 
@@ -132,7 +132,7 @@ Describe 'faros_event.sh'
           )
       }
       When call aggregate_event_test
-      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Build": { "uid": "<build>", "name": "", "startedAt": 10, "endedAt": 10, "status": { "category": "Success", "detail": "" }, "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } }, { "cicd_BuildCommitAssociation": { "build": { "uid": "<build>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } }, { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_Deployment": { "uid": "<deployment>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "" }, "build": { "uid": "<build>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "" } }, { "cicd_Organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } }, { "cicd_Pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } ] } Dry run: Event NOT sent to Faros. Done.'
+      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Build": { "uid": "<build>", "name": "", "startedAt": 10, "endedAt": 10, "status": { "category": "Success", "detail": "" }, "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } }, { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } }, { "cicd_Deployment": { "uid": "<deployment>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "" }, "build": { "uid": "<build>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "" } }, { "cicd_Organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } }, { "cicd_Pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End
 

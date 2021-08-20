@@ -81,22 +81,15 @@ function help() {
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     printf "${RED}(Required build fields)${NC}\\n"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
-    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
-    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
-    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     printf "${RED}(Required artifact fields)${NC}\\n"
     echo "--artifact <artifact>                 | FAROS_ARTIFACT                  |"
     echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
     echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
     echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
-    # cicd_ArtifactCommit requirement
-    # -------------------------------------------------------------------------------------------------------
-    # echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
-    # echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
-    # echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
-    # echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
-    # -------------------------------------------------------------------------------------------------------
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
+    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
+    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
+    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                  | Environment Variable            | Default"
@@ -421,14 +414,6 @@ function resolveBuildInput() {
     # Required fields:
     build_status=${build_status:-$FAROS_BUILD_STATUS}
 
-    # TODO: commits should not associate to a build like this. Should be cicd_ArtifactCommit
-    # --------------------------------------------------------------------------------------
-    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
-    vcs_org=${vcs_org:-$FAROS_VCS_ORG}
-    vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
-    # --------------------------------------------------------------------------------------
-
     # Optional fields:
     resolveBuildDefaults
     build_name=${build_name:-$FAROS_BUILD_NAME}
@@ -577,6 +562,43 @@ function makeArtifactDeployment() {
     )
 }
 
+function makeArtifactCommitAssociation() {
+    cicd_ArtifactCommitAssociation=$( jq -n \
+        --arg artifact "$artifact" \
+        --arg artifact_repo "$artifact_repo" \
+        --arg artifact_org "$artifact_org" \
+        --arg artifact_source "$artifact_source" \
+        --arg commit_sha "$commit_sha" \
+        --arg vcs_repo "$vcs_repo" \
+        --arg vcs_org "$vcs_org" \
+        --arg vcs_source "$vcs_source" \
+        '{
+            "cicd_ArtifactCommitAssociation": {
+                "artifact": {
+                    "uid": $artifact,
+                    "repository": {
+                        "uid": $artifact_repo,
+                        "organization": {
+                            "uid": $artifact_org,
+                            "source": $artifact_source
+                        }
+                    }
+                },
+                "commit": {
+                    "sha": $commit_sha,
+                    "repository": {
+                        "name": $vcs_repo,
+                        "organization": {
+                            "uid": $vcs_org,
+                            "source": $vcs_source
+                        }
+                    }
+                }
+            }
+        }'
+    )
+}
+
 function makeBuild() {
     cicd_Build=$( jq -n \
         --arg build_name "$build_name" \
@@ -603,44 +625,6 @@ function makeBuild() {
                     "organization": {
                         "uid": $cicd_org,
                         "source": $cicd_source
-                    }
-                }
-            }
-        }'
-    )
-}
-
-# TODO: This should be ArtifactCommitAssociation
-function makeBuildCommitAssociation() {
-    cicd_BuildCommitAssociation=$( jq -n \
-        --arg build "$build" \
-        --arg pipeline "$pipeline" \
-        --arg cicd_org "$cicd_org" \
-        --arg cicd_source "$cicd_source" \
-        --arg commit_sha "$commit_sha" \
-        --arg vcs_repo "$vcs_repo" \
-        --arg vcs_org "$vcs_org" \
-        --arg vcs_source "$vcs_source" \
-        '{
-            "cicd_BuildCommitAssociation": {
-                "build": {
-                    "uid": $build,
-                    "pipeline": {
-                        "uid": $pipeline,
-                        "organization": {
-                            "uid": $cicd_org,
-                            "source": $cicd_source
-                        }
-                    }
-                },
-                "commit": {
-                    "sha": $commit_sha,
-                    "repository": {
-                        "name": $vcs_repo,
-                        "organization": {
-                            "uid": $vcs_org,
-                            "source": $vcs_source
-                        }
                     }
                 }
             }
@@ -703,10 +687,8 @@ function makeEvent() {
 
 function addBuildToEvent() {
     makeBuild
-    makeBuildCommitAssociation
     request_body=$(jq ".entries += [
-        $cicd_Build,
-        $cicd_BuildCommitAssociation
+        $cicd_Build
     ]" <<< $request_body)
 }
 
@@ -723,8 +705,10 @@ function addDeploymentToEvent() {
 
 function addArtifactToEvent() {
     makeArtifact
+    makeArtifactCommitAssociation
     request_body=$(jq ".entries += [
-        $cicd_Artifact
+        $cicd_Artifact,
+        $cicd_ArtifactCommitAssociation
     ]" <<< $request_body)
 }
 
