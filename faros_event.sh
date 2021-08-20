@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-version="0.1.2"
-canonical_model_version="0.8.9"
+version="0.2.0"
+canonical_model_version="0.8.9" # - TODO: What should this be?
 github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "uuidgen")
@@ -55,15 +55,13 @@ function help() {
     printf "${BLUE} |  _|| (_| || |  | (_) |\\__ \\ ${RED} / ___ \\  | |\\n"
     printf "${BLUE} |_|   \\__,_||_|   \\___/ |___/ ${RED}/_/   \\_\\|___|\\n"
     printf "${NC}\\n"
-    echo
-    echo "Sends deployment and/or build information to Faros."
-    echo "Depending on if you are sending a deployment, build, or both, different flags will"
-    echo "be required."
-    echo
     printf "${RED}Canonical Model Version: v$canonical_model_version ${NC}\\n"
     echo
-    printf "${RED}Required Args:${NC}\\n"
-    echo "Event type (i.e. \"deployment\", \"build\", \"artifact\")"
+    echo "This script sends information to Faros."
+    echo "There are multiple event types that can be used, each with a set of required and optional fields."
+    echo
+    printf "${RED}Args:${NC}\\n"
+    echo "Event type (\"deployment\", \"build\", \"artifact\")"
     echo 
     printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
     echo "---------------------------------------------------------------------------------------------------"
@@ -92,12 +90,12 @@ function help() {
     echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
     echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
     echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
-    # Preemptive cicd_ArtifactCommit requirement
+    # cicd_ArtifactCommit requirement
     # -------------------------------------------------------------------------------------------------------
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
-    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
-    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
-    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    # echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
+    # echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
+    # echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
+    # echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     # -------------------------------------------------------------------------------------------------------
     echo
     echo "---------------------------------------------------------------------------------------------------"
@@ -117,7 +115,7 @@ function help() {
     echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     printf "${BLUE}(Optional build fields)${NC}\\n"
-    echo "--build_name <build_name>             | FAROS_BUILD_NAME                |"
+    echo "--build_name <build_name>             | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
     echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
     echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
