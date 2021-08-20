@@ -146,11 +146,12 @@ Describe 'faros_event.sh'
             --pipeline "<cicd_pipeline>" \
             --cicd_org "<cicd_organization>" \
             --cicd_source "<cicd_source>" \
+            $2 \
             --no_format
           )
         }
-        When call bad_input_test "Bad_Input"
-        The output should equal 'Unrecognized arg(s): Bad_Input Failed.'
+        When call bad_input_test "Bad_Input" "Also_Bad"
+        The output should equal 'Unrecognized arg(s): Bad_Input Also_Bad Failed.'
     End
   End
 End
