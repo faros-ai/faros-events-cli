@@ -32,7 +32,19 @@ $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI
 
 ### :book: Event Types
 
-An event type (e.g. `deployment`, `build`, `artifact`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of arguments (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional arguments. More than one event type may be used at a time. If you wish to aggregate both a `build` and `deployment` event into a single call the the script you can do so by listing the event types one after another in any order.
+An event type (e.g. `deployment`, `build`, `artifact`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of arguments (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event types are the main arguments passed to the cli. Below are the supported event types with their required and optional arguments. More than one event type may be used at a time. If you wish to aggregate both a `build` and `deployment` event into a single call to the script, you can do so by listing the event types one after another in any order.
+
+Example sending a single `deployment` event:
+
+```sh
+$ ./faros_event.sh deployment
+```
+
+Example sending aggregate event combining a `build` and `deployment` event:
+
+```sh
+$ ./faros_event.sh build deployment
+```
 
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
@@ -74,7 +86,7 @@ $ ./faros_event.sh build -k "<api_key>" \
     --build "<build>" \
     --pipeline "<cicd_pipeline>" \
     --cicd_org "<cicd_organization>" \
-    --cicd_source "<cicd_source>" \
+    --cicd_source "<cicd_source>"
 ```
 
 Or using environment variables
@@ -120,7 +132,7 @@ $ ./faros_event.sh artifact -k "<api_key>" \
     --artifact_source "<artifact_source>" \
     --commit_sha "<commit_sha>" \
     --vcs_repo "<vcs_repo>" \
-    --vcs_org "<vcs_organization>"
+    --vcs_org "<vcs_organization>" \
     --vcs_source "<vcs_source>" \
     --build "<build>" \
     --pipeline "<cicd_pipeline>" \
@@ -181,10 +193,10 @@ $ ./faros_event.sh deployment -k "<api_key>" \
     --artifact_repo "<artifact_repo>" \
     --artifact_org "<artifact_org>" \
     --artifact_source "<artifact_source>" \
-    --build "<build>"
+    --build "<build>" \
     --pipeline "<cicd_pipeline>" \
     --cicd_org "<cicd_organization>" \
-    --cicd_source "<cicd_source>" \
+    --cicd_source "<cicd_source>"
 ```
 
 Or using environment variables
