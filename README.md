@@ -104,6 +104,56 @@ FAROS_VCS_ORG="<vcs_org>" \
 
 ---
 
+#### Artifact Event - `artifact`
+
+An `artifact` event communicates ...TODO:.
+
+##### Artifact Arguments
+
+| Argument                                  | Description                                                                                                                                                                                                                       | Required | Default        | Allowed Value                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;app                       | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |                |                                                                |
+| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                        | Yes      |                | Prod, Staging, QA, Dev, Sandbox, Custom                        |
+| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                     | Yes      |                | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
+| &#x2011;&#x2011;build                     | The unique identifier of the build that constructed the artifact being deployed.                                                                                                                                                  | Yes      |                |                                                                |
+| &#x2011;&#x2011;deployment                | The unique id of the deployment.                                                                                                                                                                                                  |          | Random UUID    |                                                                |
+| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                                                                                                 |          | ""             |                                                                |
+| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                                                                                               |          | ""             |                                                                |
+| &#x2011;&#x2011;source                    | The source that will be associate with the deployment.                                                                                                                                                                            |          | "Faros_Script" |                                                                |
+
+##### :mega: Sending an artifact event examples
+
+Using flags
+
+```sh
+$ ./faros_event.sh artifact -k "<api_key>" \
+    --artifact "<artifact>" \
+    --artifact_repo "<artifact_repo>" \
+    --artifact_org "<artifact_org>" \
+    --artifact_source "<artifact_source>" \
+    --build "<build>" \
+    --pipeline "<ci_pipeline>" \
+    --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>"
+```
+
+Or using environment variables
+
+```sh
+$ FAROS_API_KEY="<api_key>" \
+FAROS_ARTIFACT="<artifact>" \
+FAROS_ARTIFACT_REPO="<artifact_repo>" \
+FAROS_ARTIFACT_ORG="<artifact_org>" \
+FAROS_ARTIFACT_SOURCE="artifact_source" \
+FAROS_BUILD="<build>" \
+FAROS_PIPELINE="<pipeline>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
+./faros_event.sh deployment
+```
+
+---
+
 #### Deployment Event - `deployment`
 
 A `deployment` event communicates a deployment's status, destination environment as well as the associated build to Faros.
@@ -148,72 +198,6 @@ FAROS_DEPLOYMENT_ENV="<environment>" \
 FAROS_PIPELINE="<pipeline>" \
 FAROS_BUILD="<build>" \
 ./faros_event.sh deployment
-```
-
----
-
-#### Build and Deployment Event - `build_deployment`
-
-The `build_deployment` should be used when there is not a distinct build that created the artifact that is being deployed. In order for Faros to associate the code that is being deployed, a build that links a commit sha to the deployment will be created.
-
-##### Build and Deployment Arguments
-
-| Argument                                  | Description                                                                                                                                                                                                                                                                             | Required | Default           | Allowed Value                                                  |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;app                       | The name of the application that is being built. If this application does not already exist within Faros it will be created. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application).                                                       | Yes      |                   |                                                                |
-| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                                                                              | Yes      |                   | Prod, Staging, QA, Dev, Sandbox, Custom                        |
-| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                                                                           | Yes      |                   | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;build_status              | The status of the build.                                                                                                                                                                                                                                                                | Yes      |                   | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
-| &#x2011;&#x2011;vcs_source                | The version control source system that stores the code that is being built/deployed. (e.g. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |                   |                                                                |
-| &#x2011;&#x2011;vcs_org                   | The unique organization within the version control source system that contains the code that is being built. (e.g. faros-ai)                                                                                                                                                            | Yes      |                   |                                                                |
-| &#x2011;&#x2011;repo                      | The repository within the version control organization that stores the code associated to the provided commit sha.                                                                                                                                                                      | Yes      |                   |                                                                |
-| &#x2011;&#x2011;commit_sha                | The commit sha of the code that is being built.                                                                                                                                                                                                                                         | Yes      |                   |                                                                |
-| &#x2011;&#x2011;deployment_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g.`1626804346019`)                                                                                                                                                                                                 |          | $FAROS_START_TIME |                                                                |
-| &#x2011;&#x2011;deployment_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g.`1626804346019`)                                                                                                                                                                                                   |          | $FAROS_END_TIME   |                                                                |
-| &#x2011;&#x2011;build_start_time          | The start time of the build in milliseconds since the epoch. (e.g.`1626804346019`)                                                                                                                                                                                                      |          | $FAROS_START_TIME |                                                                |
-| &#x2011;&#x2011;build_end_time            | The end time of the build in milliseconds since the epoch. (e.g.`1626804346019`)                                                                                                                                                                                                        |          | $FAROS_END_TIME   |                                                                |
-| &#x2011;&#x2011;deployment                | The unique id of the deployment.                                                                                                                                                                                                                                                        |          | Random UUID       |                                                                |
-| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                                                                                                                                                       |          | ""                |                                                                |
-| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                                                                                                                                                     |          | ""                |                                                                |
-| &#x2011;&#x2011;source                    | The source that will be associate with the deployment.                                                                                                                                                                                                                                  |          | "Faros_Script"    |                                                                |
-| &#x2011;&#x2011;build                     | The unique identifier of the build that constructed the artifact being deployed.                                                                                                                                                                                                        |          | Random UUID       |                                                                |
-| &#x2011;&#x2011;build_status_details      | Any additional details about the status of the build that you wish to provide.                                                                                                                                                                                                          |          | ""                |                                                                |
-
-##### :mega: Sending a build_deployment event examples
-
-Using flags
-
-```sh
-$ ./faros_event.sh build_deployment -k "<api_key>" \
-    --app "<app_name>" \
-    --build_status "<build_status>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>" \
-    --commit_sha "<commit_sha>" \
-    --deployment_status "<deploy_status>" \
-    --deployment_env "<environment>" \
-    --pipeline "<ci_pipeline>" \
-    --repo "<vcs_repo>" \
-    --vcs_source "<vcs_source>" \
-    --vcs_org "<vcs_organization>"
-```
-
-Or using environment variables
-
-```sh
-$ FAROS_API_KEY="<api_key>" \
-FAROS_APP="<app_name>" \
-FAROS_BUILD_STATUS="<build_status>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
-FAROS_COMMIT_SHA="<commit_sha>" \
-FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
-FAROS_DEPLOYMENT_ENV="<environment>" \
-FAROS_REPO="<vcs_repo>" \
-FAROS_PIPELINE="<pipeline>" \
-FAROS_VCS_SOURCE="<vcs_source>" \
-FAROS_VCS_ORG="<vcs_org>" \
-./faros_event.sh build_deployment
 ```
 
 #### :wrench: Additional Settings Flags
