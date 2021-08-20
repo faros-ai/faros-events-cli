@@ -24,7 +24,7 @@ Describe 'faros_event.sh'
             --no_format)
         }
         When call deployment_event_test
-        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<app_platform>" } }, { "cicd_Organization": { "uid": "<ci_organization>", "source": "<ci_source>" } }, { "cicd_Pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } } ] } Dry run: Event NOT sent to Faros. Done.'
+        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End
 
@@ -58,7 +58,6 @@ Describe 'faros_event.sh'
             FAROS_START_TIME=10 \
             FAROS_END_TIME=10 \
             ../faros_event.sh build -k "<api_key>" \
-            --app "<app_name>" \
             --build_status Success \
             --commit_sha "<commit_sha>" \
             --vcs_repo "<vcs_repo>" \
@@ -96,7 +95,7 @@ Describe 'faros_event.sh'
           --no_format)
       }
       When call artifact_event_test
-      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_Organization": { "uid": "<ci_organization>", "source": "<ci_source>" } }, { "cicd_Pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } } ] } Dry run: Event NOT sent to Faros. Done.'
+      The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<ci_pipeline>", "organization": { "uid": "<ci_organization>", "source": "<ci_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } } ] } Dry run: Event NOT sent to Faros. Done.'
     End
   End
 

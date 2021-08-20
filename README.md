@@ -75,30 +75,30 @@ Using flags
 
 ```sh
 $ ./faros_event.sh build -k "<api_key>" \
-    --app "<app_name>" \
     --build_status "<build_status>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>" \
     --commit_sha "<commit_sha>" \
     --vcs_repo "<vcs_repo>" \
-    --pipeline "<ci_pipeline>" \
-    --vcs_source "<vcs_source>" \
     --vcs_org "<vcs_organization>"
+    --vcs_source "<vcs_source>" \
+    --build "<build>" \
+    --pipeline "<ci_pipeline>" \
+    --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>" \
 ```
 
 Or using environment variables
 
 ```sh
 $ FAROS_API_KEY="<api_key>" \
-FAROS_APP="<app_name>" \
 FAROS_BUILD_STATUS="<build_status>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
 FAROS_COMMIT_SHA="<commit_sha>" \
 FAROS_VCS_REPO="<vcs_repo>" \
-FAROS_PIPELINE="<ci_pipeline>" \
-FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_VCS_ORG="<vcs_org>" \
+FAROS_VCS_SOURCE="<vcs_source>" \
+FAROS_BUILD="<build>" \
+FAROS_PIPELINE="<ci_pipeline>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 ./faros_event.sh build
 ```
 
