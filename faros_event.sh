@@ -70,17 +70,16 @@ function help() {
     echo "---------------------------------------------------------------------------------------------------"
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
+    echo "--build <build>                       | FAROS_BUILD                     |"
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
-    echo "--ci_org <ci_org>                     | FAROS_CI_ORG                    |"
-    echo "--ci_source <ci_source>               | FAROS_CI_SOURCE                 |"
+    echo "--cicd_org <cicd_org>                 | FAROS_CICD_ORG                  |"
+    echo "--cicd_source <cicd_source>           | FAROS_CICD_SOURCE               |"
     printf "${RED}(Required deployment fields)${NC}\\n"
     echo "--app <app>                           | FAROS_APP                       |"
     echo "--deployment_source <source>          | FAROS_DEPLOYMENT_SOURCE         |"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
-    echo "--build <build>                       | FAROS_BUILD                     |"
     printf "${RED}(Required build fields)${NC}\\n"
-    echo "--build <build>                       | FAROS_BUILD                     |"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
     echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
@@ -139,6 +138,10 @@ main() {
 
     makeEvent # create the event that objects will be added to
     processArgs "$@" # populate event depending on passed event types
+
+    if ((make_cicd_objects)); then
+        addCICDObjectsToEvent
+    fi
 
     if ((debug)); then
         echo "Faros url: $url"
@@ -239,11 +242,11 @@ function parseFlags() {
             --end_time)
                 end_time="$2"
                 shift 2 ;;
-            --ci_org)
-                ci_org="$2"
+            --cicd_org)
+                cicd_org="$2"
                 shift 2 ;;
-            --ci_source)
-                ci_source="$2"
+            --cicd_source)
+                cicd_source="$2"
                 shift 2 ;;
             --artifact)
                 artifact="$2"
@@ -275,6 +278,9 @@ function parseFlags() {
             -u|--url)
                 url="$2"
                 shift 2 ;;
+            --make_cicd_objects)
+                make_cicd_objects=1
+                shift ;;
             --dry_run)
                 dry_run=1
                 shift ;;
@@ -342,8 +348,8 @@ function resolveInput() {
     api_key=${api_key:-$FAROS_API_KEY}
     build=${build:-$FAROS_BUILD}
     pipeline=${pipeline:-$FAROS_PIPELINE}
-    ci_org=${ci_org:-$FAROS_CI_ORG}
-    ci_source=${ci_source:-$FAROS_CI_SOURCE}
+    cicd_org=${cicd_org:-$FAROS_CICD_ORG}
+    cicd_source=${cicd_source:-$FAROS_CICD_SOURCE}
 
     # Optional fields:
     resolveDefaults
@@ -354,6 +360,7 @@ function resolveInput() {
     end_time=${end_time:-$FAROS_END_TIME}
     
     # Optional script settings: If unset then false
+    make_cicd_objects=${make_cicd_objects:-0}
     print_event=${print_event:-0}
     dry_run=${dry_run:-0}
     silent=${silent:-0}
@@ -471,8 +478,8 @@ function makeDeployment() {
         --arg app_platform "$app_platform" \
         --arg build "$build" \
         --arg pipeline "$pipeline" \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Deployment": {
                 "uid": $deployment,
@@ -496,8 +503,8 @@ function makeDeployment() {
                     "pipeline": {
                         "uid": $pipeline,
                         "organization": {
-                            "uid": $ci_org,
-                            "source": $ci_source
+                            "uid": $cicd_org,
+                            "source": $cicd_source
                         }
                     }
                 }
@@ -514,8 +521,8 @@ function makeArtifact() {
         --arg artifact_source "$artifact_source" \
         --arg build "$build" \
         --arg pipeline "$pipeline" \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Artifact": {
                 "uid": $artifact,
@@ -524,8 +531,8 @@ function makeArtifact() {
                     "pipeline": {
                         "uid": $pipeline,
                         "organization": {
-                            "uid": $ci_org,
-                            "source": $ci_source
+                            "uid": $cicd_org,
+                            "source": $cicd_source
                         }
                     }
                 },
@@ -579,8 +586,8 @@ function makeBuild() {
         --arg end_time "$build_end_time" \
         --arg build "$build" \
         --arg pipeline "$pipeline" \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Build": {
                 "uid": $build,
@@ -594,8 +601,8 @@ function makeBuild() {
                 "pipeline": {
                     "uid": $pipeline,
                     "organization": {
-                        "uid": $ci_org,
-                        "source": $ci_source
+                        "uid": $cicd_org,
+                        "source": $cicd_source
                     }
                 }
             }
@@ -608,8 +615,8 @@ function makeBuildCommitAssociation() {
     cicd_BuildCommitAssociation=$( jq -n \
         --arg build "$build" \
         --arg pipeline "$pipeline" \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         --arg commit_sha "$commit_sha" \
         --arg vcs_repo "$vcs_repo" \
         --arg vcs_org "$vcs_org" \
@@ -621,8 +628,8 @@ function makeBuildCommitAssociation() {
                     "pipeline": {
                         "uid": $pipeline,
                         "organization": {
-                            "uid": $ci_org,
-                            "source": $ci_source
+                            "uid": $cicd_org,
+                            "source": $cicd_source
                         }
                     }
                 },
@@ -644,14 +651,14 @@ function makeBuildCommitAssociation() {
 function makePipeline() {
     cicd_Pipeline=$( jq -n \
         --arg pipeline "$pipeline" \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Pipeline": {
                 "uid": $pipeline,
                 "organization": {
-                    "uid": $ci_org,
-                    "source": $ci_source
+                    "uid": $cicd_org,
+                    "source": $cicd_source
                 }
             }
         }'
@@ -673,12 +680,12 @@ function makeApplication() {
 
 function makeOrganization() {
     cicd_Organization=$( jq -n \
-        --arg ci_org "$ci_org" \
-        --arg ci_source "$ci_source" \
+        --arg cicd_org "$cicd_org" \
+        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Organization": {
-                "uid": $ci_org,
-                "source": $ci_source
+                "uid": $cicd_org,
+                "source": $cicd_source
             }
         }'
     )
@@ -697,13 +704,9 @@ function makeEvent() {
 function addBuildToEvent() {
     makeBuild
     makeBuildCommitAssociation
-    makeOrganization
-    makePipeline
     request_body=$(jq ".entries += [
         $cicd_Build,
-        $cicd_BuildCommitAssociation,
-        $cicd_Organization,
-        $cicd_Pipeline
+        $cicd_BuildCommitAssociation
     ]" <<< $request_body)
 }
 
@@ -711,23 +714,24 @@ function addDeploymentToEvent() {
     makeDeployment
     makeArtifactDeployment
     makeApplication
-    makeOrganization
-    makePipeline
     request_body=$(jq ".entries += [
         $cicd_Deployment,
         $cicd_ArtifactDeployment,
-        $compute_Application,
-        $cicd_Organization,
-        $cicd_Pipeline
+        $compute_Application
     ]" <<< $request_body)
 }
 
 function addArtifactToEvent() {
     makeArtifact
+    request_body=$(jq ".entries += [
+        $cicd_Artifact
+    ]" <<< $request_body)
+}
+
+function addCICDObjectsToEvent() {
     makeOrganization
     makePipeline
     request_body=$(jq ".entries += [
-        $cicd_Artifact,
         $cicd_Organization,
         $cicd_Pipeline
     ]" <<< $request_body)

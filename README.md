@@ -38,18 +38,18 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit_sha` becomes `FAROS_COMMIT_SHA`, `--vcs_org` becomes `FAROS_VCS_ORG`.
 
-| Argument                   | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
-| &#x2011;&#x2011;api_key    | Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                                                                                          | Yes      |                             |               |
-| &#x2011;&#x2011;build      | The unique identifier of the build that is being executed.                                                                                                                                                                        | Yes      |                             |               |
-| &#x2011;&#x2011;pipeline   | The name of the pipeline that contains the build.                                                                                                                                                                                 | Yes      |                             |               |
-| &#x2011;&#x2011;ci_org     | The unique organization within the CI source system that contains the build.                                                                                                                                                      | Yes      |                             |               |
-| &#x2011;&#x2011;ci_source  | The CI source system that contains the build. (e.g. `Jenkins`). Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |                             |               |
-| &#x2011;&#x2011;url        | The Faros url to send the event to.                                                                                                                                                                                               |          | `https://prod.api.faros.ai` |               |
-| &#x2011;&#x2011;graph      | The graph that the event should be sent to.                                                                                                                                                                                       |          | "default"                   |               |
-| &#x2011;&#x2011;origin     | The origin of the event that is being sent to faros.                                                                                                                                                                              |          | "Faros_Script_Event"        |               |
-| &#x2011;&#x2011;start_time | That start time of the build in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                              |          | Now                         |               |
-| &#x2011;&#x2011;end_time   | That end time of the build in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                                |          | Now                         |               |
+| Argument                    | Description                                                                                                                                                                                                                       | Required | Default                     | Allowed Value |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------- |
+| &#x2011;&#x2011;api_key     | Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                                                                                          | Yes      |                             |               |
+| &#x2011;&#x2011;build       | The unique identifier of the build that is being executed.                                                                                                                                                                        | Yes      |                             |               |
+| &#x2011;&#x2011;pipeline    | The name of the pipeline that contains the build.                                                                                                                                                                                 | Yes      |                             |               |
+| &#x2011;&#x2011;cicd_org    | The unique organization within the CI source system that contains the build.                                                                                                                                                      | Yes      |                             |               |
+| &#x2011;&#x2011;cicd_source | The CI source system that contains the build. (e.g. `Jenkins`). Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | Yes      |                             |               |
+| &#x2011;&#x2011;url         | The Faros url to send the event to.                                                                                                                                                                                               |          | `https://prod.api.faros.ai` |               |
+| &#x2011;&#x2011;graph       | The graph that the event should be sent to.                                                                                                                                                                                       |          | "default"                   |               |
+| &#x2011;&#x2011;origin      | The origin of the event that is being sent to faros.                                                                                                                                                                              |          | "Faros_Script_Event"        |               |
+| &#x2011;&#x2011;start_time  | That start time of the build in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                              |          | Now                         |               |
+| &#x2011;&#x2011;end_time    | That end time of the build in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                                |          | Now                         |               |
 
 ---
 
@@ -80,9 +80,9 @@ $ ./faros_event.sh build -k "<api_key>" \
     --vcs_org "<vcs_organization>"
     --vcs_source "<vcs_source>" \
     --build "<build>" \
-    --pipeline "<ci_pipeline>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>" \
+    --pipeline "<cicd_pipeline>" \
+    --cicd_org "<cicd_organization>" \
+    --cicd_source "<cicd_source>" \
 ```
 
 Or using environment variables
@@ -95,9 +95,9 @@ FAROS_VCS_REPO="<vcs_repo>" \
 FAROS_VCS_ORG="<vcs_org>" \
 FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_BUILD="<build>" \
-FAROS_PIPELINE="<ci_pipeline>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
+FAROS_PIPELINE="<cicd_pipeline>" \
+FAROS_CICD_ORG="<cicd_org>" \
+FAROS_CICD_SOURCE="<cicd_source>" \
 ./faros_event.sh build
 ```
 
@@ -127,9 +127,9 @@ $ ./faros_event.sh artifact -k "<api_key>" \
     --artifact_org "<artifact_org>" \
     --artifact_source "<artifact_source>" \
     --build "<build>" \
-    --pipeline "<ci_pipeline>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>"
+    --pipeline "<cicd_pipeline>" \
+    --cicd_org "<cicd_organization>" \
+    --cicd_source "<cicd_source>"
 ```
 
 Or using environment variables
@@ -142,8 +142,8 @@ FAROS_ARTIFACT_ORG="<artifact_org>" \
 FAROS_ARTIFACT_SOURCE="artifact_source" \
 FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<pipeline>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
+FAROS_CICD_ORG="<cicd_org>" \
+FAROS_CICD_SOURCE="<cicd_source>" \
 ./faros_event.sh artifact
 ```
 
@@ -182,9 +182,9 @@ $ ./faros_event.sh deployment -k "<api_key>" \
     --artifact_org "<artifact_org>" \
     --artifact_source "<artifact_source>" \
     --build "<build>"
-    --pipeline "<ci_pipeline>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>" \
+    --pipeline "<cicd_pipeline>" \
+    --cicd_org "<cicd_organization>" \
+    --cicd_source "<cicd_source>" \
 ```
 
 Or using environment variables
@@ -202,18 +202,19 @@ FAROS_ARTIFACT_ORG="<artifact_org>" \
 FAROS_ARTIFACT_SOURCE="<artifact_source>" \
 FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<pipeline>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
+FAROS_CICD_ORG="<cicd_org>" \
+FAROS_CICD_SOURCE="<cicd_source>" \
 ./faros_event.sh deployment
 ```
 
 #### :wrench: Additional Settings Flags
 
-| Flag      | Description                            |
-| --------- | -------------------------------------- |
-| --dry_run | Print the event instead of sending.    |
-| --silent  | Unexceptional output will be silenced. |
-| --debug   | Helpful information will be printed.   |
+| Flag                | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| --make_cicd_objects | Include `cicd_Organization` and `cicd_Pipeline` in the sent event. |
+| --dry_run           | Print the event instead of sending.                                |
+| --silent            | Unexceptional output will be silenced.                             |
+| --debug             | Helpful information will be printed.                               |
 
 ## :white_check_mark: Testing
 
