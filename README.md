@@ -26,13 +26,13 @@ Or with `curl`:
 
 ```sh
 # set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
-$ export FAROS_CLI_VERSION="v0.1.2"
+$ export FAROS_CLI_VERSION="v0.2.0"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
 ### :book: Event Types
 
-An event type (e.g. `deployment`, `build`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of arguments (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional arguments.
+An event type (e.g. `deployment`, `build`, `artifact`) corresponds to the step of your CI/CD process that you are instrumenting. Each event type represents a set of arguments (required and optional) that are used to populate a specific set of Faros' canonical models which are then sent to Faros. The event type is the main argument passed to the cli. Below are the supported event types with their required and optional arguments. More than one event type may be used at a time. If you wish to aggregate both a `build` and `deployment` event into a single call the the script you can do so by listing the event types one after another in any order.
 
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 version="0.2.0"
-canonical_model_version="0.8.9" # - TODO: What should this be?
+canonical_model_version="0.8.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "uuidgen")
@@ -59,6 +59,7 @@ function help() {
     echo
     echo "This script sends information to Faros."
     echo "There are multiple event types that can be used, each with a set of required and optional fields."
+    echo "More than one event type can be used at the same time."
     echo
     printf "${RED}Args:${NC}\\n"
     echo "Event type (\"deployment\", \"build\", \"artifact\")"
@@ -133,9 +134,11 @@ function help() {
 
 main() {
     parseFlags "$@"
-    set -- ${POSITIONAL[@]:-} # restore positional parameters
-    parsePositionalArgs "$@"
+    set -- ${POSITIONAL[@]:-} # restore positional args
     resolveInput
+
+    makeEvent # create the event that objects will be added to
+    processArgs "$@" # populate event depending on passed event types
 
     if ((debug)); then
         echo "Faros url: $url"
@@ -143,21 +146,6 @@ main() {
         echo "Dry run: $dry_run"
         echo "Silent: $print_event"
         echo "Debug: $debug"
-    fi
-
-    if [ $EVENT_TYPE = "deployment" ]; then
-        resolveDeploymentInput
-        makeDeploymentEvent
-    elif [ $EVENT_TYPE = "build" ]; then
-        resolveBuildInput
-        makeBuildEvent
-    elif [ $EVENT_TYPE = "artifact" ]; then
-        resolveArtifactInput
-        makeArtifactEvent
-    else
-        err "Unrecognized event type: $EVENT_TYPE \n
-            Valid event types: deployment, build, build_deployment."
-        fail
     fi
 
     log "Request Body:"
@@ -311,7 +299,8 @@ function parseFlags() {
     done
 }
 
-function parsePositionalArgs() {
+# Depending on passed event type resolve input and populate event
+function processArgs() {
     # No positional arg passed - show help
     if !(($#)); then
         help
@@ -322,13 +311,16 @@ function parsePositionalArgs() {
     while (($#)); do
         case "$1" in
             deployment)
-                EVENT_TYPE="deployment"
+                resolveDeploymentInput
+                addDeploymentToEvent
                 shift ;;
             build)
-                EVENT_TYPE="build"
+                resolveBuildInput
+                addBuildToEvent
                 shift ;;
             artifact)
-                EVENT_TYPE="artifact"
+                resolveArtifactInput
+                addArtifactToEvent
                 shift ;;
             help)
                 help
@@ -348,8 +340,6 @@ function parsePositionalArgs() {
 function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
-
-    # Where the event is being sent from
     build=${build:-$FAROS_BUILD}
     pipeline=${pipeline:-$FAROS_PIPELINE}
     ci_org=${ci_org:-$FAROS_CI_ORG}
@@ -422,19 +412,19 @@ function resolveDeploymentDefaults() {
 
 function resolveBuildInput() {
     # Required fields:
-    build_name=${build_name:-$FAROS_BUILD_NAME}
     build_status=${build_status:-$FAROS_BUILD_STATUS}
 
     # TODO: commits should not associate to a build like this. Should be cicd_ArtifactCommit
     # --------------------------------------------------------------------------------------
     commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    vcs_repo=${vcs_repo:-$FAROS_REPO}
+    vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
     vcs_org=${vcs_org:-$FAROS_VCS_ORG}
     vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
     # --------------------------------------------------------------------------------------
 
     # Optional fields:
     resolveBuildDefaults
+    build_name=${build_name:-$FAROS_BUILD_NAME}
     build_status_details=${build_status_details:-$FAROS_BUILD_STATUS_DETAILS}
     build_start_time=${build_start_time:-$FAROS_BUILD_START_TIME}
     build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
@@ -446,6 +436,7 @@ function resolveBuildInput() {
 }
 
 function resolveBuildDefaults() {
+    FAROS_BUILD_NAME=${FAROS_BUILD_NAME:-$FAROS_BUILD_NAME_DEFAULT}
     FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
     FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$start_time}
     FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$end_time}
@@ -693,68 +684,53 @@ function makeOrganization() {
     )
 }
 
-function makeBuildEvent() {
-    makeBuild
-    makeBuildCommitAssociation
-    makePipeline
-    makeOrganization
+function makeEvent() {
     request_body=$( jq -n \
         --arg origin "$origin" \
-        --argjson build "$cicd_Build" \
-        --argjson buildCommit "$cicd_BuildCommitAssociation" \
-        --argjson pipeline "$cicd_Pipeline" \
-        --argjson organization "$cicd_Organization" \
         '{ 
             "origin": $origin,
-            "entries": [
-                $build,
-                $buildCommit,
-                $pipeline,
-                $organization
-            ]
+            "entries": []
         }'
     )
 }
 
-function makeDeploymentEvent() {
+function addBuildToEvent() {
+    makeBuild
+    makeBuildCommitAssociation
+    makeOrganization
+    makePipeline
+    request_body=$(jq ".entries += [
+        $cicd_Build,
+        $cicd_BuildCommitAssociation,
+        $cicd_Organization,
+        $cicd_Pipeline
+    ]" <<< $request_body)
+}
+
+function addDeploymentToEvent() {
     makeDeployment
     makeArtifactDeployment
     makeApplication
     makeOrganization
     makePipeline
-    request_body=$( jq -n \
-        --arg origin "$origin" \
-        --argjson deployment "$cicd_Deployment" \
-        --argjson artifactDeployment "$cicd_ArtifactDeployment" \
-        --argjson application "$compute_Application" \
-        --argjson organization "$cicd_Organization" \
-        --argjson pipeline "$cicd_Pipeline" \
-        '{ 
-            "origin": $origin,
-            "entries": [
-                $deployment,
-                $artifactDeployment
-            ]
-        }'
-    )
+    request_body=$(jq ".entries += [
+        $cicd_Deployment,
+        $cicd_ArtifactDeployment,
+        $compute_Application,
+        $cicd_Organization,
+        $cicd_Pipeline
+    ]" <<< $request_body)
 }
 
-function makeArtifactEvent() {
+function addArtifactToEvent() {
     makeArtifact
     makeOrganization
     makePipeline
-    request_body=$( jq -n \
-        --arg origin "$origin" \
-        --argjson artifact "$cicd_Artifact" \
-        --argjson organization "$cicd_Organization" \
-        --argjson pipeline "$cicd_Pipeline" \
-        '{ 
-            "origin": $origin,
-            "entries": [
-                $artifact
-            ]
-        }'
-    )
+    request_body=$(jq ".entries += [
+        $cicd_Artifact,
+        $cicd_Organization,
+        $cicd_Pipeline
+    ]" <<< $request_body)
 }
 
 function sendEventToFaros() {
