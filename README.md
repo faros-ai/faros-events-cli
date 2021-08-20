@@ -145,14 +145,14 @@ FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<pipeline>" \
 FAROS_CI_ORG="<ci_org>" \
 FAROS_CI_SOURCE="<ci_source>" \
-./faros_event.sh deployment
+./faros_event.sh artifact
 ```
 
 ---
 
 ### Deployment Event - `deployment`
 
-A `deployment` event communicates a deployment's status, destination environment as well as the associated build to Faros.
+A `deployment` event communicates a deployment's status, destination environment, build that triggered the deployment as well as the artifact being deployed to Faros.
 
 #### Deployment Arguments
 
@@ -175,12 +175,16 @@ Using flags
 ```sh
 $ ./faros_event.sh deployment -k "<api_key>" \
     --app "<app_name>" \
-    --ci_org "<ci_organization>" \
-    --ci_source "<ci_source>" \
     --deployment_status "<deploy_status>" \
     --deployment_env "<environment>" \
-    --pipeline "<ci_pipeline>" \
+    --artifact "<artifact>" \
+    --artifact_repo "<artifact_repo>" \
+    --artifact_org "<artifact_org>" \
+    --artifact_source "<artifact_source>" \
     --build "<build>"
+    --pipeline "<ci_pipeline>" \
+    --ci_org "<ci_organization>" \
+    --ci_source "<ci_source>" \
 ```
 
 Or using environment variables
@@ -188,12 +192,16 @@ Or using environment variables
 ```sh
 $ FAROS_API_KEY="<api_key>" \
 FAROS_APP="<app_name>" \
-FAROS_CI_ORG="<ci_org>" \
-FAROS_CI_SOURCE="<ci_source>" \
 FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
 FAROS_DEPLOYMENT_ENV="<environment>" \
-FAROS_PIPELINE="<pipeline>" \
+FAROS_ARTIFACT="<artifact>" \
+FAROS_ARTIFACT_REPO="<artifact_repo>" \
+FAROS_ARTIFACT_ORG="<artifact_org>" \
+FAROS_ARTIFACT_SOURCE="<artifact_source>" \
 FAROS_BUILD="<build>" \
+FAROS_PIPELINE="<pipeline>" \
+FAROS_CI_ORG="<ci_org>" \
+FAROS_CI_SOURCE="<ci_source>" \
 ./faros_event.sh deployment
 ```
 

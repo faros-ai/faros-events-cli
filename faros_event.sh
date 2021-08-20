@@ -138,7 +138,7 @@ main() {
     resolveInput
 
     if ((debug)); then
-        echo "Faros url: $api_url"
+        echo "Faros url: $url"
         echo "Faros graph: $graph"
         echo "Dry run: $dry_run"
         echo "Silent: $print_event"
@@ -350,6 +350,7 @@ function resolveInput() {
     api_key=${api_key:-$FAROS_API_KEY}
 
     # Where the event is being sent from
+    build=${build:-$FAROS_BUILD}
     pipeline=${pipeline:-$FAROS_PIPELINE}
     ci_org=${ci_org:-$FAROS_CI_ORG}
     ci_source=${ci_source:-$FAROS_CI_SOURCE}
@@ -385,9 +386,12 @@ function resolveDeploymentInput() {
     deployment_source=${deployment_source:-$FAROS_DEPLOYMENT_SOURCE}
     deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
-    
-    # build required for deployment
-    build=${build:-$FAROS_BUILD}
+
+    # Artifact required for deployment:
+    artifact=${artifact:-$ARTIFACT}
+    artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
+    artifact_org=${artifact_org:-$ARTIFACT_ORG}
+    artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
 
     # Optional fields:
     resolveDeploymentDefaults
@@ -418,7 +422,6 @@ function resolveDeploymentDefaults() {
 
 function resolveBuildInput() {
     # Required fields:
-    build=${build:-$FAROS_BUILD}
     build_name=${build_name:-$FAROS_BUILD_NAME}
     build_status=${build_status:-$FAROS_BUILD_STATUS}
 
@@ -461,9 +464,6 @@ function resolveArtifactInput() {
     # vcs_org=${vcs_org:-$FAROS_VCS_ORG}
     # vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
     # ------------------------------------------
-
-    # build required for artifact
-    build=${build:-$FAROS_BUILD}
 }
 
 function makeDeployment() {
@@ -733,10 +733,7 @@ function makeDeploymentEvent() {
             "origin": $origin,
             "entries": [
                 $deployment,
-                $artifactDeployment,
-                $application,
-                $organization,
-                $pipeline
+                $artifactDeployment
             ]
         }'
     )
@@ -754,9 +751,7 @@ function makeArtifactEvent() {
         '{ 
             "origin": $origin,
             "entries": [
-                $artifact,
-                $organization,
-                $pipeline
+                $artifact
             ]
         }'
     )
