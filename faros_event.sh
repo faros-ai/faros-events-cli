@@ -47,6 +47,7 @@ no_format=0
 # Theme
 RED='\033[0;31m'
 BLUE='\033[0;34m'
+GREY='\033[30;1m'
 NC='\033[0m' # No Color
 
 function help() {
@@ -75,11 +76,6 @@ function help() {
     echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
     echo "--cicd_org <cicd_org>                 | FAROS_CICD_ORG                  |"
     echo "--cicd_source <cicd_source>           | FAROS_CICD_SOURCE               |"
-    printf "${RED}(Required deployment fields)${NC}\\n"
-    echo "--app <app>                           | FAROS_APP                       |"
-    echo "--deployment_source <source>          | FAROS_DEPLOYMENT_SOURCE         |"
-    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
-    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     printf "${RED}(Required build fields)${NC}\\n"
     echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
     printf "${RED}(Required artifact fields)${NC}\\n"
@@ -87,6 +83,21 @@ function help() {
     echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
     echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
     echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
+    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
+    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
+    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
+    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    printf "${RED}(Required deployment fields) - must include Artifact or Commit information${NC}\\n"
+    echo "--app <app>                           | FAROS_APP                       |"
+    echo "--deployment_source <source>          | FAROS_DEPLOYMENT_SOURCE         |"
+    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
+    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
+    printf "${GREY}Artifact information ------------------------------------------------------------------------------${NC}\\n"
+    echo "--artifact <artifact>                 | FAROS_ARTIFACT                  |"
+    echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
+    echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
+    echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
+    printf "${GREY}Commit information ------------------------------------------------------------------------------${NC}\\n"
     echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
@@ -128,9 +139,6 @@ function help() {
 main() {
     parseFlags "$@"
     set -- ${POSITIONAL[@]:-} # restore positional args
-    resolveInput
-
-    makeEvent # create the event that objects will be added to
     processArgs "$@" # populate event depending on passed event types
 
     if ((make_cicd_objects)); then
@@ -302,10 +310,13 @@ function parseFlags() {
 # Depending on passed event type resolve input and populate event
 function processArgs() {
     # No positional arg passed - show help
-    if !(($#)); then
+    if !(($#)) || [ "$1" == "help" ]; then
         help
         exit 0
     fi
+
+    resolveInput
+    makeEvent # create the event that objects will be added to
 
     # Loop through positional arguments and process them
     while (($#)); do
@@ -314,7 +325,7 @@ function processArgs() {
                 resolveDeploymentInput
                 addDeploymentToEvent
                 if ((use_commit)); then
-                    # Dummy Artifact will be used
+                    # Dummy Artifact will be added
                     addArtifactToEvent
                 fi
                 shift ;;
