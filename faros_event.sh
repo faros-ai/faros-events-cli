@@ -28,7 +28,8 @@ FAROS_BUILD_NAME_DEFAULT=""
 FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
 FAROS_START_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_END_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
-FAROS_DEPLOYMENT_DEFAULT=$(uuidgen)  # Random UUID
+FAROS_DEPLOYMENT_DEFAULT=$(uuidgen) # Random UUID
+FAROS_ARTIFACT_DEFAULT=${FAROS_ARTIFACT_DEFAULT:-$(uuidgen)} # Random UUID
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -312,6 +313,10 @@ function processArgs() {
             deployment)
                 resolveDeploymentInput
                 addDeploymentToEvent
+                if ((use_commit)); then
+                    # Dummy Artifact will be used
+                    addArtifactCommitToDeployment
+                fi
                 shift ;;
             build)
                 resolveBuildInput
@@ -377,11 +382,28 @@ function resolveDeploymentInput() {
     deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
 
-    # Artifact required for deployment:
-    artifact=${artifact:-$ARTIFACT}
-    artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
-    artifact_org=${artifact_org:-$ARTIFACT_ORG}
-    artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
+    # Artifact or Commit required for Deployment:
+    use_commit=0
+    if ! [ -z ${artifact+x} ] || ! [ -z ${ARTIFACT+x} ]; then
+        artifact=${artifact:-$ARTIFACT}
+        artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
+        artifact_org=${artifact_org:-$ARTIFACT_ORG}
+        artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
+    elif ! [ -z ${commit_sha+x} ] || ! [ -z ${FAROS_COMMIT_SHA+x} ]; then
+        commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+        vcs_repo=${vcs_repo:-$FAROS_REPO}
+        vcs_org=${vcs_org:-$FAROS_VCS_ORG}
+        vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
+        # Populate dummy Artifact
+        artifact=$FAROS_ARTIFACT_DEFAULT
+        artifact_repo=""
+        artifact_org=""
+        artifact_source=""
+        use_commit=1
+    else
+        err "Deployment event requires artifact or commit information"
+        fail
+    fi 
 
     # Optional fields:
     resolveDeploymentDefaults
@@ -704,6 +726,13 @@ function addArtifactToEvent() {
     makeArtifactCommitAssociation
     request_body=$(jq ".entries += [
         $cicd_Artifact,
+        $cicd_ArtifactCommitAssociation
+    ]" <<< $request_body)
+}
+
+function addArtifactCommitToDeployment() {
+    makeArtifactCommitAssociation
+    request_body=$(jq ".entries += [
         $cicd_ArtifactCommitAssociation
     ]" <<< $request_body)
 }

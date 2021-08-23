@@ -169,20 +169,28 @@ A `deployment` event communicates a deployment's status, destination environment
 
 #### Deployment Arguments
 
-| Argument                                  | Description                                                                                                                                              | Required | Default    | Allowed Value                                                  |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;app                       | The name of the application that is being deployed. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |            |                                                                |
-| &#x2011;&#x2011;deployment                | The unique identifier of the deployment.                                                                                                                 | Yes      |            |                                                                |
-| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                               | Yes      |            | Prod, Staging, QA, Dev, Sandbox, Custom                        |
-| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                            | Yes      |            | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;deployment_source         | The source system executing deployment.                                                                                                                  | Yes      |            |                                                                |
-| &#x2011;&#x2011;app_platform              | The compute platform that runs the application.                                                                                                          |          | ""         |                                                                |
-| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                        |          | ""         |                                                                |
-| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                      |          | ""         |                                                                |
-| &#x2011;&#x2011;deployment_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                 |          | start_time |                                                                |
-| &#x2011;&#x2011;deployment_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                   |          | end_time   |                                                                |
+| Argument                                  | Description                                                                                                                                                                                                                                                                    | Required                     | Default    | Allowed Value                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ---------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;app                       | The name of the application that is being deployed. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application).                                                                                                                       | Yes                          |            |                                                                |
+| &#x2011;&#x2011;deployment                | The unique identifier of the deployment.                                                                                                                                                                                                                                       | Yes                          |            |                                                                |
+| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                                                                                                                                                     | Yes                          |            | Prod, Staging, QA, Dev, Sandbox, Custom                        |
+| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                                                                                                                                                  | Yes                          |            | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
+| &#x2011;&#x2011;deployment_source         | The source system executing deployment.                                                                                                                                                                                                                                        | Yes                          |            |                                                                |
+| &#x2011;&#x2011;app_platform              | The compute platform that runs the application.                                                                                                                                                                                                                                |                              | ""         |                                                                |
+| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                                                                                                                                              |                              | ""         |                                                                |
+| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                                                                                                                                            |                              | ""         |                                                                |
+| &#x2011;&#x2011;deployment_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                                                                       |                              | start_time |                                                                |
+| &#x2011;&#x2011;deployment_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                                                                                                         |                              | end_time   |                                                                |
+| &#x2011;&#x2011;artifact                  | The unique identifier of the artifact being deployed.                                                                                                                                                                                                                          | If `commit_sha` **not** included |            |                                                                |
+| &#x2011;&#x2011;artifact_repo             | The repository where the artifact is stored.                                                                                                                                                                                                                                   | If `artifact` included       |            |                                                                |
+| &#x2011;&#x2011;artifact_org              | The organization in which the artifact repository resides.                                                                                                                                                                                                                     | If `artifact` included       |            |                                                                |
+| &#x2011;&#x2011;artifact_source           | The source system that stores the artifact.                                                                                                                                                                                                                                    | If `artifact` included       |            |                                                                |
+| &#x2011;&#x2011;commit_sha                | The commit sha of the code that is being built.                                                                                                                                                                                                                                | If `artifact` **not** included   |            |                                                                |
+| &#x2011;&#x2011;vcs_repo                  | The repository within the version control organization that stores the code associated to the provided commit sha.                                                                                                                                                             | If `commit_sha` included     |            |                                                                |
+| &#x2011;&#x2011;vcs_org                   | The unique organization within the version control source system that contains the code that is being built. (e.g. faros-ai)                                                                                                                                                   | If `commit_sha` included     |            |                                                                |
+| &#x2011;&#x2011;vcs_source                | The version control source system that stores the code that is being built. (e.g. GitHub, GitLab, Bitbucket) Please note that this field is case sensitive. If you have a feed that connects to one of these sources, this name must match exactly to be correctly associated. | If `commit_sha` included     |            |                                                                |
 
-#### :mega: Sending a deployment event examples
+#### :mega: Sending a deployment event using `artifact` examples
 
 Using flags
 
@@ -216,6 +224,47 @@ FAROS_ARTIFACT="<artifact>" \
 FAROS_ARTIFACT_REPO="<artifact_repo>" \
 FAROS_ARTIFACT_ORG="<artifact_org>" \
 FAROS_ARTIFACT_SOURCE="<artifact_source>" \
+FAROS_BUILD="<build>" \
+FAROS_PIPELINE="<pipeline>" \
+FAROS_CICD_ORG="<cicd_org>" \
+FAROS_CICD_SOURCE="<cicd_source>" \
+./faros_event.sh deployment
+```
+
+#### :mega: Sending a deployment event using `commit_sha` examples
+
+Using flags
+
+```sh
+$ ./faros_event.sh deployment -k "<api_key>" \
+    --app "<app_name>" \
+    --deployment "<deployment>" \
+    --deployment_source "<deployment_source>" \
+    --deployment_status "<deploy_status>" \
+    --deployment_env "<environment>" \
+    --commit_sha "<commit_sha>" \
+    --vcs_repo "<vcs_repo>" \
+    --vcs_org "<vcs_organization>" \
+    --vcs_source "<vcs_source>" \
+    --build "<build>" \
+    --pipeline "<cicd_pipeline>" \
+    --cicd_org "<cicd_organization>" \
+    --cicd_source "<cicd_source>"
+```
+
+Or using environment variables
+
+```sh
+$ FAROS_API_KEY="<api_key>" \
+FAROS_APP="<app_name>" \
+FAROS_DEPLOYMENT="<deployment>" \
+FAROS_DEPLOYMENT_SOURCE="<deployment_source>" \
+FAROS_DEPLOYMENT_STATUS="<deploy_status>" \
+FAROS_DEPLOYMENT_ENV="<environment>" \
+FAROS_COMMIT_SHA="<commit_sha>" \
+FAROS_VCS_REPO="<vcs_repo>" \
+FAROS_VCS_ORG="<vcs_org>" \
+FAROS_VCS_SOURCE="<vcs_source>" \
 FAROS_BUILD="<build>" \
 FAROS_PIPELINE="<pipeline>" \
 FAROS_CICD_ORG="<cicd_org>" \

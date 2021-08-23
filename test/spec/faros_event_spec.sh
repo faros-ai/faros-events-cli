@@ -1,7 +1,7 @@
 Describe 'faros_event.sh'
   Describe 'faros_event.sh deployment'
-    It 'Constructs correct deployment event'
-        deployment_event_test() {
+    It 'Constructs correct deployment event when artifact included'
+        deployment_artifact_event_test() {
           echo $(
             FAROS_DEPLOYMENT="<deployment_uid>" \
             FAROS_START_TIME=10 \
@@ -23,8 +23,59 @@ Describe 'faros_event.sh'
             --dry_run \
             --no_format)
         }
-        When call deployment_event_test
+        When call deployment_artifact_event_test
         The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<app_platform>" } } ] } Dry run: Event NOT sent to Faros. Done.'
+    End
+
+    It 'Constructs correct deployment event when commmit included'
+        deployment_commit_event_test() {
+          echo $(
+            FAROS_DEPLOYMENT="<deployment_uid>" \
+            FAROS_ARTIFACT_DEFAULT="<dummy_artifact>" \
+            FAROS_START_TIME=10 \
+            FAROS_END_TIME=10 \
+            ../faros_event.sh deployment -k "<api_key>" \
+            --app "<app_name>" \
+            --app_platform "<app_platform>" \
+            --build "<build_uid>" \
+            --deployment_status Success \
+            --deployment_env QA \
+            --deployment_source "<deployment_source>" \
+            --commit_sha "<commit_sha>" \
+            --vcs_repo "<vcs_repo>" \
+            --vcs_org "<vcs_organization>" \
+            --vcs_source "<vcs_source>" \
+            --pipeline "<cicd_pipeline>" \
+            --cicd_org "<cicd_organization>" \
+            --cicd_source "<cicd_source>" \
+            --dry_run \
+            --no_format)
+        }
+        When call deployment_commit_event_test
+        The output should equal 'Request Body: { "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<dummy_artifact>", "repository": { "uid": "", "organization": { "uid": "", "source": "" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<app_platform>" } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<dummy_artifact>", "repository": { "uid": "", "organization": { "uid": "", "source": "" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] } Dry run: Event NOT sent to Faros. Done.'
+    End
+
+    It 'Fails deployment event when artifact and commit missing'
+        deployment_artifact_commit_missing_test() {
+          echo $(
+            FAROS_DEPLOYMENT="<deployment_uid>" \
+            FAROS_START_TIME=10 \
+            FAROS_END_TIME=10 \
+            ../faros_event.sh deployment -k "<api_key>" \
+            --app "<app_name>" \
+            --app_platform "<app_platform>" \
+            --build "<build_uid>" \
+            --deployment_status Success \
+            --deployment_env QA \
+            --deployment_source "<deployment_source>" \
+            --pipeline "<cicd_pipeline>" \
+            --cicd_org "<cicd_organization>" \
+            --cicd_source "<cicd_source>" \
+            --dry_run \
+            --no_format)
+        }
+        When call deployment_artifact_commit_missing_test
+        The output should equal 'Deployment event requires artifact or commit information Failed.'
     End
   End
 
