@@ -89,6 +89,7 @@ function help() {
     echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
     printf "${RED}(Required deployment fields) - must include Artifact or Commit information${NC}\\n"
     echo "--app <app>                           | FAROS_APP                       |"
+    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                |"
     echo "--deployment_source <source>          | FAROS_DEPLOYMENT_SOURCE         |"
     echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
     echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
@@ -97,7 +98,7 @@ function help() {
     echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
     echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
     echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
-    printf "${GREY}Commit information ------------------------------------------------------------------------------${NC}\\n"
+    printf "${GREY}Commit information --------------------------------------------------------------------------------${NC}\\n"
     echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
     echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
     echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
@@ -112,18 +113,17 @@ function help() {
     echo "--origin <origin>                     | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
     echo "--start_time <start>                  | FAROS_START_TIME                | Now"
     echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
-    printf "${BLUE}(Optional deployment fields)${NC}\\n"
-    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                | Random UUID"
-    echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
-    echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
-    echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
-    echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
-    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     printf "${BLUE}(Optional build fields)${NC}\\n"
     echo "--build_name <build_name>             | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
     echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
     echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
+    printf "${BLUE}(Optional deployment fields)${NC}\\n"
+    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
+    echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
+    echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
+    echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
+    echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     echo
     printf "${BLUE}Additional settings flags:${NC}\\n"
     echo "--dry_run     Print the event instead of sending."
@@ -436,7 +436,6 @@ function resolveDeploymentInput() {
 
 function resolveDeploymentDefaults() {
     FAROS_APP_PLATFORM=${FAROS_APP_PLATFORM:-$FAROS_APP_PLATFORM_DEFAULT}
-    FAROS_DEPLOYMENT=${FAROS_DEPLOYMENT:-$FAROS_DEPLOYMENT_DEFAULT}
     FAROS_DEPLOYMENT_ENV_DETAILS=${FAROS_DEPLOYMENT_ENV_DETAILS:-$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_STATUS_DETAILS=${FAROS_DEPLOYMENT_STATUS_DETAILS:-$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_START_TIME=${FAROS_DEPLOYMENT_START_TIME:-$start_time}
