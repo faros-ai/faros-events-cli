@@ -38,7 +38,6 @@ build_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOYMENT_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deployment_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOYMENT_STATUSES[*]}")")
 
-print_event=0
 dry_run=0
 silent=0
 debug=0
@@ -138,8 +137,11 @@ function help() {
 
 main() {
     parseFlags "$@"
-    set -- ${POSITIONAL[@]:-} # restore positional args
-    processArgs "$@" # populate event depending on passed event types
+    set -- ${POSITIONAL[@]:-} # Restore positional args
+    processArgs "$@" # Determine which event types are present
+    resolveInput # Resolve general fields
+    makeEvent # Create the event that objects will be added to
+    processEventTypes # Per present event types, resolve input and populate event
 
     if ((make_cicd_objects)); then
         addCICDObjectsToEvent
@@ -149,7 +151,7 @@ main() {
         echo "Faros url: $url"
         echo "Faros graph: $graph"
         echo "Dry run: $dry_run"
-        echo "Silent: $print_event"
+        echo "Silent: $silent"
         echo "Debug: $debug"
     fi
 
@@ -307,7 +309,7 @@ function parseFlags() {
     done
 }
 
-# Depending on passed event type resolve input and populate event
+# Determine which event types are present
 function processArgs() {
     # No positional arg passed - show help
     if !(($#)) || [ "$1" == "help" ]; then
@@ -315,27 +317,21 @@ function processArgs() {
         exit 0
     fi
 
-    resolveInput
-    makeEvent # create the event that objects will be added to
+    build_event=0
+    artifact_event=0
+    deployment_event=0
 
-    # Loop through positional arguments and process them
+    # loop through positional args
     while (($#)); do
         case "$1" in
-            deployment)
-                resolveDeploymentInput
-                addDeploymentToEvent
-                if ((use_commit)); then
-                    # Dummy Artifact will be added
-                    addArtifactToEvent
-                fi
-                shift ;;
             build)
-                resolveBuildInput
-                addBuildToEvent
+                build_event=1
                 shift ;;
             artifact)
-                resolveArtifactInput
-                addArtifactToEvent
+                artifact_event=1
+                shift ;;
+            deployment)
+                deployment_event=1
                 shift ;;
             help)
                 help
@@ -349,6 +345,30 @@ function processArgs() {
     if [ ! -z "${UNRECOGNIZED:-}" ]; then
         err "Unrecognized arg(s): ${UNRECOGNIZED[@]}"
         fail
+    fi
+}
+
+# Resolve input and populate event depending on present event types
+# Each distict event type should be considered only once
+function processEventTypes() {
+    if ((build_event)); then
+        resolveBuildInput
+        addBuildToEvent
+    fi
+
+    if ((artifact_event)); then
+        resolveArtifactInput
+        addArtifactToEvent
+    fi
+
+    # Deployment goes last to allow artifact to resolve input first
+    if ((deployment_event)); then
+        resolveDeploymentInput
+        addDeploymentToEvent
+        if ((use_commit)); then
+            # Dummy Artifact will be added
+            addArtifactToEvent
+        fi
     fi
 }
 
@@ -370,7 +390,6 @@ function resolveInput() {
     
     # Optional script settings: If unset then false
     make_cicd_objects=${make_cicd_objects:-0}
-    print_event=${print_event:-0}
     dry_run=${dry_run:-0}
     silent=${silent:-0}
     debug=${debug:-0}
