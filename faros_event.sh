@@ -414,14 +414,14 @@ function resolveDeploymentInput() {
 
     # Artifact or Commit required for Deployment:
     use_commit=0
-    if ! [ -z ${artifact+x} ] || ! [ -z ${ARTIFACT+x} ]; then
-        artifact=${artifact:-$ARTIFACT}
-        artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
-        artifact_org=${artifact_org:-$ARTIFACT_ORG}
-        artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
+    if ! [ -z ${artifact+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
+        artifact=${artifact:-$FAROS_ARTIFACT}
+        artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
+        artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
+        artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
     elif ! [ -z ${commit_sha+x} ] || ! [ -z ${FAROS_COMMIT_SHA+x} ]; then
         commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-        vcs_repo=${vcs_repo:-$FAROS_REPO}
+        vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
         vcs_org=${vcs_org:-$FAROS_VCS_ORG}
         vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
         # Populate dummy Artifact
@@ -486,12 +486,12 @@ function resolveBuildDefaults() {
 }
 
 function resolveArtifactInput() {
-    artifact=${artifact:-$ARTIFACT}
-    artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
-    artifact_org=${artifact_org:-$ARTIFACT_ORG}
-    artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
+    artifact=${artifact:-$FAROS_ARTIFACT}
+    artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
+    artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
+    artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
     commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    vcs_repo=${vcs_repo:-$FAROS_REPO}
+    vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
     vcs_org=${vcs_org:-$FAROS_VCS_ORG}
     vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
 }
