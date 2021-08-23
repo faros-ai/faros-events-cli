@@ -315,7 +315,7 @@ function processArgs() {
                 addDeploymentToEvent
                 if ((use_commit)); then
                     # Dummy Artifact will be used
-                    addArtifactCommitToDeployment
+                    addArtifactToEvent
                 fi
                 shift ;;
             build)
@@ -726,13 +726,6 @@ function addArtifactToEvent() {
     makeArtifactCommitAssociation
     request_body=$(jq ".entries += [
         $cicd_Artifact,
-        $cicd_ArtifactCommitAssociation
-    ]" <<< $request_body)
-}
-
-function addArtifactCommitToDeployment() {
-    makeArtifactCommitAssociation
-    request_body=$(jq ".entries += [
         $cicd_ArtifactCommitAssociation
     ]" <<< $request_body)
 }
