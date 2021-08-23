@@ -71,10 +71,12 @@ A `build` event is used to communicate the duration, status, and location of a b
 
 #### Build Arguments
 
-| Argument                             | Description                                                                    | Required | Default | Allowed Value                                               |
-| ------------------------------------ | ------------------------------------------------------------------------------ | -------- | ------- | ----------------------------------------------------------- |
-| &#x2011;&#x2011;build_status         | The status of the build.                                                       | Yes      |         | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
-| &#x2011;&#x2011;build_status_details | Any additional details about the status of the build that you wish to provide. |          | ""      |                                                             |
+| Argument                             | Description                                                                         | Required | Default    | Allowed Value                                               |
+| ------------------------------------ | ----------------------------------------------------------------------------------- | -------- | ---------- | ----------------------------------------------------------- |
+| &#x2011;&#x2011;build_status         | The status of the build.                                                            | Yes      |            | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
+| &#x2011;&#x2011;build_status_details | Any additional details about the status of the build that you wish to provide.      |          | ""         |                                                             |
+| &#x2011;&#x2011;build_start_time     | The start time of the build in milliseconds since the epoch. (e.g. `1626804346019`) |          | start_time |                                                             |
+| &#x2011;&#x2011;build_end_time       | The end time of the build in milliseconds since the epoch. (e.g. `1626804346019`)   |          | end_time   |                                                             |
 
 #### :mega: Sending a build event examples
 
@@ -167,16 +169,18 @@ A `deployment` event communicates a deployment's status, destination environment
 
 #### Deployment Arguments
 
-| Argument                                  | Description                                                                                                                                              | Required | Default | Allowed Value                                                  |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;app                       | The name of the application that is being deployed. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |         |                                                                |
-| &#x2011;&#x2011;deployment                | The unique identifier of the deployment.                                                                                                                 | Yes      |         |                                                                |
-| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                               | Yes      |         | Prod, Staging, QA, Dev, Sandbox, Custom                        |
-| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                            | Yes      |         | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;deployment_source         | The source system executing deployment.                                                                                                                  | Yes      |         |                                                                |
-| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                        |          | ""      |                                                                |
-| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                      |          | ""      |                                                                |
-| &#x2011;&#x2011;app_platform              | The compute platform that runs the application.                                                                                                          |          | ""      |                                                                |
+| Argument                                  | Description                                                                                                                                              | Required | Default    | Allowed Value                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;app                       | The name of the application that is being deployed. You can view your [applications in Faros](https://app.faros.ai/default/teams/ownership/application). | Yes      |            |                                                                |
+| &#x2011;&#x2011;deployment                | The unique identifier of the deployment.                                                                                                                 | Yes      |            |                                                                |
+| &#x2011;&#x2011;deployment_env            | The environment that the application is being deployed to.                                                                                               | Yes      |            | Prod, Staging, QA, Dev, Sandbox, Custom                        |
+| &#x2011;&#x2011;deployment_status         | The status of the deployment.                                                                                                                            | Yes      |            | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
+| &#x2011;&#x2011;deployment_source         | The source system executing deployment.                                                                                                                  | Yes      |            |                                                                |
+| &#x2011;&#x2011;app_platform              | The compute platform that runs the application.                                                                                                          |          | ""         |                                                                |
+| &#x2011;&#x2011;deployment_env_details    | Any additional details about the deployment environment that you wish to provide.                                                                        |          | ""         |                                                                |
+| &#x2011;&#x2011;deployment_status_details | Any additional details about the status of the deployment that you wish to provide.                                                                      |          | ""         |                                                                |
+| &#x2011;&#x2011;deployment_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                 |          | start_time |                                                                |
+| &#x2011;&#x2011;deployment_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                   |          | end_time   |                                                                |
 
 #### :mega: Sending a deployment event examples
 
