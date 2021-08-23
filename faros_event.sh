@@ -439,14 +439,10 @@ function resolveArtifactInput() {
     artifact_repo=${artifact_repo:-$ARTIFACT_REPO}
     artifact_org=${artifact_org:-$ARTIFACT_ORG}
     artifact_source=${artifact_source:-$ARTIFACT_SOURCE}
-
-    # cicd_ArtifactCommit requirement
-    # ------------------------------------------
-    # commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    # vcs_repo=${vcs_repo:-$FAROS_REPO}
-    # vcs_org=${vcs_org:-$FAROS_VCS_ORG}
-    # vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
-    # ------------------------------------------
+    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+    vcs_repo=${vcs_repo:-$FAROS_REPO}
+    vcs_org=${vcs_org:-$FAROS_VCS_ORG}
+    vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
 }
 
 function makeDeployment() {

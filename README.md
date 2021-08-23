@@ -67,7 +67,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### Build Event - `build`
 
-A `build` event is used to communicate a specific build's status, the code being built, and where the build is taking place.
+A `build` event is used to communicate the duration, status, and location of a build.
 
 #### Build Arguments
 
