@@ -6,14 +6,14 @@ version="0.2.0"
 canonical_model_version="0.8.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
-declare -a arr=("curl" "jq" "uuidgen")
+declare -a arr=("curl" "jq")
 for i in "${arr[@]}"; do
     which $i &> /dev/null || 
         { echo "Error: $i is required." && missing_require=1; }
 done
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl, jq and uuidgen are available before running the script."
+    echo "Please ensure curl and jq are available before running the script."
     exit 1
 fi
 
@@ -28,8 +28,6 @@ FAROS_BUILD_NAME_DEFAULT=""
 FAROS_BUILD_STATUS_DETAILS_DEFAULT=""
 FAROS_START_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
 FAROS_END_TIME_DEFAULT=$(date +%s000000000 | cut -b1-13) # Now
-FAROS_DEPLOYMENT_DEFAULT=$(uuidgen) # Random UUID
-FAROS_ARTIFACT_DEFAULT=${FAROS_ARTIFACT_DEFAULT:-$(uuidgen)} # Random UUID
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -60,75 +58,59 @@ function help() {
     echo
     echo "This script sends information to Faros."
     echo "There are multiple event types that can be used, each with a set of required and optional fields."
-    echo "More than one event type can be used at the same time."
     echo
     printf "${RED}Args:${NC}\\n"
-    echo "Event type (\"deployment\", \"build\", \"artifact\")"
+    echo "Event type (\"CI\", \"CD\")"
     echo 
     printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
     echo "---------------------------------------------------------------------------------------------------"
-    echo "Flag                                  | Environment Variable            | Allowed Values"
+    echo "Flag                                    | Environment Variable            | Allowed Values"
     echo "---------------------------------------------------------------------------------------------------"
     printf "${RED}(Required fields)${NC}\\n"
-    echo "-k / --api_key <api_key>              | FAROS_API_KEY                   |"
-    echo "--build <build>                       | FAROS_BUILD                     |"
-    echo "--pipeline <pipeline>                 | FAROS_PIPELINE                  |"
-    echo "--cicd_org <cicd_org>                 | FAROS_CICD_ORG                  |"
-    echo "--cicd_source <cicd_source>           | FAROS_CICD_SOURCE               |"
-    printf "${RED}(Required build fields)${NC}\\n"
-    echo "--build_status <status>               | FAROS_BUILD_STATUS              | ${build_statuses}"
-    printf "${RED}(Required artifact fields)${NC}\\n"
-    echo "--artifact <artifact>                 | FAROS_ARTIFACT                  |"
-    echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
-    echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
-    echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
-    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
-    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
-    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
-    printf "${RED}(Required deployment fields) - must include Artifact or Commit information${NC}\\n"
-    echo "--app <app>                           | FAROS_APP                       |"
-    echo "--deployment <deployment>             | FAROS_DEPLOYMENT                |"
-    echo "--deployment_source <source>          | FAROS_DEPLOYMENT_SOURCE         |"
-    echo "--deployment_env <env>                | FAROS_DEPLOYMENT_ENV            | ${envs}"
-    echo "--deployment_status <status>          | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
-    printf "${GREY}Artifact information ------------------------------------------------------------------------------${NC}\\n"
-    echo "--artifact <artifact>                 | FAROS_ARTIFACT                  |"
-    echo "--artifact_repo <artifact_repo>       | FAROS_ARTIFACT_REPO             |"
-    echo "--artifact_org <artifact_org>         | FAROS_ARTIFACT_ORG              |"
-    echo "--artifact_source <artifact_source>   | FAROS_ARTIFACT_SOURCE           |"
-    printf "${GREY}Commit information --------------------------------------------------------------------------------${NC}\\n"
-    echo "--commit_sha <commit_sha>             | FAROS_COMMIT_SHA                |"
-    echo "--vcs_repo <vcs_repo>                 | FAROS_VCS_REPO                  |"
-    echo "--vcs_org <vcs_org>                   | FAROS_VCS_ORG                   |"
-    echo "--vcs_source <vcs_source>             | FAROS_VCS_SOURCE                |"
+    echo "-k / --api_key <api_key>                | FAROS_API_KEY                   |"
+    echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     |"
+    printf "${RED}(Required CI fields)${NC}\\n"
+    echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
+    printf "${RED}(Required CD fields) - must include Artifact or VCS information${NC}\\n"
+    echo "--deployment <source://app/env/deploy>  | FAROS_DEPLOY                    |"
+    echo "--deployment_status <status>            | FAROS_DEPLOY_STATUS             | ${deployment_statuses}"
+    printf "${GREY}Artifact information:${NC}\\n"
+    echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  |"
+    printf "${GREY}VCS information:${NC}\\n"
+    echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
+    printf "${RED}(Required fields if --write_build flag set)${NC}\\n"
+    echo "--build_status <status>                 | FAROS_BUILD_STATUS              | ${build_statuses}"
     echo
     echo "---------------------------------------------------------------------------------------------------"
-    echo "Flag                                  | Environment Variable            | Default"
+    echo "Flag                                    | Environment Variable            | Default"
     echo "---------------------------------------------------------------------------------------------------"
     printf "${BLUE}(Optional fields)${NC}\\n"
-    echo "-u / --url <url>                      | FAROS_URL                       | $FAROS_URL_DEFAULT"
-    echo "-g / --graph <graph>                  | FAROS_GRAPH                     | \"$FAROS_GRAPH_DEFAULT\""
-    echo "--origin <origin>                     | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
-    echo "--start_time <start>                  | FAROS_START_TIME                | Now"
-    echo "--end_time <end>                      | FAROS_END_TIME                  | Now"
-    printf "${BLUE}(Optional build fields)${NC}\\n"
-    echo "--build_name <build_name>             | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
-    echo "--build_status_details <details>      | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
-    echo "--build_start_time <start>            | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
-    echo "--build_end_time <end>                | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
-    printf "${BLUE}(Optional deployment fields)${NC}\\n"
-    echo "--app_platform <platform>             | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
-    echo "--deployment_env_details <details>    | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
-    echo "--deployment_status_details <details> | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
-    echo "--deployment_start_time <start>       | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
-    echo "--deployment_end_time <end>           | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
+    echo "-u / --url <url>                        | FAROS_URL                       | $FAROS_URL_DEFAULT"
+    echo "-g / --graph <graph>                    | FAROS_GRAPH                     | \"$FAROS_GRAPH_DEFAULT\""
+    echo "--origin <origin>                       | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "--start_time <start>                    | FAROS_START_TIME                | Now"
+    echo "--end_time <end>                        | FAROS_END_TIME                  | Now"
+    printf "${BLUE}(Optional CI fields)${NC}\\n"
+    echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  | FAROS_VCS"
+    printf "${BLUE}(Optional CD fields)${NC}\\n"
+    echo "--deployment_app_platform <platform>    | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
+    echo "--deployment_env_details <details>      | FAROS_DEPLOY_ENV_DETAILS        | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
+    echo "--deployment_status_details <details>   | FAROS_DEPLOY_STATUS_DETAILS     | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
+    echo "--deployment_start_time <start>         | FAROS_DEPLOY_START_TIME         | FAROS_START_TIME"
+    echo "--deployment_end_time <end>             | FAROS_DEPLOY_END_TIME           | FAROS_END_TIME"
+    printf "${BLUE}(Optional fields if --write_build flag set)${NC}\\n"
+    echo "--build_name <build_name>               | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
+    echo "--build_status_details <details>        | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
+    echo "--build_start_time <start>              | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
+    echo "--build_end_time <end>                  | FAROS_BUILD_END_TIME            | FAROS_END_TIME"
     echo
     printf "${BLUE}Additional settings flags:${NC}\\n"
-    echo "--dry_run     Print the event instead of sending."
-    echo "--silent      Unexceptional output will be silenced."
-    echo "--debug       Helpful information will be printed."
-    echo "--no_format   Log formatting will be turned off."
+    echo "--write_build         Include cicd_Build in the event."
+    echo "--write_cicd_objects  Include cicd_Organization & cicd_Pipeline in the event."
+    echo "--dry_run             Print the event instead of sending."
+    echo "--silent              Unexceptional output will be silenced."
+    echo "--debug               Helpful information will be printed."
+    echo "--no_format           Log formatting will be turned off."
     echo
     echo "For more usage information please visit: $github_url"
     echo
@@ -143,7 +125,12 @@ main() {
     makeEvent # Create the event that objects will be added to
     processEventTypes # Per present event types, resolve input and populate event
 
-    if ((make_cicd_objects)); then
+    if ((write_build)); then
+        resolveBuildInput
+        addBuildToEvent
+    fi
+
+    if ((write_cicd_objects)); then
         addCICDObjectsToEvent
     fi
 
@@ -186,26 +173,20 @@ function parseFlags() {
             -k|--api_key)
                 api_key="$2"
                 shift 2 ;;
-            --app)
-                app="$2"
+            --build)
+                build_uri="$2"
+                shift 2 ;;
+            --deployment)
+                deployment_uri="$2"
+                shift 2 ;;
+            --vcs)
+                vcs_uri="$2"
+                shift 2 ;;
+            --artifact)
+                artifact_uri="$2"
                 shift 2 ;;
             --app_platform)
                 app_platform="$2"
-                shift 2 ;;
-            --commit_sha)
-                commit_sha="$2"
-                shift 2 ;;
-            --pipeline)
-                pipeline="$2"
-                shift 2 ;;
-            --deployment)
-                deployment="$2"
-                shift 2 ;;
-            --deployment_source)
-                deployment_source="$2"
-                shift 2 ;;
-            --deployment_env)
-                deployment_env="$2"
                 shift 2 ;;
             --deployment_env_details)
                 deployment_env_details="$2"
@@ -221,9 +202,6 @@ function parseFlags() {
                 shift 2 ;;
             --deployment_end_time)
                 deployment_end_time="$2"
-                shift 2 ;;
-            --build)
-                build="$2"
                 shift 2 ;;
             --build_name)
                 build_name="$2"
@@ -246,33 +224,6 @@ function parseFlags() {
             --end_time)
                 end_time="$2"
                 shift 2 ;;
-            --cicd_org)
-                cicd_org="$2"
-                shift 2 ;;
-            --cicd_source)
-                cicd_source="$2"
-                shift 2 ;;
-            --artifact)
-                artifact="$2"
-                shift 2 ;;
-            --artifact_repo)
-                artifact_repo="$2"
-                shift 2 ;;
-            --artifact_org)
-                artifact_org="$2"
-                shift 2 ;;
-            --artifact_source)
-                artifact_source="$2"
-                shift 2 ;;
-            --vcs_repo)
-                vcs_repo="$2"
-                shift 2 ;;
-            --vcs_org)
-                vcs_org="$2"
-                shift 2 ;;
-            --vcs_source)
-                vcs_source="$2"
-                shift 2 ;;
             -g|--graph)
                 graph="$2"
                 shift 2 ;;
@@ -282,8 +233,11 @@ function parseFlags() {
             -u|--url)
                 url="$2"
                 shift 2 ;;
-            --make_cicd_objects)
-                make_cicd_objects=1
+            --write_cicd_objects)
+                write_cicd_objects=1
+                shift ;;
+            --write_build)
+                write_build=1
                 shift ;;
             --dry_run)
                 dry_run=1
@@ -317,21 +271,17 @@ function processArgs() {
         exit 0
     fi
 
-    build_event=0
-    artifact_event=0
-    deployment_event=0
+    ci_event=0
+    cd_event=0
 
     # loop through positional args
     while (($#)); do
         case "$1" in
-            build)
-                build_event=1
+            CI)
+                ci_event=1
                 shift ;;
-            artifact)
-                artifact_event=1
-                shift ;;
-            deployment)
-                deployment_event=1
+            CD)
+                cd_event=1
                 shift ;;
             help)
                 help
@@ -351,34 +301,46 @@ function processArgs() {
 # Resolve input and populate event depending on present event types
 # Each distict event type should be considered only once
 function processEventTypes() {
-    if ((build_event)); then
-        resolveBuildInput
-        addBuildToEvent
+    if ((ci_event)); then
+        resolveCIInput
+        addCIObjectsToEvent
     fi
 
-    if ((artifact_event)); then
-        resolveArtifactInput
-        addArtifactToEvent
-    fi
-
-    # Deployment goes last to allow artifact to resolve input first
-    if ((deployment_event)); then
-        resolveDeploymentInput
-        addDeploymentToEvent
+    if ((cd_event)); then
+        resolveCDInput
+        addCDObjectsToEvent
         if ((use_commit)); then
             # Dummy Artifact will be added
-            addArtifactToEvent
+            addCIObjectsToEvent
         fi
+    fi
+}
+
+# Parses a uri of the form:
+# value_A://value_B/value_C/value_D
+# arg2: The env var name in which to store value_A
+# arg3: The env var name in which to store value_B
+# arg4: The env var name in whcih to store value_C
+# arg5: The env var name in which to store value_D
+function parseUri() {
+    valid_chars="a-zA-Z0-9_.<>-"
+    uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
+    if [[ "$1" =~ $uri_regex ]]; then
+        export "$2"=$(sed 's/:.*//' <<< $1)
+        export "$3"=$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< $1)
+        export "$4"=$(sed 's/.*:\/\/.*\/\(.*\)\/.*/\1/' <<< $1)
+        export "$5"=$(sed 's/.*:\/\/.*\/.*\///' <<< $1)
+    else
+        err "Resource URI could not be parsed: $1"
+        fail
     fi
 }
 
 function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
-    build=${build:-$FAROS_BUILD}
-    pipeline=${pipeline:-$FAROS_PIPELINE}
-    cicd_org=${cicd_org:-$FAROS_CICD_ORG}
-    cicd_source=${cicd_source:-$FAROS_CICD_SOURCE}
+    
+    parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build"
 
     # Optional fields:
     resolveDefaults
@@ -389,7 +351,8 @@ function resolveInput() {
     end_time=${end_time:-$FAROS_END_TIME}
     
     # Optional script settings: If unset then false
-    make_cicd_objects=${make_cicd_objects:-0}
+    write_cicd_objects=${make_cicd_objects:-0}
+    write_build=${write_build:-0}
     dry_run=${dry_run:-0}
     silent=${silent:-0}
     debug=${debug:-0}
@@ -404,39 +367,32 @@ function resolveDefaults() {
     FAROS_END_TIME=${FAROS_END_TIME:-$FAROS_END_TIME_DEFAULT}
 }
 
-function resolveDeploymentInput() {
+function resolveCDInput() {
     # Required fields:
-    app=${app:-$FAROS_APP}
-    deployment=${deployment:-$FAROS_DEPLOYMENT}
-    deployment_source=${deployment_source:-$FAROS_DEPLOYMENT_SOURCE}
-    deployment_env=${deployment_env:-$FAROS_DEPLOYMENT_ENV}
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
 
-    # Artifact or Commit required for Deployment:
+    parseUri "${deployment_uri:-$FAROS_DEPLOYMENT}" "deployment_source" "app" "deployment_env" "deployment"
+
+    # Artifact or VCS required for Deployment:
     use_commit=0
-    if ! [ -z ${artifact+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
-        artifact=${artifact:-$FAROS_ARTIFACT}
-        artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
-        artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
-        artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
-    elif ! [ -z ${commit_sha+x} ] || ! [ -z ${FAROS_COMMIT_SHA+x} ]; then
-        commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-        vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
-        vcs_org=${vcs_org:-$FAROS_VCS_ORG}
-        vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
-        # Populate dummy Artifact
-        artifact=$FAROS_ARTIFACT_DEFAULT
-        artifact_repo=""
-        artifact_org=""
-        artifact_source=""
+    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
+        parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact"
+    elif ! [ -z ${vcs_uri+x} ] || ! [ -z ${FAROS_VCS+x} ]; then
+        parseUri "${vcs_uri:-$FAROS_VCS}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
+
+        # Populate dummy Artifact with commit information
+        artifact=$commit_sha
+        artifact_repo=$vcs_repo
+        artifact_org=$vcs_org
+        artifact_source=$vcs_source
         use_commit=1
     else
-        err "Deployment event requires artifact or commit information"
+        err "CD event requires artifact or vcs information"
         fail
     fi 
 
     # Optional fields:
-    resolveDeploymentDefaults
+    resolveCDDefaults
     app_platform=${app_platform:-$FAROS_APP_PLATFORM}
     deployment_env_details=${deployment_env_details:-$FAROS_DEPLOYMENT_ENV_DETAILS}
     deployment_status_details=${deploymant_status_details:-$FAROS_DEPLOYMENT_STATUS_DETAILS}
@@ -453,12 +409,26 @@ function resolveDeploymentInput() {
     fi
 }
 
-function resolveDeploymentDefaults() {
+function resolveCDDefaults() {
     FAROS_APP_PLATFORM=${FAROS_APP_PLATFORM:-$FAROS_APP_PLATFORM_DEFAULT}
     FAROS_DEPLOYMENT_ENV_DETAILS=${FAROS_DEPLOYMENT_ENV_DETAILS:-$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_STATUS_DETAILS=${FAROS_DEPLOYMENT_STATUS_DETAILS:-$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT}
     FAROS_DEPLOYMENT_START_TIME=${FAROS_DEPLOYMENT_START_TIME:-$start_time}
     FAROS_DEPLOYMENT_END_TIME=${FAROS_DEPLOYMENT_END_TIME:-$end_time}
+}
+
+function resolveCIInput() {
+    parseUri "${vcs_uri:-$FAROS_VCS}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
+
+    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
+        parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact"
+    else
+        # Populate dummy artifact with vcs information
+        artifact=$commit_sha
+        artifact_repo=$vcs_repo
+        artifact_org=$vcs_org
+        artifact_source=$vcs_source
+    fi 
 }
 
 function resolveBuildInput() {
@@ -483,17 +453,6 @@ function resolveBuildDefaults() {
     FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
     FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$start_time}
     FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$end_time}
-}
-
-function resolveArtifactInput() {
-    artifact=${artifact:-$FAROS_ARTIFACT}
-    artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
-    artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
-    artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
-    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    vcs_repo=${vcs_repo:-$FAROS_VCS_REPO}
-    vcs_org=${vcs_org:-$FAROS_VCS_ORG}
-    vcs_source=${vcs_source:-$FAROS_VCS_SOURCE}
 }
 
 function makeDeployment() {
@@ -739,7 +698,7 @@ function addBuildToEvent() {
     ]" <<< $request_body)
 }
 
-function addDeploymentToEvent() {
+function addCDObjectsToEvent() {
     makeDeployment
     makeArtifactDeployment
     makeApplication
@@ -750,7 +709,7 @@ function addDeploymentToEvent() {
     ]" <<< $request_body)
 }
 
-function addArtifactToEvent() {
+function addCIObjectsToEvent() {
     makeArtifact
     makeArtifactCommitAssociation
     request_body=$(jq ".entries += [
