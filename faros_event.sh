@@ -72,8 +72,8 @@ function help() {
     printf "${RED}(Required CI fields)${NC}\\n"
     echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
     printf "${RED}(Required CD fields) - must include Artifact or VCS information${NC}\\n"
-    echo "--deployment <source://app/env/deploy>  | FAROS_DEPLOY                    |"
-    echo "--deployment_status <status>            | FAROS_DEPLOY_STATUS             | ${deployment_statuses}"
+    echo "--deployment <source://app/env/deploy>  | FAROS_DEPLOYMENT                |"
+    echo "--deployment_status <status>            | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     printf "${GREY}Artifact information:${NC}\\n"
     echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  |"
     printf "${GREY}VCS information:${NC}\\n"
@@ -94,10 +94,10 @@ function help() {
     echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  | FAROS_VCS"
     printf "${BLUE}(Optional CD fields)${NC}\\n"
     echo "--deployment_app_platform <platform>    | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
-    echo "--deployment_env_details <details>      | FAROS_DEPLOY_ENV_DETAILS        | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
-    echo "--deployment_status_details <details>   | FAROS_DEPLOY_STATUS_DETAILS     | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
-    echo "--deployment_start_time <start>         | FAROS_DEPLOY_START_TIME         | FAROS_START_TIME"
-    echo "--deployment_end_time <end>             | FAROS_DEPLOY_END_TIME           | FAROS_END_TIME"
+    echo "--deployment_env_details <details>      | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
+    echo "--deployment_status_details <details>   | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
+    echo "--deployment_start_time <start>         | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
+    echo "--deployment_end_time <end>             | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
     printf "${BLUE}(Optional fields if --write_build flag set)${NC}\\n"
     echo "--build_name <build_name>               | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
     echo "--build_status_details <details>        | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
@@ -339,7 +339,6 @@ function parseUri() {
 function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
-    
     parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build"
 
     # Optional fields:
@@ -369,9 +368,8 @@ function resolveDefaults() {
 
 function resolveCDInput() {
     # Required fields:
-    deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
-
     parseUri "${deployment_uri:-$FAROS_DEPLOYMENT}" "deployment_source" "app" "deployment_env" "deployment"
+    deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
 
     # Artifact or VCS required for Deployment:
     use_commit=0
@@ -418,6 +416,7 @@ function resolveCDDefaults() {
 }
 
 function resolveCIInput() {
+    # Required fields:
     parseUri "${vcs_uri:-$FAROS_VCS}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
 
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
