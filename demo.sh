@@ -22,12 +22,12 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # # CI Event 
 # ./faros_event.sh CI \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --build "build_source://build_org/build_pipeline/build_id"
 
 # # CI Event (without artifact information)
 # ./faros_event.sh CI \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --build "build_source://build_org/build_pipeline/build_id"
 
 # # CD Event
@@ -47,12 +47,12 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # ./faros_event.sh CD \
 #     --deployment_status "Success" \
 #     --deployment "deploy_source://app/QA/deploy_id" \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --build "build_source://build_org/build_pipeline/build_id"
 
 # # CD Event (with --write_build)
 # ./faros_event.sh CD \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --build "build_source://build_org/build_pipeline/build_id" \
 #     --deployment "deploy_source://app/QA/deploy_id" \
 #     --deployment_status "Success" \
@@ -61,7 +61,7 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 
 # CI CD event (including build information)
 # ./faros_event.sh CI CD \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
 #     --deployment "deploy_source://app/QA/deploy_id" \
 #     --build "build_source://build_org/build_pipeline/build_id" \
@@ -69,6 +69,6 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 
 # # CI CD event (excluding artifact)
 # ./faros_event.sh CI CD \
-#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --deployment "deploy_source://app/QA/deploy_id" \
 #     --deployment_status "Success"

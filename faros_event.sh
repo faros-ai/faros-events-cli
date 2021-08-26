@@ -69,14 +69,14 @@ function help() {
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>                | FAROS_API_KEY                   |"
     printf "${RED}(Required CI fields)${NC}\\n"
-    echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
-    printf "${RED}(Required CD fields) - must include Artifact or VCS information${NC}\\n"
+    echo "--commit <source://org/repo/commit>     | FAROS_COMMIT                    |"
+    printf "${RED}(Required CD fields) - must include Artifact or Commit information${NC}\\n"
     echo "--deployment <source://app/env/deploy>  | FAROS_DEPLOYMENT                |"
     echo "--deployment_status <status>            | FAROS_DEPLOYMENT_STATUS         | ${deployment_statuses}"
     printf "${GREY}Artifact information:${NC}\\n"
     echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  |"
-    printf "${GREY}VCS information:${NC}\\n"
-    echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
+    printf "${GREY}Commit information:${NC}\\n"
+    echo "--commit <source://org/repo/commit>     | FAROS_COMMIT                    |"
     printf "${RED}(Required fields if --write_build flag set)${NC}\\n"
     echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     |"
     echo "--build_status <status>                 | FAROS_BUILD_STATUS              | ${build_statuses}"
@@ -92,7 +92,7 @@ function help() {
     echo "--start_time <start>                    | FAROS_START_TIME                | Now"
     echo "--end_time <end>                        | FAROS_END_TIME                  | Now"
     printf "${BLUE}(Optional CI arguments)${NC}\\n"
-    echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  | FAROS_VCS"
+    echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  | FAROS_COMMIT"
     printf "${BLUE}(Optional CD arguments)${NC}\\n"
     echo "--deployment_app_platform <platform>    | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     echo "--deployment_env_details <details>      | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
@@ -181,8 +181,8 @@ function parseFlags() {
             --deployment)
                 deployment_uri="$2"
                 shift 2 ;;
-            --vcs)
-                vcs_uri="$2"
+            --commit)
+                commit_uri="$2"
                 shift 2 ;;
             --artifact)
                 artifact_uri="$2"
@@ -380,12 +380,12 @@ function resolveCDInput() {
     parseUri "${deployment_uri:-$FAROS_DEPLOYMENT}" "deployment_source" "app" "deployment_env" "deployment"
     deployment_status=${deployment_status:-$FAROS_DEPLOYMENT_STATUS}
 
-    # Artifact or VCS required for Deployment:
+    # Artifact or Commit required for Deployment:
     use_commit=0
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
         parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact"
-    elif ! [ -z ${vcs_uri+x} ] || ! [ -z ${FAROS_VCS+x} ]; then
-        parseUri "${vcs_uri:-$FAROS_VCS}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
+    elif ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
+        parseUri "${commit_uri:-$FAROS_COMMIT}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
 
         # Populate dummy Artifact with commit information
         artifact=$commit_sha
@@ -394,7 +394,7 @@ function resolveCDInput() {
         artifact_source=$vcs_source
         use_commit=1
     else
-        err "CD event requires artifact or vcs information"
+        err "CD event requires artifact or commit information"
         fail
     fi 
 
@@ -426,12 +426,12 @@ function resolveCDDefaults() {
 
 function resolveCIInput() {
     # Required fields:
-    parseUri "${vcs_uri:-$FAROS_VCS}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
+    parseUri "${commit_uri:-$FAROS_COMMIT}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha"
 
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
         parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact"
     else
-        # Populate dummy artifact with vcs information
+        # Populate dummy artifact with commit information
         artifact=$commit_sha
         artifact_repo=$vcs_repo
         artifact_org=$vcs_org
@@ -440,6 +440,11 @@ function resolveCIInput() {
 }
 
 function resolveBuildInput() {
+    if !((build_present)); then
+        err "Build information must be passed to use the --write_build flag"
+        fail
+    fi
+
     # Required fields:
     build_status=${build_status:-$FAROS_BUILD_STATUS}
 
