@@ -1,7 +1,7 @@
 Describe 'faros_event.sh'
   Describe 'CD event'
 
-    CDWithArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<app_platform>" } } ] }'
+    CDWithArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<deployment_app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<deployment_app_platform>" } } ] }'
 
     It 'constructs correct event when artifact included using flags'
       cd_event_test() {
@@ -11,7 +11,7 @@ Describe 'faros_event.sh'
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
-          --app_platform "<app_platform>" \
+          --deployment_app_platform "<deployment_app_platform>" \
           --deployment_status Success \
           --deployment_start_time 10 \
           --deployment_end_time 10
@@ -28,7 +28,7 @@ Describe 'faros_event.sh'
           FAROS_ARTIFACT="<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           FAROS_DEPLOYMENT="<deployment_source>://<app_name>/QA/<deployment_uid>" \
-          FAROS_APP_PLATFORM="<app_platform>" \
+          FAROS_APP_PLATFORM="<deployment_app_platform>" \
           FAROS_DEPLOYMENT_STATUS="Success" \
           FAROS_DEPLOYMENT_START_TIME=10 \
           FAROS_DEPLOYMENT_END_TIME=10 \
@@ -39,7 +39,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithArtifactExpectedOutput"
     End
 
-    CDWithCommitExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<app_platform>" } }, { "cicd_Artifact": { "uid": "<commit_sha>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
+    CDWithCommitExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<deployment_app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<deployment_app_platform>" } }, { "cicd_Artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
     
     It 'constructs correct event when commmit included using flags'
       cd_event_test() {
@@ -50,7 +50,7 @@ Describe 'faros_event.sh'
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
           --deployment_status Success \
-          --app_platform "<app_platform>" \
+          --deployment_app_platform "<deployment_app_platform>" \
           --deployment_start_time 10 \
           --deployment_end_time 10 \
         )
@@ -67,7 +67,7 @@ Describe 'faros_event.sh'
           FAROS_DEPLOYMENT="<deployment_source>://<app_name>/QA/<deployment_uid>" \
           FAROS_VCS="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
           FAROS_DEPLOYMENT_STATUS="Success" \
-          FAROS_APP_PLATFORM="<app_platform>" \
+          FAROS_APP_PLATFORM="<deployment_app_platform>" \
           ../faros_event.sh CD --dry_run --no_format \
           --start_time 10 \
           --end_time 10
@@ -75,6 +75,22 @@ Describe 'faros_event.sh'
       }
       When call cd_event_test
       The output should include "$CDWithCommitExpectedOutput"
+    End
+
+    It 'constructs correct event when build is excluded'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD --dry_run --no_format \
+          -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
+          --deployment_status Success \
+          --deployment_start_time 10 \
+          --deployment_end_time 10
+        )
+      }
+      When call cd_event_test
+      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "" } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "" } } ] }'
     End
 
     It 'fails when artifact and vcs missing'
@@ -112,7 +128,7 @@ Describe 'faros_event.sh'
 
   Describe 'CI event'
 
-    CIWithArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
+    CIWithArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
 
     It 'constructs correct event when artifact included using flags'
       ci_event_test() {
@@ -142,7 +158,7 @@ Describe 'faros_event.sh'
       The output should include "$CIWithArtifactExpectedOutput"
     End
 
-    CIWithoutArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<commit_sha>", "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } }, "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
+    CIWithoutArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
 
     It 'constructs correct event when artifact excluded using flags'
       ci_event_test() {
@@ -168,6 +184,19 @@ Describe 'faros_event.sh'
       }
       When call ci_event_test
       The output should include "$CIWithoutArtifactExpectedOutput"
+    End
+
+    It 'constructs correct event when build is excluded'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI --dry_run --no_format \
+          -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
+        )
+      }
+      When call ci_event_test
+      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
     End
   End
 

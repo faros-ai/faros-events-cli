@@ -68,7 +68,6 @@ function help() {
     echo "---------------------------------------------------------------------------------------------------"
     printf "${RED}(Required fields)${NC}\\n"
     echo "-k / --api_key <api_key>                | FAROS_API_KEY                   |"
-    echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     |"
     printf "${RED}(Required CI fields)${NC}\\n"
     echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
     printf "${RED}(Required CD fields) - must include Artifact or VCS information${NC}\\n"
@@ -79,12 +78,14 @@ function help() {
     printf "${GREY}VCS information:${NC}\\n"
     echo "--vcs <source://org/repo/commit>        | FAROS_VCS                       |"
     printf "${RED}(Required fields if --write_build flag set)${NC}\\n"
+    echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     |"
     echo "--build_status <status>                 | FAROS_BUILD_STATUS              | ${build_statuses}"
     echo
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                    | Environment Variable            | Default"
     echo "---------------------------------------------------------------------------------------------------"
     printf "${BLUE}(Optional fields)${NC}\\n"
+    echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     | Omitted from objects"
     echo "-u / --url <url>                        | FAROS_URL                       | $FAROS_URL_DEFAULT"
     echo "-g / --graph <graph>                    | FAROS_GRAPH                     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin <origin>                       | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
@@ -185,8 +186,8 @@ function parseFlags() {
             --artifact)
                 artifact_uri="$2"
                 shift 2 ;;
-            --app_platform)
-                app_platform="$2"
+            --deployment_app_platform)
+                deployment_app_platform="$2"
                 shift 2 ;;
             --deployment_env_details)
                 deployment_env_details="$2"
@@ -339,7 +340,13 @@ function parseUri() {
 function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
-    parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build"
+
+    if ! [ -z ${build_uri+x} ] || ! [ -z ${FAROS_BUILD+x} ]; then
+        parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build"
+        build_present=1
+    else
+        build_present=0
+    fi
 
     # Optional fields:
     resolveDefaults
@@ -391,7 +398,7 @@ function resolveCDInput() {
 
     # Optional fields:
     resolveCDDefaults
-    app_platform=${app_platform:-$FAROS_APP_PLATFORM}
+    deployment_app_platform=${deployment_app_platform:-$FAROS_APP_PLATFORM}
     deployment_env_details=${deployment_env_details:-$FAROS_DEPLOYMENT_ENV_DETAILS}
     deployment_status_details=${deploymant_status_details:-$FAROS_DEPLOYMENT_STATUS_DETAILS}
     deployment_start_time=${deployment_start_time:-$FAROS_DEPLOYMENT_START_TIME}
@@ -465,11 +472,7 @@ function makeDeployment() {
         --arg deployment_env "$deployment_env" \
         --arg deployment_env_details "$deployment_env_details" \
         --arg app "$app" \
-        --arg app_platform "$app_platform" \
-        --arg build "$build" \
-        --arg pipeline "$pipeline" \
-        --arg cicd_org "$cicd_org" \
-        --arg cicd_source "$cicd_source" \
+        --arg deployment_app_platform "$deployment_app_platform" \
         '{
             "cicd_Deployment": {
                 "uid": $deployment,
@@ -486,8 +489,21 @@ function makeDeployment() {
                 },
                 "application" : {
                     "name": $app,
-                    "platform": $app_platform
-                },
+                    "platform": $deployment_app_platform
+                }
+            }
+        }'
+    )
+    
+    # Add build to cicd_Deployment if fields are present
+    if ((build_present)); then
+        cicd_Deployment=$(jq \
+            --arg build "$build" \
+            --arg pipeline "$pipeline" \
+            --arg cicd_org "$cicd_org" \
+            --arg cicd_source "$cicd_source" \
+            '.cicd_Deployment +=
+            {
                 "build": {
                     "uid": $build,
                     "pipeline": {
@@ -498,9 +514,9 @@ function makeDeployment() {
                         }
                     }
                 }
-            }
-        }'
-    )
+            }' <<< $cicd_Deployment
+        )
+    fi
 }
 
 function makeArtifact() {
@@ -509,23 +525,9 @@ function makeArtifact() {
         --arg artifact_repo "$artifact_repo" \
         --arg artifact_org "$artifact_org" \
         --arg artifact_source "$artifact_source" \
-        --arg build "$build" \
-        --arg pipeline "$pipeline" \
-        --arg cicd_org "$cicd_org" \
-        --arg cicd_source "$cicd_source" \
         '{
             "cicd_Artifact": {
                 "uid": $artifact,
-                "build": {
-                    "uid": $build,
-                    "pipeline": {
-                        "uid": $pipeline,
-                        "organization": {
-                            "uid": $cicd_org,
-                            "source": $cicd_source
-                        }
-                    }
-                },
                 "repository": {
                     "uid": $artifact_repo,
                     "organization": {
@@ -536,6 +538,29 @@ function makeArtifact() {
             }
         }'
     )
+
+    # Add build to cicd_Artifact if fields are present
+    if ((build_present)); then
+        cicd_Artifact=$(jq \
+            --arg build "$build" \
+            --arg pipeline "$pipeline" \
+            --arg cicd_org "$cicd_org" \
+            --arg cicd_source "$cicd_source" \
+            '.cicd_Artifact +=
+            {
+                "build": {
+                    "uid": $build,
+                    "pipeline": {
+                        "uid": $pipeline,
+                        "organization": {
+                            "uid": $cicd_org,
+                            "source": $cicd_source
+                        }
+                    }
+                }
+            }' <<< $cicd_Artifact
+        )
+    fi
 }
 
 function makeArtifactDeployment() {
@@ -657,11 +682,11 @@ function makePipeline() {
 function makeApplication() {
     compute_Application=$( jq -n \
         --arg app "$app" \
-        --arg app_platform "$app_platform" \
+        --arg deployment_app_platform "$deployment_app_platform" \
         '{
             "compute_Application": {
                 "name": $app,
-                "platform": $app_platform
+                "platform": $deployment_app_platform
             }
         }'
     )
