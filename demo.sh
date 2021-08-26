@@ -10,12 +10,11 @@
 set -euo pipefail
 
 # Connecting to Faros
-# ============================================================================_
+# =============================================================================
 # visit https://docs.faros.ai/#/api?id=getting-access for api access
 export FAROS_API_KEY="<api_key>" 
-# export FAROS_URL="<url>" # default: https://prod.api.faros.ai
-# export FAROS_GRAPH="default"
 export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
+# =============================================================================
 
 # # help
 # ./faros_event.sh --help
@@ -60,10 +59,16 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 #     --build_status "Success" \
 #     --write_build
 
-# # CI CD event (including build information)
+# CI CD event (including build information)
 # ./faros_event.sh CI CD \
 #     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
 #     --deployment "deploy_source://app/QA/deploy_id" \
 #     --build "build_source://build_org/build_pipeline/build_id" \
+#     --deployment_status "Success"
+
+# # CI CD event (excluding artifact)
+# ./faros_event.sh CI CD \
+#     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --deployment "deploy_source://app/QA/deploy_id" \
 #     --deployment_status "Success"
