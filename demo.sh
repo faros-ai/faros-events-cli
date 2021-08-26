@@ -10,15 +10,17 @@
 set -euo pipefail
 
 # Connecting to Faros
-export FAROS_API_KEY="<api_key>" # visit https://docs.faros.ai/#/api?id=getting-access
-# export FAROS_URL="<url>"
+# ============================================================================_
+# visit https://docs.faros.ai/#/api?id=getting-access for api access
+export FAROS_API_KEY="<api_key>" 
+# export FAROS_URL="<url>" # default: https://prod.api.faros.ai
 # export FAROS_GRAPH="default"
-export FAROS_DRY_RUN=1 # Set to 0 to send the event to Faros
+export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 
 # # help
 # ./faros_event.sh --help
 
-# CI Event 
+# # CI Event 
 # ./faros_event.sh CI \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
 #     --vcs "vcs_source://vcs_org/vcs_repo/commit_sha" \
