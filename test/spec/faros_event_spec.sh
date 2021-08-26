@@ -209,6 +209,34 @@ Describe 'faros_event.sh'
     End
   End
 
+  Describe '--write_cicd_objects'
+    It 'correctly adds a cicd_Organization and cicd_Pipeline to the event'
+       write_build_test() {
+        echo $(
+          ../faros_event.sh CI -k "<key>" \
+          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --build_status "Success" \
+          --write_cicd_objects
+        )
+      }
+      When call write_build_test
+      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<commit_sha>", "repository": { "uid": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } }, { "cicd_Organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } }, { "cicd_Pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } ] }'
+    End
+
+    It 'fails when --build missing'
+      missing_build_test() {
+        echo $(
+          ../faros_event.sh CI -k "<key>" \
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --write_cicd_objects
+        )
+      }
+      When call missing_build_test
+      The output should include "Build information must be passed to use the --write_cicd_objects flag Failed."
+    End
+  End
+
   Describe 'bad input'
     It 'responds with bad input'
       bad_input_test() {

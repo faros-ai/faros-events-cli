@@ -127,11 +127,19 @@ main() {
     processEventTypes # Per present event types, resolve input and populate event
 
     if ((write_build)); then
+        if !((build_present)); then
+            err "Build information must be passed to use the --write_build flag"
+            fail
+        fi
         resolveBuildInput
         addBuildToEvent
     fi
 
     if ((write_cicd_objects)); then
+        if !((build_present)); then
+            err "Build information must be passed to use the --write_cicd_objects flag"
+            fail
+        fi
         addCICDObjectsToEvent
     fi
 
@@ -343,6 +351,7 @@ function resolveInput() {
     # Required fields:
     api_key=${api_key:-$FAROS_API_KEY}
 
+    # Optional fields:
     if ! [ -z ${build_uri+x} ] || ! [ -z ${FAROS_BUILD+x} ]; then
         parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build"
         build_present=1
@@ -350,7 +359,6 @@ function resolveInput() {
         build_present=0
     fi
 
-    # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
     url=${url:-$FAROS_URL}
@@ -359,7 +367,7 @@ function resolveInput() {
     end_time=${end_time:-$FAROS_END_TIME}
     
     # Optional script settings: If unset then false
-    write_cicd_objects=${make_cicd_objects:-0}
+    write_cicd_objects=${write_cicd_objects:-0}
     write_build=${write_build:-0}
     dry_run=${dry_run:-0}
     silent=${silent:-0}
@@ -440,11 +448,6 @@ function resolveCIInput() {
 }
 
 function resolveBuildInput() {
-    if !((build_present)); then
-        err "Build information must be passed to use the --write_build flag"
-        fail
-    fi
-
     # Required fields:
     build_status=${build_status:-$FAROS_BUILD_STATUS}
 
