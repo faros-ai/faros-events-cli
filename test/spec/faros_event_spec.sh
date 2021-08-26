@@ -9,8 +9,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when artifact included using flags'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD \
-          -k "<api_key>" \
+          ../faros_event.sh CD -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
@@ -43,8 +42,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when commmit included using flags'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD \
-          -k "<api_key>" \
+          ../faros_event.sh CD -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
@@ -75,8 +73,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when build is excluded'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD \
-          -k "<api_key>" \
+          ../faros_event.sh CD -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --deployment_status Success
@@ -89,8 +86,7 @@ Describe 'faros_event.sh'
     It 'fails when artifact and vcs missing'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD \
-          -k "<api_key>" \
+          ../faros_event.sh CD -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --deployment_status Success
@@ -103,8 +99,7 @@ Describe 'faros_event.sh'
     It 'requires --deployment'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD \
-          -k "<api_key>" \
+          ../faros_event.sh CD -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment_status Success
         )
@@ -122,8 +117,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when artifact included using flags'
       ci_event_test() {
         echo $(
-          ../faros_event.sh CI \
-          -k "<api_key>" \
+          ../faros_event.sh CI -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
@@ -140,7 +134,7 @@ Describe 'faros_event.sh'
           FAROS_ARTIFACT="<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           FAROS_VCS="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          ../faros_event.sh CI --dry_run --no_format
+          ../faros_event.sh CI
         )
       }
       When call ci_event_test
@@ -152,8 +146,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when artifact excluded using flags'
       ci_event_test() {
         echo $(
-          ../faros_event.sh CI --dry_run --no_format \
-          -k "<api_key>" \
+          ../faros_event.sh CI -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
         )
@@ -168,7 +161,7 @@ Describe 'faros_event.sh'
           FAROS_API_KEY="<api_key>" \
           FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           FAROS_VCS="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          ../faros_event.sh CI --dry_run --no_format
+          ../faros_event.sh CI
         )
       }
       When call ci_event_test
@@ -178,8 +171,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when build is excluded'
       ci_event_test() {
         echo $(
-          ../faros_event.sh CI --dry_run --no_format \
-          -k "<api_key>" \
+          ../faros_event.sh CI -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
         )
@@ -206,8 +198,7 @@ Describe 'faros_event.sh'
     It 'with malformed URI responds with parsing error'
         bad_input_test() {
           echo $(
-            ../faros_event.sh CD \
-            -k "<key>" \
+            ../faros_event.sh CD -k "<key>" \
             --build "$1"
           )
         }
