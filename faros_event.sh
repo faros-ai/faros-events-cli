@@ -36,10 +36,10 @@ build_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOYMENT_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deployment_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOYMENT_STATUSES[*]}")")
 
-dry_run=0
+dry_run=${FAROS_DRY_RUN:-0}
 silent=0
 debug=0
-no_format=0
+no_format=${FAROS_NO_FORMAT:-0}
 
 # Theme
 RED='\033[0;31m'
@@ -62,7 +62,7 @@ function help() {
     printf "${RED}Args:${NC}\\n"
     echo "Event type (\"CI\", \"CD\")"
     echo 
-    printf "${RED}Fields:${NC} (Can be provided as flag or environment variable)\\n"
+    printf "${RED}Arguments:${NC} (Can be provided as flag or environment variable)\\n"
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                    | Environment Variable            | Allowed Values"
     echo "---------------------------------------------------------------------------------------------------"
@@ -84,22 +84,22 @@ function help() {
     echo "---------------------------------------------------------------------------------------------------"
     echo "Flag                                    | Environment Variable            | Default"
     echo "---------------------------------------------------------------------------------------------------"
-    printf "${BLUE}(Optional fields)${NC}\\n"
+    printf "${BLUE}(Optional arguments)${NC}\\n"
     echo "--build <source://org/pipeline/build>   | FAROS_BUILD                     | Omitted from objects"
     echo "-u / --url <url>                        | FAROS_URL                       | $FAROS_URL_DEFAULT"
     echo "-g / --graph <graph>                    | FAROS_GRAPH                     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin <origin>                       | FAROS_ORIGIN                    | \"$FAROS_ORIGIN_DEFAULT\""
     echo "--start_time <start>                    | FAROS_START_TIME                | Now"
     echo "--end_time <end>                        | FAROS_END_TIME                  | Now"
-    printf "${BLUE}(Optional CI fields)${NC}\\n"
+    printf "${BLUE}(Optional CI arguments)${NC}\\n"
     echo "--artifact <source://org/repo/artifact> | FAROS_ARTIFACT                  | FAROS_VCS"
-    printf "${BLUE}(Optional CD fields)${NC}\\n"
+    printf "${BLUE}(Optional CD arguments)${NC}\\n"
     echo "--deployment_app_platform <platform>    | FAROS_APP_PLATFORM              | \"$FAROS_APP_PLATFORM_DEFAULT\""
     echo "--deployment_env_details <details>      | FAROS_DEPLOYMENT_ENV_DETAILS    | \"$FAROS_DEPLOYMENT_ENV_DETAILS_DEFAULT\""
     echo "--deployment_status_details <details>   | FAROS_DEPLOYMENT_STATUS_DETAILS | \"$FAROS_DEPLOYMENT_STATUS_DETAILS_DEFAULT\""
     echo "--deployment_start_time <start>         | FAROS_DEPLOYMENT_START_TIME     | FAROS_START_TIME"
     echo "--deployment_end_time <end>             | FAROS_DEPLOYMENT_END_TIME       | FAROS_END_TIME"
-    printf "${BLUE}(Optional fields if --write_build flag set)${NC}\\n"
+    printf "${BLUE}(Optional arguments if --write_build flag set)${NC}\\n"
     echo "--build_name <build_name>               | FAROS_BUILD_NAME                | \"$FAROS_BUILD_NAME_DEFAULT\""
     echo "--build_status_details <details>        | FAROS_BUILD_STATUS_DETAILS      | \"$FAROS_BUILD_STATUS_DETAILS_DEFAULT\""
     echo "--build_start_time <start>              | FAROS_BUILD_START_TIME          | FAROS_START_TIME"
@@ -149,6 +149,7 @@ main() {
     if !(($dry_run)); then
         sendEventToFaros
 
+        # Log error response as an error and fail
         if [ ! $http_response_status -eq 200 ]; then
             err "[HTTP status: $http_response_status]"
             err "Response Body:"
@@ -319,6 +320,7 @@ function processEventTypes() {
 
 # Parses a uri of the form:
 # value_A://value_B/value_C/value_D
+# arg1; The uri to parse
 # arg2: The env var name in which to store value_A
 # arg3: The env var name in which to store value_B
 # arg4: The env var name in whcih to store value_C

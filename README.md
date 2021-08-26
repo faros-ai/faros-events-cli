@@ -124,8 +124,7 @@ In addition to the general required and optional arguments, the following argume
 Using flags
 
 ```sh
-$ ./faros_event.sh CD \
-    -k "<api_key>" \
+$ ./faros_event.sh CD -k "<api_key>" \
     --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
     --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
     --deployment_status Success
@@ -144,8 +143,7 @@ FAROS_DEPLOYMENT_STATUS="Success" \
 Including build information
 
 ```sh
-$ ./faros_event.sh CD \
-    -k "<api_key>" \
+$ ./faros_event.sh CD -k "<api_key>" \
     --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
     --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
     --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
@@ -157,8 +155,7 @@ $ ./faros_event.sh CD \
 Using flags
 
 ```sh
-$ ./faros_event.sh CD \
-    -k "<api_key>" \
+$ ./faros_event.sh CD -k "<api_key>" \
     --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
     --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
     --deployment_status Success
@@ -177,11 +174,21 @@ FAROS_DEPLOYMENT_STATUS="Success" \
 Including build information
 
 ```sh
-$ ./faros_event.sh CD \
-    -k "<api_key>" \
+$ ./faros_event.sh CD -k "<api_key>" \
     --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
     --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
     --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+    --deployment_status Success
+```
+
+#### In case you want to send everything at once :wink:
+
+```sh
+$ ./faros_event.sh CI CD -k "<api_key>" \
+    --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>"
+    --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
+    --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
     --deployment_status Success
 ```
 

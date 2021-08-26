@@ -1,20 +1,21 @@
 Describe 'faros_event.sh'
+  export FAROS_DRY_RUN=1
+  export FAROS_NO_FORMAT=1
+  export FAROS_START_TIME=10
+  export FAROS_END_TIME=10
   Describe 'CD event'
-
     CDWithArtifactExpectedOutput='{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "<deployment_app_platform>" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deployment_uid>", "source": "<deployment_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "<deployment_app_platform>" } } ] }'
 
     It 'constructs correct event when artifact included using flags'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD --dry_run --no_format \
+          ../faros_event.sh CD \
           -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --deployment_app_platform "<deployment_app_platform>" \
-          --deployment_status Success \
-          --deployment_start_time 10 \
-          --deployment_end_time 10
+          --deployment_status Success
         )
       }
       When call cd_event_test
@@ -30,9 +31,7 @@ Describe 'faros_event.sh'
           FAROS_DEPLOYMENT="<deployment_source>://<app_name>/QA/<deployment_uid>" \
           FAROS_APP_PLATFORM="<deployment_app_platform>" \
           FAROS_DEPLOYMENT_STATUS="Success" \
-          FAROS_DEPLOYMENT_START_TIME=10 \
-          FAROS_DEPLOYMENT_END_TIME=10 \
-          ../faros_event.sh CD --dry_run --no_format
+          ../faros_event.sh CD
         )
       }
       When call cd_event_test
@@ -44,15 +43,13 @@ Describe 'faros_event.sh'
     It 'constructs correct event when commmit included using flags'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD --dry_run --no_format \
+          ../faros_event.sh CD \
           -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
           --vcs "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
           --deployment_status Success \
           --deployment_app_platform "<deployment_app_platform>" \
-          --deployment_start_time 10 \
-          --deployment_end_time 10 \
         )
       }
       When call cd_event_test
@@ -68,9 +65,7 @@ Describe 'faros_event.sh'
           FAROS_VCS="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
           FAROS_DEPLOYMENT_STATUS="Success" \
           FAROS_APP_PLATFORM="<deployment_app_platform>" \
-          ../faros_event.sh CD --dry_run --no_format \
-          --start_time 10 \
-          --end_time 10
+          ../faros_event.sh CD
         )
       }
       When call cd_event_test
@@ -80,13 +75,11 @@ Describe 'faros_event.sh'
     It 'constructs correct event when build is excluded'
       cd_event_test() {
         echo $(
-          ../faros_event.sh CD --dry_run --no_format \
+          ../faros_event.sh CD \
           -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
-          --deployment_status Success \
-          --deployment_start_time 10 \
-          --deployment_end_time 10
+          --deployment_status Success
         )
       }
       When call cd_event_test
@@ -96,9 +89,7 @@ Describe 'faros_event.sh'
     It 'fails when artifact and vcs missing'
       cd_event_test() {
         echo $(
-          FAROS_START_TIME=10 \
-          FAROS_END_TIME=10 \
-          ../faros_event.sh CD --dry_run --no_format \
+          ../faros_event.sh CD \
           -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment "<deployment_source>://<app_name>/QA/<deployment_uid>" \
@@ -112,9 +103,7 @@ Describe 'faros_event.sh'
     It 'requires --deployment'
       cd_event_test() {
         echo $(
-          FAROS_START_TIME=10 \
-          FAROS_END_TIME=10 \
-          ../faros_event.sh CD --dry_run --no_format \
+          ../faros_event.sh CD \
           -k "<api_key>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deployment_status Success
@@ -133,7 +122,7 @@ Describe 'faros_event.sh'
     It 'constructs correct event when artifact included using flags'
       ci_event_test() {
         echo $(
-          ../faros_event.sh CI --dry_run --no_format \
+          ../faros_event.sh CI \
           -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
@@ -207,8 +196,7 @@ Describe 'faros_event.sh'
             ../faros_event.sh $1 \
             -k "<key>" \
             --build "<build>" \
-            $2 \
-            --no_format
+            $2
           )
         }
         When call bad_input_test "Bad_Input" "Also_Bad"
@@ -220,8 +208,7 @@ Describe 'faros_event.sh'
           echo $(
             ../faros_event.sh CD \
             -k "<key>" \
-            --build "$1" \
-            --no_format
+            --build "$1"
           )
         }
         When call bad_input_test "bad://uri"
