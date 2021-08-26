@@ -81,7 +81,7 @@ FAROS_ARTIFACT="<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
 ./faros_event.sh CI
 ```
 
-Excluding Artifact information
+Omitting Artifact information
 
 ```sh
 $ ./faros_event.sh CI -k "<api_key>" \
@@ -119,7 +119,7 @@ In addition to the general required and optional arguments, the following argume
 | &#x2011;&#x2011;deployment_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                    |                                | `start_time` |                                                                |
 | &#x2011;&#x2011;deployment_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                      |                                | `end_time`   |                                                                |
 
-#### :mega: Sending a `CD` event using `--artifact` examples
+#### :mega: Sending a `CD` event using artifact information examples
 
 Using flags
 
@@ -152,7 +152,7 @@ $ ./faros_event.sh CD \
     --deployment_status Success
 ```
 
-#### :mega: Sending a `CD` event using `--vcs` examples
+#### :mega: Sending a `CD` event using vcs information examples
 
 Using flags
 
