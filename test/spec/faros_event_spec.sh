@@ -177,7 +177,7 @@ Describe 'faros_event.sh'
       The output should include "$CIWithoutArtifactExpectedOutput"
     End
 
-    It 'constructs correct event when build is excluded'
+    It 'constructs correct event when run is excluded'
       ci_event_test() {
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
