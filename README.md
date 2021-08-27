@@ -86,7 +86,7 @@ A `CI` event communicates the outcome of a code build pipeline execution, and it
 
 #### CD Event - `CD`
 
-A `CD` event communicates the outcome of an application deployment pipeline execution, the environment (e.g. QA, Prod).
+A `CD` event communicates the outcome of an application deployment pipeline execution, and the environment (e.g. QA, Prod).
 
 #### CD Arguments
 
@@ -109,7 +109,7 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 
 ### :herb: Real life examples
 
-The following sends an event that communicates that a deployment pipeline that is executed by `Buildkite` which is called `my-app-deploy-prod` was successful. It communicated that the application `my-app` was successfully deployed via `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both my build and my deployment.
+The following sends an event that communicates that a deployment pipeline that is executed by `Buildkite` which is called `my-app-deploy-prod` was successful. It communicated that the application `my-app` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the build and the deployment.
 
 ```sh
 $ ./faros_event.sh CD -k "<api_key>" \

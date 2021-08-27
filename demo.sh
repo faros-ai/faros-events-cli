@@ -19,7 +19,8 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # # help
 # ./faros_event.sh --help
 
-# # CI Event  ./faros_event.sh CI \
+# # CI Event  
+# ./faros_event.sh CI \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
 #     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --build "build_source://build_org/build_pipeline/build_id" \

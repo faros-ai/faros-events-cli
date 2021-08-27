@@ -109,7 +109,7 @@ function help() {
     echo "--build_name            |     |"
     echo "--build_start_time      |     | e.g. 1626804346019"
     echo "--build_end_time        |     | e.g. 1626804346019"
-    echo "*1 --artifact or --commit required"
+    echo "*1 Either --artifact or --commit required"
     echo "*2 If --build included"
     echo
     echo "Additional Settings:"
@@ -319,6 +319,7 @@ function processEventTypes() {
 # arg3: The env var name in which to store value_B
 # arg4: The env var name in which to store value_C
 # arg5: The env var name in which to store value_D
+# arg6: The form of the URI to communicate when parsing fails
 function parseUri() {
     valid_chars="a-zA-Z0-9_.<>-"
     uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
