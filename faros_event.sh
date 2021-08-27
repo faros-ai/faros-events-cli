@@ -69,41 +69,41 @@ function help() {
     echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and" 
     echo "--deploy becomes FAROS_DEPLOY"
     echo "-----------------------------------------------------------------------------"
-    echo "Argument         | Req |  Default Value"
+    echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
-    echo "-k / --api_key   | Y   |"
-    echo "-u / --url       |     | $FAROS_URL_DEFAULT"
-    echo "-g / --graph     |     | \"$FAROS_GRAPH_DEFAULT\""
-    echo "--origin         |     | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "-k / --api_key          | Yes |"
+    echo "-u / --url              |     | $FAROS_URL_DEFAULT"
+    echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
+    echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
-    echo "Argument               | Req | Allowed Values"
+    echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
-    echo "--commit               | Y   | uri of the form: source://org/repo/commit"
-    echo "--artifact             | Y   | uri of the form: source://org/repo/artifact"
-    echo "--build                |     | uri of the form: source://org/pipeline/build"
-    echo "--build_status         | *1  | ${build_statuses}"
-    echo "--build_status_details |     |"
-    echo "--build_name           |     |"
-    echo "--build_start_time     |     |"
-    echo "--build_end_time       |     |"
+    echo "--commit                | Yes | URI of the form: source://org/repo/commit"
+    echo "--artifact              | Yes | URI of the form: source://org/repo/artifact"
+    echo "--build                 |     | URI of the form: source://org/pipeline/build"
+    echo "--build_status          | *1  | ${build_statuses}"
+    echo "--build_status_details  |     |"
+    echo "--build_name            |     |"
+    echo "--build_start_time      |     |"
+    echo "--build_end_time        |     |"
     echo "*1 If --build included"
     echo   
     printf "${BLUE}CD Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
-    echo "--deploy                | Y   | uri of the form: source://app/env/deploy"
-    echo "--deploy_status         | Y   | ${deploy_statuses}"
+    echo "--deploy                | Yes | URI of the form: source://app/env/deploy"
+    echo "--deploy_status         | Yes | ${deploy_statuses}"
+    echo "--artifact              | *1  | URI of the form: source://org/repo/artifact"
+    echo "--commit                | *1  | URI of the form: source://org/repo/commit"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
-    echo "--artifact              | *1  | uri of the form: source://org/repo/artifact"
-    echo "--commit                | *1  | uri of the form: source://org/repo/commit"
-    echo "--build                 |     | uri of the form: source://org/pipeline/build"
+    echo "--build                 |     | URI of the form: source://org/pipeline/build"
     echo "--build_status          | *2  | ${build_statuses}"
     echo "--build_status_details  |     |"
     echo "--build_name            |     |"
@@ -120,7 +120,6 @@ function help() {
     echo "--no_build_object  Do not include cicd_Build in the event."
     echo
     echo "For more usage information please visit: $github_url"
-    echo
     exit 0
 }
 
@@ -386,7 +385,7 @@ function resolveCDInput() {
     parseDeployUri
     deploy_status=${deploy_status:-$FAROS_DEPLOY_STATUS}
 
-    # Artifact or Commit required for deploy:
+    # Artifact or Commit required for CD event
     use_commit=0
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
         parseArtifactUri
