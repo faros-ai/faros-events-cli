@@ -89,13 +89,13 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "--commit                | Yes | URI of the form: source://org/repo/commit"
     echo "--artifact              | Yes | URI of the form: source://org/repo/artifact"
-    echo "--build                 |     | URI of the form: source://org/pipeline/build"
-    echo "--build_status          | *1  | ${build_statuses}"
-    echo "--build_status_details  |     |"
-    echo "--build_name            |     |"
-    echo "--build_start_time      |     |"
-    echo "--build_end_time        |     |"
-    echo "*1 If --build included"
+    echo "--run                   |     | URI of the form: source://org/pipeline/run"
+    echo "--run_status            | *1  | ${build_statuses}"
+    echo "--run_status_details    |     |"
+    echo "--run_name              |     |"
+    echo "--run_start_time        |     | e.g. 1626804346019"
+    echo "--run_end_time          |     | e.g. 1626804346019"
+    echo "*1 If --run included"
     echo   
     printf "${BLUE}CD Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
@@ -110,15 +110,15 @@ function help() {
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
-    echo "--build                 |     | URI of the form: source://org/pipeline/build"
-    echo "--build_status          | *3  | ${build_statuses}"
-    echo "--build_status_details  |     |"
-    echo "--build_name            |     |"
-    echo "--build_start_time      |     | e.g. 1626804346019"
-    echo "--build_end_time        |     | e.g. 1626804346019"
+    echo "--run                   |     | URI of the form: source://org/pipeline/run"
+    echo "--run_status            | *3  | ${build_statuses}"
+    echo "--run_status_details    |     |"
+    echo "--run_name              |     |"
+    echo "--run_start_time        |     | e.g. 1626804346019"
+    echo "--run_end_time          |     | e.g. 1626804346019"
     echo "*1 env must be: ${envs}"
     echo "*2 Either --artifact or --commit required"
-    echo "*3 If --build included"
+    echo "*3 If --run included"
     echo
     echo "Additional Settings:"
     echo "--dry_run          Do not send the event."
@@ -187,7 +187,7 @@ function parseFlags() {
             -k|--api_key)
                 api_key="$2"
                 shift 2 ;;
-            --build)
+            --run)
                 build_uri="$2"
                 shift 2 ;;
             --deploy)
@@ -217,19 +217,19 @@ function parseFlags() {
             --deploy_end_time)
                 deploy_end_time="$2"
                 shift 2 ;;
-            --build_name)
+            --run_name)
                 build_name="$2"
                 shift 2 ;;
-            --build_status)
+            --run_status)
                 build_status="$2"
                 shift 2 ;;
-            --build_status_details)
+            --run_status_details)
                 build_status_details="$2"
                 shift 2 ;;
-            --build_start_time)
+            --run_start_time)
                 build_start_time="$2"
                 shift 2 ;;
-            --build_end_time)
+            --run_end_time)
                 build_end_time="$2"
                 shift 2 ;;
             -g|--graph)
@@ -342,7 +342,7 @@ function parseUri() {
 }
 
 function parseBuildUri() {
-    parseUri "${build_uri:-$FAROS_BUILD}" "cicd_source" "cicd_org" "pipeline" "build" "source://org/pipeline/build"
+    parseUri "${build_uri:-$FAROS_RUN}" "cicd_source" "cicd_org" "pipeline" "build" "source://org/pipeline/run"
 }
 
 function parseCommitUri() {
@@ -363,7 +363,7 @@ function resolveInput() {
 
     # Optional fields:
     # Resolve and parse build information if present
-    if ! [ -z ${build_uri+x} ] || ! [ -z ${FAROS_BUILD+x} ]; then
+    if ! [ -z ${build_uri+x} ] || ! [ -z ${FAROS_RUN+x} ]; then
         parseBuildUri
         build_present=1
     else
@@ -454,14 +454,14 @@ function resolveCIInput() {
 
 function resolveBuildInput() {
     # Required fields:
-    build_status=${build_status:-$FAROS_BUILD_STATUS}
+    build_status=${build_status:-$FAROS_RUN_STATUS}
 
     # Optional fields:
     resolveBuildDefaults
-    build_name=${build_name:-$FAROS_BUILD_NAME}
-    build_status_details=${build_status_details:-$FAROS_BUILD_STATUS_DETAILS}
-    build_start_time=${build_start_time:-$FAROS_BUILD_START_TIME}
-    build_end_time=${build_end_time:-$FAROS_BUILD_END_TIME}
+    build_name=${build_name:-$FAROS_RUN_NAME}
+    build_status_details=${build_status_details:-$FAROS_RUN_STATUS_DETAILS}
+    build_start_time=${build_start_time:-$FAROS_RUN_START_TIME}
+    build_end_time=${build_end_time:-$FAROS_RUN_END_TIME}
 
     if ! [[ ${BUILD_STATUSES[*]} =~ (^|[[:space:]])"$build_status"($|[[:space:]]) ]] ; then
       err "Invalid build status $build_status. Allowed values: ${build_statuses}";
@@ -470,10 +470,10 @@ function resolveBuildInput() {
 }
 
 function resolveBuildDefaults() {
-    FAROS_BUILD_NAME=${FAROS_BUILD_NAME:-$FAROS_BUILD_NAME_DEFAULT}
-    FAROS_BUILD_STATUS_DETAILS=${FAROS_BUILD_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
-    FAROS_BUILD_START_TIME=${FAROS_BUILD_START_TIME:-$FAROS_START_TIME_DEFAULT}
-    FAROS_BUILD_END_TIME=${FAROS_BUILD_END_TIME:-$FAROS_END_TIME_DEFAULT}
+    FAROS_RUN_NAME=${FAROS_RUN_NAME:-$FAROS_BUILD_NAME_DEFAULT}
+    FAROS_RUN_STATUS_DETAILS=${FAROS_RUN_STATUS_DETAILS:-$FAROS_BUILD_STATUS_DETAILS_DEFAULT}
+    FAROS_RUN_START_TIME=${FAROS_RUN_START_TIME:-$FAROS_START_TIME_DEFAULT}
+    FAROS_RUN_END_TIME=${FAROS_RUN_END_TIME:-$FAROS_END_TIME_DEFAULT}
 }
 
 function makeDeployment() {

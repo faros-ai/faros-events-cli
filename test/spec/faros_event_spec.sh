@@ -11,10 +11,10 @@ Describe 'faros_event.sh'
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success" \
           --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
           --deploy_app_platform "<deploy_app_platform>" \
-          --build_status "Success" \
           --deploy_status "Success"
         )
       }
@@ -27,10 +27,10 @@ Describe 'faros_event.sh'
         echo $(
           FAROS_API_KEY="<api_key>" \
           FAROS_ARTIFACT="<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
-          FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN_STATUS="Success" \
           FAROS_DEPLOY="<deploy_source>://<app_name>/QA/<deploy_uid>" \
           FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
-          FAROS_BUILD_STATUS="Success" \
           FAROS_DEPLOY_STATUS="Success" \
           ../faros_event.sh CD
         )
@@ -45,12 +45,12 @@ Describe 'faros_event.sh'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
           --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          --build_status "Success" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success" \
           --deploy_status "Success" \
-          --deploy_app_platform "<deploy_app_platform>" \
+          --deploy_app_platform "<deploy_app_platform>"
         )
       }
       When call cd_event_test
@@ -62,9 +62,9 @@ Describe 'faros_event.sh'
         echo $(
           FAROS_API_KEY="<api_key>" \
           FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN_STATUS="Success" \
           FAROS_DEPLOY="<deploy_source>://<app_name>/QA/<deploy_uid>" \
-          FAROS_BUILD_STATUS="Success" \
           FAROS_DEPLOY_STATUS="Success" \
           FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
           ../faros_event.sh CD
@@ -74,7 +74,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithCommitExpectedOutput"
     End
 
-    It 'constructs correct event when build is excluded'
+    It 'constructs correct event when run is excluded'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
@@ -91,8 +91,8 @@ Describe 'faros_event.sh'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
-          --build_status Success \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status Success \
           --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
           --deploy_status "Success"
         )
@@ -105,7 +105,7 @@ Describe 'faros_event.sh'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deploy_status "Success"
         )
       }
@@ -125,8 +125,8 @@ Describe 'faros_event.sh'
           ../faros_event.sh CI -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
-          --build_status "Success"
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success"
         )
       }
       When call ci_event_test
@@ -139,8 +139,8 @@ Describe 'faros_event.sh'
           FAROS_API_KEY="<api_key>" \
           FAROS_ARTIFACT="<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
-          FAROS_BUILD_STATUS="Success" \
+          FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN_STATUS="Success" \
           ../faros_event.sh CI
         )
       }
@@ -154,9 +154,9 @@ Describe 'faros_event.sh'
       ci_event_test() {
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
-          --build_status "Success" \
-          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success"
         )
       }
       When call ci_event_test
@@ -167,9 +167,9 @@ Describe 'faros_event.sh'
       ci_event_test() {
         echo $(
           FAROS_API_KEY="<api_key>" \
-          FAROS_BUILD="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-          FAROS_BUILD_STATUS="Success" \
+          FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN_STATUS="Success" \
           ../faros_event.sh CI
         )
       }
@@ -196,7 +196,7 @@ Describe 'faros_event.sh'
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
-          --build "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
           --deploy_status "Success" \
           --no_build_object
@@ -213,7 +213,7 @@ Describe 'faros_event.sh'
         echo $(
           ../faros_event.sh $1 \
           -k "<key>" \
-          --build "<build>" \
+          --run "<build>" \
           $2
         )
       }
@@ -225,11 +225,11 @@ Describe 'faros_event.sh'
       bad_input_test() {
         echo $(
           ../faros_event.sh CD -k "<key>" \
-          --build "$1"
+          --run "$1"
         )
       }
       When call bad_input_test "bad://uri"
-      The output should equal 'Resource URI could not be parsed: bad://uri The URI should be of the form: source://org/pipeline/build Failed.'
+      The output should equal 'Resource URI could not be parsed: bad://uri The URI should be of the form: source://org/pipeline/run Failed.'
     End
   End
 End
