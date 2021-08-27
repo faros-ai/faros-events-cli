@@ -2,7 +2,7 @@
 
 CLI for reporting events to Faros platform.
 
-The purpose of this script is to enable integration of any CI/CD pipeline with Faros platform. The script provides all the necessary instrumentation for sending `CI` and `CD` events to Faros, validating the input values, and error handling.
+The script provides all the necessary instrumentation for CI/CD pipelines by sending events to Faros platform
 
 ## :zap: Usage
 
@@ -60,8 +60,8 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 | Argument                | Description                                                                                                                              | Required | Default                     |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- |
-| &#x2011;&#x2011;api_key | Your Faros api key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes      |                             |
-| &#x2011;&#x2011;url     | The Faros url to send the event to.                                                                                                      |          | `https://prod.api.faros.ai` |
+| &#x2011;&#x2011;api_key | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes      |                             |
+| &#x2011;&#x2011;url     | The Faros API url to send the event to.                                                                                                      |          | `https://prod.api.faros.ai` |
 | &#x2011;&#x2011;graph   | The graph that the event should be sent to.                                                                                              |          | "default"                   |
 | &#x2011;&#x2011;origin  | The origin of the event that is being sent to Faros.                                                                                     |          | "Faros_Script_Event"        |
 | &#x2011;&#x2011;dry_run | Print the event instead of sending. (no value accepted, true if flag is present)                                                         |          | False                       |
@@ -111,18 +111,18 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 
 ### :herb: Real life examples
 
-The following sends an event that communicates that a deployment pipeline that is run by `Buildkite` which is called `my-app-deploy-prod` was successful. It communicated that the application `my-app` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the job run and the deployment.
+The following sends an event that communicates that a deployment pipeline that is run by `Buildkite` which is called `payments-service-deploy-prod` was successful. It communicated that the application `payments-service` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the job run and the deployment.
 
 ```sh
 $ ./faros_event.sh CD -k "<api_key>" \
-    --run "Buildkite://faros-ai/my-app-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
+    --run "Buildkite://faros-ai/payments-service-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
     --run_status "Success" \
     --run_start_time "1626804346000" \
-    --run_end_time "1626804347000" \
-    --deploy "ECS://my-app/Prod/d-CGAKEHE8S" \
+    --run_end_time "1626804358000" \
+    --deploy "ECS://payments-service/Prod/d-CGAKEHE8S" \
     --deploy_status "Success" \
-    --deploy_start_time "1626804346000" \
-    --deploy_end_time "1626804347000" \
+    --deploy_start_time "1626804356000" \
+    --deploy_end_time "1626804357000" \
     --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b" \
 ```
 
