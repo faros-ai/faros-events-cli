@@ -94,23 +94,24 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
-    echo "--deploy                | Yes | URI of the form: source://app/env/deploy"
+    echo "--deploy                | Yes | URI of the form: source://app/env/deploy *1"
     echo "--deploy_status         | Yes | ${deploy_statuses}"
-    echo "--artifact              | *1  | URI of the form: source://org/repo/artifact"
-    echo "--commit                | *1  | URI of the form: source://org/repo/commit"
+    echo "--artifact              | *2  | URI of the form: source://org/repo/artifact"
+    echo "--commit                | *2  | URI of the form: source://org/repo/commit"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
     echo "--build                 |     | URI of the form: source://org/pipeline/build"
-    echo "--build_status          | *2  | ${build_statuses}"
+    echo "--build_status          | *3  | ${build_statuses}"
     echo "--build_status_details  |     |"
     echo "--build_name            |     |"
     echo "--build_start_time      |     | e.g. 1626804346019"
     echo "--build_end_time        |     | e.g. 1626804346019"
-    echo "*1 Either --artifact or --commit required"
-    echo "*2 If --build included"
+    echo "*1 env must be: ${envs}"
+    echo "*2 Either --artifact or --commit required"
+    echo "*3 If --build included"
     echo
     echo "Additional Settings:"
     echo "--dry_run          Do not send the event."
@@ -412,11 +413,11 @@ function resolveCDInput() {
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
     if ! [[ ${ENVS[*]} =~ (^|[[:space:]])"$deploy_env"($|[[:space:]]) ]] ; then
-      err "Invalid deploy environment: $deploy_env. Allowed values: ${envs}";
+      err "Invalid deployment environment: $deploy_env. Allowed values: ${envs}";
       fail
     fi
     if ! [[ ${DEPLOY_STATUSES[*]} =~ (^|[[:space:]])"$deploy_status"($|[[:space:]]) ]] ; then
-      err "Invalid deploy status: $deploy_status. Allowed values: ${deploy_statuses}";
+      err "Invalid --deploy_status: $deploy_status. Allowed values: ${deploy_statuses}";
       fail
     fi
 }
