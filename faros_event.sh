@@ -187,7 +187,7 @@ function parseFlags() {
             -k|--api_key)
                 api_key="$2"
                 shift 2 ;;
-            --run)
+            --run) # Externally build is referred to as run
                 build_uri="$2"
                 shift 2 ;;
             --deploy)
@@ -452,6 +452,9 @@ function resolveCIInput() {
     fi 
 }
 
+# Externally build is referred to as run
+# This manifests in external Env Var names and flag names
+# but the internal variables still use build for naming
 function resolveBuildInput() {
     # Required fields:
     build_status=${build_status:-$FAROS_RUN_STATUS}
