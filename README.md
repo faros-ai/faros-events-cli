@@ -2,7 +2,7 @@
 
 CLI for reporting events to Faros platform.
 
-The purpose of this script is to abstract away the schema structure of the various CI/CD Faros canonical models. When attempting to send a deploy or build event to Faros, only the field values need to be specified and the script takes care of structuring and sending the request.
+The purpose of this script is to enable integration of any CI/CD pipeline with Faros platform. The script provides all the necessary instrumentation for sending `CI` and `CD` events to Faros, validating the input values, and error handling.
 
 ## :zap: Usage
 
