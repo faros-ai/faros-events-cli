@@ -60,10 +60,17 @@ function help() {
     echo "There are multiple event types that can be used, each with a set of required"
     echo "and optional fields."
     echo
-    printf "${RED}Args:${NC}\\n"
-    echo "Event type (\"CI\", \"CD\")"
+    printf "${RED}Event Types:${NC}\\n"
+    echo "CI"
+    echo "CD"
+    echo
+    printf "${BLUE}Example Event:${NC}\\n"
+    echo "./faros_event.sh CD -k \"<faros_api_key>\" \\"
+    echo "--artifact \"<artifact_source>://<org>/<repo>/<artifact_uid>\" \\"
+    echo "--deploy \"<deploy_source>://<app_name>/<environment>/<deploy_uid>\" \\"
+    echo "--deploy_status \"Success\" \\"
     echo 
-    printf "${RED}General Arguments:${NC}\\n"
+    printf "${RED}Arguments:${NC}\\n"
     echo "Arguments can be provided either by flag or by environment variable."
     echo "By convension, you can switch to using environment variables by prefixing the"
     echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and" 
