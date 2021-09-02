@@ -467,7 +467,7 @@ function resolveBuildInput() {
     build_end_time=${build_end_time:-$FAROS_RUN_END_TIME}
 
     if ! [[ ${BUILD_STATUSES[*]} =~ (^|[[:space:]])"$build_status"($|[[:space:]]) ]] ; then
-      err "Invalid build status $build_status. Allowed values: ${build_statuses}";
+      err "Invalid run status $build_status. Allowed values: ${build_statuses}";
       fail
     fi
 }
