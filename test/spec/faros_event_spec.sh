@@ -182,7 +182,7 @@ Describe 'faros_event.sh'
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
-          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
+          --commit "<vcs_source>://<VCS_ORGANIZATION>/<VCS_REPO>/<commit_sha>"
         )
       }
       When call ci_event_test
@@ -191,7 +191,7 @@ Describe 'faros_event.sh'
   End
 
   Describe '--no_build_object'
-    It 'constructs correct event CD'
+    It 'constructs correct CD event when present'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
@@ -204,6 +204,33 @@ Describe 'faros_event.sh'
       }
       When call cd_event_test
       The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Deployment": { "uid": "<deploy_uid>", "source": "<deploy_source>", "status": { "category": "Success", "detail": "" }, "startedAt": 10, "endedAt": 10, "env": { "category": "QA", "detail": "" }, "application": { "name": "<app_name>", "platform": "" }, "build": { "uid": "<build_uid>", "pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } } }, { "cicd_ArtifactDeployment": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "deployment": { "uid": "<deploy_uid>", "source": "<deploy_source>" } } }, { "compute_Application": { "name": "<app_name>", "platform": "" } }, { "cicd_Organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } }, { "cicd_Pipeline": { "uid": "<cicd_pipeline>", "organization": { "uid": "<cicd_organization>", "source": "<cicd_source>" } } } ] }'
+    End
+  End
+
+  Describe '--no_lowercase_vcs'
+    It 'constructs correct event when present'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --commit "<vcs_source>://<VCS_ORGANIZATION>/<VCS_REPO>/<commit_sha>" \
+          --no_lowercase_vcs
+        )
+      }
+      When call ci_event_test
+      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<VCS_REPO>", "organization": { "uid": "<VCS_ORGANIZATION>", "source": "<vcs_source>" } } } } } ] }'
+    End
+
+    It 'constructs correct event when absent'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --commit "<vcs_source>://<VCS_ORGANIZATION>/<VCS_REPO>/<commit_sha>"
+        )
+      }
+      When call ci_event_test
+      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
     End
   End
 

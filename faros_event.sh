@@ -6,14 +6,14 @@ version="0.2.0"
 canonical_model_version="0.8.11"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
-declare -a arr=("curl" "jq")
+declare -a arr=("curl" "jq" "sed" "awk")
 for i in "${arr[@]}"; do
     which $i &> /dev/null || 
         { echo "Error: $i is required." && missing_require=1; }
 done
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl and jq are available before running the script."
+    echo "Please ensure curl, jq, sed, and awk are available before running the script."
     exit 1
 fi
 
@@ -121,11 +121,12 @@ function help() {
     echo "*3 If --run included"
     echo
     echo "Additional Settings:"
-    echo "--dry_run          Do not send the event."
-    echo "--silent           Unexceptional output will be silenced."
-    echo "--debug            Helpful information will be printed."
-    echo "--no_format        Log formatting will be turned off."
-    echo "--no_build_object  Do not include cicd_Build in the event."
+    echo "--dry_run           Do not send the event."
+    echo "--silent            Unexceptional output will be silenced."
+    echo "--debug             Helpful information will be printed."
+    echo "--no_format         Log formatting will be turned off."
+    echo "--no_build_object   Do not include cicd_Build in the event."
+    echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -244,6 +245,9 @@ function parseFlags() {
             --no_build_object)
                 no_build_object=1
                 shift ;;
+            --no_lowercase_vcs)
+                no_lowercase_vcs=1
+                shift ;;
             --dry_run)
                 dry_run=1
                 shift ;;
@@ -347,6 +351,11 @@ function parseBuildUri() {
 
 function parseCommitUri() {
     parseUri "${commit_uri:-$FAROS_COMMIT}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha" "source://org/repo/commit"
+
+    if !((no_lowercase_vcs)); then
+        vcs_org=$(echo "$vcs_org" | awk '{print tolower($0)}')
+        vcs_repo=$(echo "$vcs_repo" | awk '{print tolower($0)}')
+    fi
 }
 
 function parseDeployUri() {
@@ -377,6 +386,7 @@ function resolveInput() {
     
     # Optional script settings: If unset then false
     no_build_object=${no_build_object:-0}
+    no_lowercase_vcs=${no_lowercase_vcs:-0}
     dry_run=${dry_run:-0}
     silent=${silent:-0}
     debug=${debug:-0}
