@@ -208,7 +208,7 @@ Describe 'faros_event.sh'
   End
 
   Describe '--no_lowercase_vcs'
-    It 'constructs correct event when present'
+    It 'constructs correct commit object when present'
       ci_event_test() {
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
@@ -218,10 +218,10 @@ Describe 'faros_event.sh'
         )
       }
       When call ci_event_test
-      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<VCS_REPO>", "organization": { "uid": "<VCS_ORGANIZATION>", "source": "<vcs_source>" } } } } } ] }'
+      The output should include '"commit": { "sha": "<commit_sha>", "repository": { "name": "<VCS_REPO>", "organization": { "uid": "<VCS_ORGANIZATION>", "source": "<vcs_source>" } } }'
     End
 
-    It 'constructs correct event when absent'
+    It 'constructs correct commit object when absent'
       ci_event_test() {
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
@@ -230,7 +230,7 @@ Describe 'faros_event.sh'
         )
       }
       When call ci_event_test
-      The output should include '{ "origin": "Faros_Script_Event", "entries": [ { "cicd_Artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } } }, { "cicd_ArtifactCommitAssociation": { "artifact": { "uid": "<artifact>", "repository": { "uid": "<artifact_repo>", "organization": { "uid": "<artifact_org>", "source": "<artifact_source>" } } }, "commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } } } } ] }'
+      The output should include '"commit": { "sha": "<commit_sha>", "repository": { "name": "<vcs_repo>", "organization": { "uid": "<vcs_organization>", "source": "<vcs_source>" } } }'
     End
   End
 
