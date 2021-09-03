@@ -59,7 +59,7 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # # CD Event (using commit)
 # ../faros_event.sh CD \
 #     --deploy "deploy_source://app/QA/deploy_id" \
-#     --commit "vcs_source://VCS_ORG/VCS_REPO/commit_sha" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --run "run_source://run_org/run_pipeline/run_id" \
 #     --deploy_status "Success" \
 #     --run_status "Success"

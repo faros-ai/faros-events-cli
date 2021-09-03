@@ -182,7 +182,7 @@ Describe 'faros_event.sh'
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
-          --commit "<vcs_source>://<VCS_ORGANIZATION>/<VCS_REPO>/<commit_sha>"
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
         )
       }
       When call ci_event_test
