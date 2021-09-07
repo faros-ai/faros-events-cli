@@ -12,6 +12,8 @@ Please make sure the following are installed before running the script:
 
 - curl
 - jq
+- sed
+- awk
 
 ### Execution
 
@@ -58,15 +60,17 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
 
-| Argument                | Description                                                                                                                              | Required | Default                     |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- |
-| &#x2011;&#x2011;api_key | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes      |                             |
-| &#x2011;&#x2011;url     | The Faros API url to send the event to.                                                                                                      |          | `https://prod.api.faros.ai` |
-| &#x2011;&#x2011;graph   | The graph that the event should be sent to.                                                                                              |          | "default"                   |
-| &#x2011;&#x2011;origin  | The origin of the event that is being sent to Faros.                                                                                     |          | "Faros_Script_Event"        |
-| &#x2011;&#x2011;dry_run | Print the event instead of sending. (no value accepted, true if flag is present)                                                         |          | False                       |
-| &#x2011;&#x2011;silent  | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                      |          | False                       |
-| &#x2011;&#x2011;debug   | Helpful information will be printed. (no value accepted, true if flag is present)                                                        |          | False                       |
+| Argument                         | Description                                                                                                                              | Required | Default                     |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- |
+| &#x2011;&#x2011;api_key          | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes      |                             |
+| &#x2011;&#x2011;url              | The Faros API url to send the event to.                                                                                                  |          | `https://prod.api.faros.ai` |
+| &#x2011;&#x2011;graph            | The graph that the event should be sent to.                                                                                              |          | "default"                   |
+| &#x2011;&#x2011;origin           | The origin of the event that is being sent to Faros.                                                                                     |          | "Faros_Script_Event"        |
+| &#x2011;&#x2011;dry_run          | Print the event instead of sending. (no value accepted, true if flag is present)                                                         |          | False                       |
+| &#x2011;&#x2011;silent           | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                      |          | False                       |
+| &#x2011;&#x2011;debug            | Helpful information will be printed. (no value accepted, true if flag is present)                                                        |          | False                       |
+| &#x2011;&#x2011;no_build_object  | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                     |          | False                       |
+| &#x2011;&#x2011;no_lowercase_vcs | Do not lowercase vcs_organization and vcs_repo. (no value accepted, true if flag is present)                                             |          | False                       |
 
 #### CI Event - `CI`
 
