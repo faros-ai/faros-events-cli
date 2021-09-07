@@ -27,7 +27,7 @@ Or with `curl`:
 
 ```sh
 # set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
-$ export FAROS_CLI_VERSION="v0.2.0"
+$ export FAROS_CLI_VERSION="v0.2.1"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
