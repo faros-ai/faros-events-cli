@@ -27,7 +27,7 @@ Or with `curl`:
 
 ```sh
 # set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
-$ export FAROS_CLI_VERSION="v0.2.0"
+$ export FAROS_CLI_VERSION="v0.2.1"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -42,7 +42,9 @@ $ ./faros_event.sh CI -k "<faros_api_key>" \
     --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<run_uid>" \
     --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
     --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_uid>" \
-    --run_status Success
+    --run_status Success \
+    --run_start_time "1626804346000" \
+    --run_end_time "1626804358000"
 ```
 
 - Use `CD` events to instrument deployment pipelines. For example, you can report the result of a successful deployment:
@@ -51,7 +53,9 @@ $ ./faros_event.sh CI -k "<faros_api_key>" \
 $ ./faros_event.sh CD -k "<faros_api_key>" \
     --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_uid>" \
     --deploy "<deploy_source>://<app_name>/<environment>/<deploy_uid>" \
-    --deploy_status Success
+    --deploy_status Success \
+    --deploy_start_time "1626804356000" \
+    --deploy_end_time "1626804357000"
 ```
 
 ### Arguments
