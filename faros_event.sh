@@ -36,9 +36,10 @@ build_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOY_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deploy_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOY_STATUSES[*]}")")
 
+# Script settings' defaults
 dry_run=${FAROS_DRY_RUN:-0}
-silent=0
-debug=0
+silent=${FAROS_SILENT:-0}
+debug=${FAROS_DEBUG:-0}
 no_format=${FAROS_NO_FORMAT:-0}
 
 # Theme
@@ -387,9 +388,6 @@ function resolveInput() {
     # Optional script settings: If unset then false
     no_build_object=${no_build_object:-0}
     no_lowercase_vcs=${no_lowercase_vcs:-0}
-    dry_run=${dry_run:-0}
-    silent=${silent:-0}
-    debug=${debug:-0}
 }
 
 function resolveDefaults() {
@@ -813,7 +811,8 @@ function printLog() {
             printf "$fmtLog \n"
             echo "$*" | jq .
         else
-            echo "$*"
+            # Minify JSON
+            echo "$*" | jq -c .
         fi
     else
         printf "$fmtLog"
