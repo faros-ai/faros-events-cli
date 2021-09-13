@@ -1,5 +1,7 @@
 # :computer: Faros Events CLI
 
+[![Latest Release](https://img.shields.io/github/v/release/faros-ai/faros-events-cli?label=latest%20version&logo=latest%20version&style=plastic)](https://github.com/faros-ai/faros-events-cli/releases/latest)
+
 CLI for reporting events to Faros platform.
 
 The script provides all the necessary instrumentation for CI/CD pipelines by sending events to Faros platform
