@@ -41,9 +41,9 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
 
 ```sh
 $ ./faros_event.sh CI -k "<faros_api_key>" \
-    --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<run_uid>" \
+    --run "<ci_source>://<ci_organization>/<ci_pipeline>/<run_id>" \
     --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_uid>" \
+    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_id>" \
     --run_status Success \
     --run_start_time "1626804346000" \
     --run_end_time "1626804358000"
@@ -53,8 +53,8 @@ $ ./faros_event.sh CI -k "<faros_api_key>" \
 
 ```sh
 $ ./faros_event.sh CD -k "<faros_api_key>" \
-    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_uid>" \
-    --deploy "<deploy_source>://<app_name>/<environment>/<deploy_uid>" \
+    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_id>" \
+    --deploy "<deploy_source>://<application>/<deploy_env>/<deploy_id>" \
     --deploy_status Success \
     --deploy_start_time "1626804356000" \
     --deploy_end_time "1626804357000"
@@ -84,6 +84,8 @@ A `CI` event communicates the outcome of a code build pipeline execution, and it
 
 #### CI Arguments
 
+> You may need to scroll to the right to view the entire table.
+
 | Argument                           | Description                                                                                                                                                                        | Required                        | Default | Allowed Value                                               |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------- | ----------------------------------------------------------- |
 | &#x2011;&#x2011;commit             | The URI of the commit. (`<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)                     | Yes                             |         |                                                             |
@@ -100,6 +102,8 @@ A `CI` event communicates the outcome of a code build pipeline execution, and it
 A `CD` event communicates the outcome of an application deployment pipeline execution, and the environment (e.g. QA, Prod).
 
 #### CD Arguments
+
+> You may need to scroll to the right to view the entire table.
 
 | Argument                              | Description                                                                                                                                                                        | Required                                                  | Default | Allowed Value                                                  |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------- | -------------------------------------------------------------- |
