@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-version="0.2.2"
+version="0.2.3"
 canonical_model_version="0.8.11"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -13,7 +13,8 @@ for i in "${arr[@]}"; do
 done
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl, jq, sed, and awk are available before running the script."
+    echo "Please ensure curl, jq, sed, and an implementation of awk (we recommend gawk)"
+    echo "are available before running the script."
     exit 1
 fi
 
