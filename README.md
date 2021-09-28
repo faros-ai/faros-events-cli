@@ -15,7 +15,7 @@ Please make sure the following are installed before running the script:
 - curl
 - jq
 - sed
-- awk
+- an implementation of awk (we recommend gawk)
 
 ### Execution
 
@@ -29,7 +29,7 @@ Or with `curl`:
 
 ```sh
 # set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
-$ export FAROS_CLI_VERSION="v0.2.2"
+$ export FAROS_CLI_VERSION="v0.2.3"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
