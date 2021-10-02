@@ -1,4 +1,4 @@
-# :computer: Faros Events CLI
+# :computer: Faros Events CLI [![CI](https://github.com/faros-ai/faros-events-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/faros-ai/faros-events-cli/actions/workflows/ci.yml) [![Release](https://github.com/faros-ai/faros-events-cli/actions/workflows/release.yml/badge.svg)](https://github.com/faros-ai/faros-events-cli/actions/workflows/release.yml)
 
 [![Latest Release](https://img.shields.io/github/v/release/faros-ai/faros-events-cli?label=latest%20version&logo=latest%20version&style=plastic)](https://github.com/faros-ai/faros-events-cli/releases/latest)
 
@@ -8,29 +8,37 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 ## :zap: Usage
 
-### Requirements
+### Execute with Bash
 
-Please make sure the following are installed before running the script:
+**Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-- curl
-- jq
-- sed
-- an implementation of awk (we recommend gawk)
-
-### Execution
-
-You can download and execute the script:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.2.3/faros_event.sh) and execute it:
 
 ```sh
 $ ./faros_event.sh help
 ```
 
-Or with `curl`:
+2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-# set to the latest version - https://github.com/faros-ai/faros-events-cli/releases/latest
 $ export FAROS_CLI_VERSION="v0.2.3"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
+```
+
+### Execute with Docker
+
+**Requirements**: Docker client and runtime.
+
+1. Pull the image:
+
+```sh
+$ docker pull farosai/faros-events-cli:v0.2.3
+```
+
+2. Run it:
+
+```sh
+$ docker run farosai/faros-events-cli:v0.2.3 help
 ```
 
 ### :book: Event Types

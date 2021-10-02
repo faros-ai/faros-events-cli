@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish-events-cli:
+    name: Publish Events CLI image
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2.3.4
+
+      - name: Generate image tags
+        id: gen-tags
+        env:
+          EVENTS_CLI_IMAGE: farosai/faros-events-cli
+        run: |
+          TAG="${GITHUB_REF:11}"
+          TAG_VERSION="${TAG//v/}"
+          echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >>"$GITHUB_ENV"
+          echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >>"$GITHUB_ENV"
+          echo "EVENTS_CLI_VERSION_TAG=$EVENTS_CLI_IMAGE:$TAG_VERSION" >>"$GITHUB_ENV"
+
+      - name: Docker login
+        uses: docker/login-action@v1.10.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish Events CLI image
+        run: |
+          docker build . -t $EVENTS_CLI_LATEST_TAG -t $EVENTS_CLI_TAG -t $EVENTS_CLI_VERSION_TAG && \
+          docker push $EVENTS_CLI_LATEST_TAG && \
+          docker push $EVENTS_CLI_TAG && \
+          docker push $EVENTS_CLI_VERSION_TAG
