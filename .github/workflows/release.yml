@@ -9,9 +9,17 @@ jobs:
     name: Publish Events CLI image
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      FAROS_DEV_API_URL: https://dev.api.faros.ai
+      FAROS_PROD_API_URL: https://prod.api.faros.ai
+      FAROS_PIPELINE_ID: faros-events-cli-cicd
     steps:
       - name: Check out
         uses: actions/checkout@v2.3.4
+
+      - name: Set CI start time # https://serverfault.com/a/151112
+        id: set-ci-start-time
+        run: echo "CI_STARTED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
 
       - name: Generate image tags
         id: gen-tags
@@ -23,6 +31,7 @@ jobs:
           echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >>"$GITHUB_ENV"
           echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >>"$GITHUB_ENV"
           echo "EVENTS_CLI_VERSION_TAG=$EVENTS_CLI_IMAGE:$TAG_VERSION" >>"$GITHUB_ENV"
+          echo "TAG_VERSION=$TAG_VERSION" >>"$GITHUB_ENV"
 
       - name: Docker login
         uses: docker/login-action@v1.10.0
@@ -32,7 +41,49 @@ jobs:
 
       - name: Publish Events CLI image
         run: |
-          docker build . -t $EVENTS_CLI_LATEST_TAG -t $EVENTS_CLI_TAG -t $EVENTS_CLI_VERSION_TAG && \
+          docker build . -t $EVENTS_CLI_LATEST_TAG \
+          -t $EVENTS_CLI_TAG \
+          -t $EVENTS_CLI_VERSION_TAG \
+          --label "faros-build-id=$GITHUB_RUN_ID" \
+          --label "faros-ci-pipeline=$FAROS_PIPELINE_ID" \
+          --label "faros-ci-org=faros-ai" \
+          --label "faros-ci-source=GitHub" \
+          --label "faros-commit-sha=$GITHUB_SHA" \
+          --label "faros-vcs-repo=faros-events-cli" \
+          --label "faros-vcs-org=faros-ai" \
+          --label "faros-vcs-source=GitHub" && \
           docker push $EVENTS_CLI_LATEST_TAG && \
           docker push $EVENTS_CLI_TAG && \
           docker push $EVENTS_CLI_VERSION_TAG
+
+      - name: Set CI end time
+        id: set-ci-end-time
+        run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
+      
+      - name: Send CI event to Faros - prod
+        uses: faros-ai/faros-cicd-github-action@v2.0.0
+        if: ${{ always() }}
+        with:
+          api-key: ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }}
+          api-url: ${{ env.FAROS_PROD_API_URL }}
+          graph: faros
+          event: CI
+          pipeline-id: ${{ env.FAROS_PIPELINE_ID }}
+          artifact: ${{ format('Docker://farosai/faros-events-cli/{0}', $TAG_VERSION) }}
+          run-status: ${{ job.status }}
+          run-started-at: ${{ env.CI_STARTED_AT }}
+          run-ended-at: ${{ env.CI_ENDED_AT }}
+
+      - name: Send CI event to Faros - dev
+        uses: faros-ai/faros-cicd-github-action@v2.0.0
+        if: ${{ always() }}
+        with:
+          api-key: ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }}
+          api-url: ${{ env.FAROS_DEV_API_URL }}
+          graph: faros
+          event: CI
+          pipeline-id: ${{ env.FAROS_PIPELINE_ID }}
+          artifact: ${{ format('Docker://farosai/faros-events-cli/{0}', $TAG_VERSION) }}
+          run-status: ${{ job.status }}
+          run-started-at: ${{ env.CI_STARTED_AT }}
+          run-ended-at: ${{ env.CI_ENDED_AT }}
