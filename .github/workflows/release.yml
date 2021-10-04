@@ -62,6 +62,15 @@ jobs:
 
       - name: Set CI end time
         run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
+
+      - name: Set run status
+        run: |
+        if [[ ${{ job.status }} == "Success" ]]; then
+        fi
+          echo "FAROS_RUN_STATUS=Success" >> $GITHUB_ENV
+        else
+          echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
+        fi
       
       - name: Send CI event to Faros - prod
         if: ${{ always() }}
@@ -72,7 +81,7 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
-          --run_status ${{ job.status == "success" && "Success" || "Failed" }} \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
@@ -86,7 +95,7 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
-          --run_status ${{ job.status == "success" && "Success" || "Failed" }} \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
