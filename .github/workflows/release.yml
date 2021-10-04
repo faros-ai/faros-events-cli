@@ -75,7 +75,7 @@ jobs:
         run: |
           ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
           -u ${{ env.FAROS_PROD_API_URL }} \
-          -g $FAROS_GRAPH \
+          -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
@@ -89,7 +89,7 @@ jobs:
         run: |
           ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
           -u ${{ env.FAROS_DEV_API_URL }} \
-          -g $FAROS_GRAPH \
+          -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
@@ -103,7 +103,7 @@ jobs:
         run: |
           ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
           -u ${{ env.FAROS_PROD_API_URL }} \
-          -g $FAROS_GRAPH \
+          -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
@@ -117,7 +117,7 @@ jobs:
         run: |
           ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
           -u ${{ env.FAROS_DEV_API_URL }} \
-          -g $FAROS_GRAPH \
+          -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
