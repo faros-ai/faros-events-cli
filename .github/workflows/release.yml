@@ -68,6 +68,7 @@ jobs:
           -u ${{ env.FAROS_PROD_API_URL }} \
           -g faros \
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
+          --commit GitHub://faros-ai/faros-events-cli/$COMMIT_SHA \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ job.status }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
@@ -81,6 +82,7 @@ jobs:
           -u ${{ env.FAROS_DEV_API_URL }} \
           -g faros \
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
+          --commit GitHub://faros-ai/faros-events-cli/$COMMIT_SHA \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ job.status }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
