@@ -72,7 +72,7 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
-          --run_status ${{ job.status }} \
+          --run_status ${{ job.status == "success" && "Success" || "Failed" }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
@@ -86,7 +86,7 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
-          --run_status ${{ job.status }} \
+          --run_status ${{ job.status == "success" && "Success" || "Failed" }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
