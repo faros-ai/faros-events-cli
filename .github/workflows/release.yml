@@ -70,8 +70,8 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ job.status }} \
-          --run_started-at ${{ env.CI_STARTED_AT }} \
-          --run_ended-at ${{ env.CI_ENDED_AT }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
 
       - name: Send CI event to Faros - dev
@@ -83,6 +83,6 @@ jobs:
           --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ job.status }} \
-          --run_started-at ${{ env.CI_STARTED_AT }} \
-          --run_ended-at ${{ env.CI_ENDED_AT }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }} \
           --dry_run
