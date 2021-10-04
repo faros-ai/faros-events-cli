@@ -93,3 +93,31 @@ jobs:
           --run_status_details ${{ job.status }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }}
+
+      - name: Send CD event to Faros - prod
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_PROD_API_URL }} \
+          -g faros \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
+
+        - name: Send CD event to Faros - dev
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_DEV_API_URL }} \
+          -g faros \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
