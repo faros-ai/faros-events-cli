@@ -12,7 +12,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.2.4/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.2.5/faros_event.sh) and execute it:
 
 ```sh
 $ ./faros_event.sh help
@@ -21,7 +21,7 @@ $ ./faros_event.sh help
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-$ export FAROS_CLI_VERSION="v0.2.4"
+$ export FAROS_CLI_VERSION="v0.2.5"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -32,13 +32,13 @@ $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI
 1. Pull the image:
 
 ```sh
-$ docker pull farosai/faros-events-cli:v0.2.4
+$ docker pull farosai/faros-events-cli:v0.2.5
 ```
 
 2. Run it:
 
 ```sh
-$ docker run farosai/faros-events-cli:v0.2.4 help
+$ docker run farosai/faros-events-cli:v0.2.5 help
 ```
 
 ### :book: Event Types
