@@ -45,7 +45,7 @@ jobs:
           docker build . -t $EVENTS_CLI_LATEST_TAG \
           -t $EVENTS_CLI_TAG \
           -t $EVENTS_CLI_VERSION_TAG \
-          -t EVENTS_CLI_COMMIT_SHA_TAG \
+          -t $EVENTS_CLI_COMMIT_SHA_TAG \
           --label "faros-build-id=$GITHUB_RUN_ID" \
           --label "faros-ci-pipeline=$FAROS_PIPELINE_ID" \
           --label "faros-ci-org=faros-ai" \
