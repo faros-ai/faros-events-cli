@@ -65,12 +65,12 @@ jobs:
 
       - name: Set run status
         run: |
-        if [[ ${{ job.status }} == "Success" ]]; then
-        fi
-          echo "FAROS_RUN_STATUS=Success" >> $GITHUB_ENV
-        else
-          echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
-        fi
+          if [[ ${{ job.status }} == "Success" ]]; then
+          fi
+            echo "FAROS_RUN_STATUS=Success" >> $GITHUB_ENV
+          else
+            echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
+          fi
       
       - name: Send CI event to Faros - prod
         if: ${{ always() }}
