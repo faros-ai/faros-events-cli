@@ -105,7 +105,8 @@ jobs:
           -u ${{ env.FAROS_PROD_API_URL }} \
           -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
-          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID \
+          --deploy_status ${{ env.FAROS_RUN_STATUS }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ env.FAROS_RUN_STATUS }} \
           --run_status_details ${{ job.status }} \
@@ -119,7 +120,8 @@ jobs:
           -u ${{ env.FAROS_DEV_API_URL }} \
           -g ${{ env.FAROS_GRAPH }} \
           --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
-          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID \
+          --deploy_status ${{ env.FAROS_RUN_STATUS }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ env.FAROS_RUN_STATUS }} \
           --run_status_details ${{ job.status }} \
