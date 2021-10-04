@@ -1,9 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches:
-    - wm/release-workflow
   release:
     types: [created]
 
@@ -33,39 +30,37 @@ jobs:
           echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >> "$GITHUB_ENV"
           echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >> "$GITHUB_ENV"
           echo "EVENTS_CLI_VERSION_TAG=$EVENTS_CLI_IMAGE:$TAG_VERSION" >> "$GITHUB_ENV"
-          echo "EVENT_CLI_ARTIFACT=Docker://$EVENTS_CLI_IMAGE/Test" >> "$GITHUB_ENV"
+          echo "EVENTS_CLI_ARTIFACT=Docker://$EVENTS_CLI_IMAGE/$TAG_VERSION" >>"$GITHUB_ENV"
 
-      # echo "EVENT_CLI_ARTIFACT=Docker://$EVENTS_CLI_IMAGE/$TAG_VERSION" >>"$GITHUB_ENV"
+      - name: Docker login
+        uses: docker/login-action@v1.10.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # - name: Docker login
-      #   uses: docker/login-action@v1.10.0
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # - name: Publish Events CLI image
-      #   run: |
-      #     docker build . -t $EVENTS_CLI_LATEST_TAG \
-      #     -t $EVENTS_CLI_TAG \
-      #     -t $EVENTS_CLI_VERSION_TAG \
-      #     --label "faros-build-id=$GITHUB_RUN_ID" \
-      #     --label "faros-ci-pipeline=$FAROS_PIPELINE_ID" \
-      #     --label "faros-ci-org=faros-ai" \
-      #     --label "faros-ci-source=GitHub" \
-      #     --label "faros-commit-sha=$GITHUB_SHA" \
-      #     --label "faros-vcs-repo=faros-events-cli" \
-      #     --label "faros-vcs-org=faros-ai" \
-      #     --label "faros-vcs-source=GitHub" && \
-      #     docker push $EVENTS_CLI_LATEST_TAG && \
-      #     docker push $EVENTS_CLI_TAG && \
-      #     docker push $EVENTS_CLI_VERSION_TAG
+      - name: Publish Events CLI image
+        run: |
+          docker build . -t $EVENTS_CLI_LATEST_TAG \
+          -t $EVENTS_CLI_TAG \
+          -t $EVENTS_CLI_VERSION_TAG \
+          --label "faros-build-id=$GITHUB_RUN_ID" \
+          --label "faros-ci-pipeline=$FAROS_PIPELINE_ID" \
+          --label "faros-ci-org=faros-ai" \
+          --label "faros-ci-source=GitHub" \
+          --label "faros-commit-sha=$GITHUB_SHA" \
+          --label "faros-vcs-repo=faros-events-cli" \
+          --label "faros-vcs-org=faros-ai" \
+          --label "faros-vcs-source=GitHub" && \
+          docker push $EVENTS_CLI_LATEST_TAG && \
+          docker push $EVENTS_CLI_TAG && \
+          docker push $EVENTS_CLI_VERSION_TAG
 
       - name: Set CI end time
         run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
 
       - name: Set run status
         run: |
-          if [[ ${{ job.status }} == "Success" ]]; then
+          if [[ ${{ job.status }} == success ]]; then
             echo "FAROS_RUN_STATUS=Success" >> $GITHUB_ENV
           else
             echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
@@ -77,13 +72,13 @@ jobs:
           ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
           -u ${{ env.FAROS_PROD_API_URL }} \
           -g faros \
-          --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
-          --run_end_time ${{ env.CI_ENDED_AT }} \
-          --dry_run
+          --run_end_time ${{ env.CI_ENDED_AT }}
 
       - name: Send CI event to Faros - dev
         if: ${{ always() }}
@@ -91,10 +86,10 @@ jobs:
           ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
           -u ${{ env.FAROS_DEV_API_URL }} \
           -g faros \
-          --artifact ${{ env.EVENT_CLI_ARTIFACT }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
           --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
           --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
           --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
           --run_start_time ${{ env.CI_STARTED_AT }} \
-          --run_end_time ${{ env.CI_ENDED_AT }} \
-          --dry_run
+          --run_end_time ${{ env.CI_ENDED_AT }}
