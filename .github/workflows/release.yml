@@ -9,9 +9,17 @@ jobs:
     name: Publish Events CLI image
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      FAROS_DEV_API_URL: https://dev.api.faros.ai
+      FAROS_PROD_API_URL: https://prod.api.faros.ai
+      FAROS_PIPELINE_ID: faros-events-cli-release
+      FAROS_GRAPH: faros
     steps:
       - name: Check out
         uses: actions/checkout@v2.3.4
+
+      - name: Set CI start time # https://serverfault.com/a/151112
+        run: echo "CI_STARTED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
 
       - name: Generate image tags
         id: gen-tags
@@ -20,9 +28,11 @@ jobs:
         run: |
           TAG="${GITHUB_REF:11}"
           TAG_VERSION="${TAG//v/}"
-          echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >>"$GITHUB_ENV"
-          echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >>"$GITHUB_ENV"
-          echo "EVENTS_CLI_VERSION_TAG=$EVENTS_CLI_IMAGE:$TAG_VERSION" >>"$GITHUB_ENV"
+          echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >> "$GITHUB_ENV"
+          echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >> "$GITHUB_ENV"
+          echo "EVENTS_CLI_VERSION_TAG=$EVENTS_CLI_IMAGE:$TAG_VERSION" >> "$GITHUB_ENV"
+          echo "EVENTS_CLI_COMMIT_SHA_TAG=$EVENTS_CLI_IMAGE:$COMMIT_SHA" >> "$GITHUB_ENV"
+          echo "EVENTS_CLI_ARTIFACT=Docker://$EVENTS_CLI_IMAGE/$TAG_VERSION" >> "$GITHUB_ENV"
 
       - name: Docker login
         uses: docker/login-action@v1.10.0
@@ -32,7 +42,86 @@ jobs:
 
       - name: Publish Events CLI image
         run: |
-          docker build . -t $EVENTS_CLI_LATEST_TAG -t $EVENTS_CLI_TAG -t $EVENTS_CLI_VERSION_TAG && \
+          docker build . -t $EVENTS_CLI_LATEST_TAG \
+          -t $EVENTS_CLI_TAG \
+          -t $EVENTS_CLI_VERSION_TAG \
+          -t $EVENTS_CLI_COMMIT_SHA_TAG \
+          --label "faros-build-id=$GITHUB_RUN_ID" \
+          --label "faros-ci-pipeline=$FAROS_PIPELINE_ID" \
+          --label "faros-ci-org=faros-ai" \
+          --label "faros-ci-source=GitHub" \
+          --label "faros-commit-sha=$GITHUB_SHA" \
+          --label "faros-vcs-repo=faros-events-cli" \
+          --label "faros-vcs-org=faros-ai" \
+          --label "faros-vcs-source=GitHub" && \
           docker push $EVENTS_CLI_LATEST_TAG && \
+          docker push $EVENTS_CLI_COMMIT_SHA_TAG && \
           docker push $EVENTS_CLI_TAG && \
           docker push $EVENTS_CLI_VERSION_TAG
+
+      - name: Set CI end time
+        run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
+
+      - name: Set run status
+        run: |
+          if [[ ${{ job.status }} == success ]]; then
+            echo "FAROS_RUN_STATUS=Success" >> $GITHUB_ENV
+          else
+            echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
+          fi
+      
+      - name: Send CI event to Faros - prod
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_PROD_API_URL }} \
+          -g ${{ env.FAROS_GRAPH }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
+
+      - name: Send CI event to Faros - dev
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CI -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_DEV_API_URL }} \
+          -g ${{ env.FAROS_GRAPH }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --commit GitHub://faros-ai/faros-events-cli/${{ github.sha }} \
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
+
+      - name: Send CD event to Faros - prod
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_PROD_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_PROD_API_URL }} \
+          -g ${{ env.FAROS_GRAPH }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
+
+        - name: Send CD event to Faros - dev
+        if: ${{ always() }}
+        run: |
+          ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
+          -u ${{ env.FAROS_DEV_API_URL }} \
+          -g ${{ env.FAROS_GRAPH }} \
+          --artifact ${{ env.EVENTS_CLI_ARTIFACT }} \
+          --deploy GitHub://faros-events-cli/Prod/$GITHUB_RUN_ID
+          --run GitHub://faros-ai/${{ env.FAROS_PIPELINE_ID }}/$GITHUB_RUN_ID \
+          --run_status ${{ env.FAROS_RUN_STATUS }} \
+          --run_status_details ${{ job.status }} \
+          --run_start_time ${{ env.CI_STARTED_AT }} \
+          --run_end_time ${{ env.CI_ENDED_AT }}
