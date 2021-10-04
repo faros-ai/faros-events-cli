@@ -69,7 +69,7 @@ jobs:
           else
             echo "FAROS_RUN_STATUS=Failed" >> $GITHUB_ENV
           fi
-      
+
       - name: Send CI event to Faros - prod
         if: ${{ always() }}
         run: |
@@ -113,7 +113,7 @@ jobs:
           --run_start_time ${{ env.CI_STARTED_AT }} \
           --run_end_time ${{ env.CI_ENDED_AT }}
 
-        - name: Send CD event to Faros - dev
+      - name: Send CD event to Faros - dev
         if: ${{ always() }}
         run: |
           ./faros_event.sh CD -k ${{ secrets.HEPHAESTUS_DEV_FAROS_API_KEY }} \
