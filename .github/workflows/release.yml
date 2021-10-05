@@ -21,13 +21,15 @@ jobs:
       - name: Set CI start time # https://serverfault.com/a/151112
         run: echo "CI_STARTED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
 
+      # GITHUB_REF looks like: refs/tags/v0.2.5
+      # ${GITHUB_REF:10} ignores the first 10 characters leaving v0.2.5
       - name: Generate image tags
         id: gen-tags
         env:
           EVENTS_CLI_IMAGE: farosai/faros-events-cli
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          TAG="${GITHUB_REF:11}"
+          TAG="${GITHUB_REF:10}"
           TAG_VERSION="${TAG//v/}"
           echo "EVENTS_CLI_LATEST_TAG=$EVENTS_CLI_IMAGE:latest" >> "$GITHUB_ENV"
           echo "EVENTS_CLI_TAG=$EVENTS_CLI_IMAGE:$TAG" >> "$GITHUB_ENV"
