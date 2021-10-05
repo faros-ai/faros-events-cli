@@ -315,11 +315,15 @@ function processEventTypes() {
     if ((ci_event)); then
         resolveCIInput
         addCIObjectsToEvent
+        if !((use_commit)); then
+            # Not dummy artifact - add cicd_Repository
+            addCICDRepositoryToEvent
+        fi
     elif ((cd_event)); then
         resolveCDInput
         addCDObjectsToEvent
         if ((use_commit)); then
-            # Dummy Artifact will be added
+            # Dummy artifact will be added
             addCIObjectsToEvent
         fi
     fi
@@ -450,6 +454,7 @@ function resolveCIInput() {
     # Required fields:
     parseCommitUri
 
+    use_commit=0
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
         parseArtifactUri
     else
@@ -458,6 +463,7 @@ function resolveCIInput() {
         artifact_repo=$vcs_repo
         artifact_org=$vcs_org
         artifact_source=$vcs_source
+        use_commit=1
     fi 
 }
 
@@ -656,6 +662,23 @@ function makeArtifactCommitAssociation() {
     )
 }
 
+function makeArtifactRepository() {
+    cicd_Repository=$( jq -n \
+        --arg artifact_repo "$artifact_repo" \
+        --arg artifact_org "$artifact_org" \
+        --arg artifact_source "$artifact_source" \
+        '{
+            "cicd_Repository": {
+                "uid": $artifact_repo,
+                "organization": {
+                    "uid": $artifact_org,
+                    "source": $artifact_source
+                }
+            }
+        }'
+    )
+}
+
 function makeBuild() {
     cicd_Build=$( jq -n \
         --arg build "$build" \
@@ -775,6 +798,13 @@ function addCICDObjectsToEvent() {
     request_body=$(jq ".entries += [
         $cicd_Organization,
         $cicd_Pipeline
+    ]" <<< $request_body)
+}
+
+function addCICDRepositoryToEvent() {
+    makeArtifactRepository
+    request_body=$(jq ".entries += [
+        $cicd_Repository
     ]" <<< $request_body)
 }
 
