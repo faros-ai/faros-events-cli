@@ -25,6 +25,7 @@ jobs:
         id: gen-tags
         env:
           EVENTS_CLI_IMAGE: farosai/faros-events-cli
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           TAG="${GITHUB_REF:11}"
           TAG_VERSION="${TAG//v/}"
