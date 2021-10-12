@@ -66,7 +66,7 @@ $ ./faros_event.sh CD -k "<faros_api_key>" \
     --deploy_end_time "1626804357000"
 ```
 
-Every time a artifact is deployed to an environment, you can send an event.
+Every time an artifact is deployed to an environment, you can send an event.
 
 ![When to send an event](resources/events.png)
 
