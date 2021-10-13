@@ -66,6 +66,10 @@ $ ./faros_event.sh CD -k "<faros_api_key>" \
     --deploy_end_time "1626804357000"
 ```
 
+Every time an artifact is deployed to an environment, you can send an event.
+
+![When to send an event](resources/events.png)
+
 ### Arguments
 
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
