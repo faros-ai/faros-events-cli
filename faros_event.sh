@@ -415,7 +415,7 @@ function resolveCDInput() {
     fi
     if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
         if ((artifact_present)); then
-            err "CD cannot have both --artifact and --commit information"
+            err "CD event cannot have both --artifact and --commit information"
             fail
         fi
         parseCommitUri

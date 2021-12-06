@@ -114,7 +114,7 @@ Describe 'faros_event.sh'
         )
       }
       When call cd_event_test
-      The output should equal 'CD cannot have both --artifact and --commit information Failed.'
+      The output should equal 'CD event cannot have both --artifact and --commit information Failed.'
     End
 
     It 'requires --deploy'
