@@ -407,10 +407,17 @@ function resolveCDInput() {
     deploy_status=${deploy_status:-$FAROS_DEPLOY_STATUS}
 
     # Artifact or Commit required for CD event
+    artifact_present=0
     use_commit=0
     if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
         parseArtifactUri
-    elif ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
+        artifact_present=1
+    fi
+    if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
+        if ((artifact_present)); then
+            err "CD cannot have both --artifact and --commit information"
+            fail
+        fi
         parseCommitUri
 
         # Populate dummy Artifact with commit information
@@ -419,7 +426,8 @@ function resolveCDInput() {
         artifact_org=$vcs_org
         artifact_source=$vcs_source
         use_commit=1
-    else
+    fi
+    if ! ((artifact_present)) && ! ((use_commit)); then
         err "CD event requires --artifact or --commit information"
         fail
     fi 

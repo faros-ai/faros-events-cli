@@ -101,6 +101,22 @@ Describe 'faros_event.sh'
       The output should equal 'CD event requires --artifact or --commit information Failed.'
     End
 
+    It 'fails when artifact and commit both present'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status Success \
+          --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
+          --deploy_status "Success"
+        )
+      }
+      When call cd_event_test
+      The output should equal 'CD cannot have both --artifact and --commit information Failed.'
+    End
+
     It 'requires --deploy'
       cd_event_test() {
         echo $(
