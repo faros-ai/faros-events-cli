@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-version="0.2.5"
-canonical_model_version="0.8.13"
+version="0.2.6"
+canonical_model_version="0.10.4"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "sed" "awk")
