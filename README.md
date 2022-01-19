@@ -147,7 +147,7 @@ $ ./faros_event.sh CD -k "<api_key>" \
     --deploy_status "Success" \
     --deploy_start_time "1626804356000" \
     --deploy_end_time "1626804357000" \
-    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b" \
+    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b"
 ```
 
 ---
