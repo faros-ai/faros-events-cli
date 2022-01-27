@@ -2,7 +2,7 @@ Describe 'faros_event.sh'
   export FAROS_DRY_RUN=1
   export FAROS_NO_FORMAT=1
   Describe 'CD event'
-    CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
+    CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4},"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2}}}'
 
     It 'constructs correct event when artifact included using flags'
       cd_event_test() {
@@ -51,7 +51,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithArtifactExpectedOutput"
     End
 
-    CDWithCommitExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
+    CDWithCommitExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2}}}'
     
     It 'constructs correct event when commmit included using flags'
       cd_event_test() {
@@ -110,7 +110,7 @@ Describe 'faros_event.sh'
         )
       }
       When call cd_event_test
-      The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success"}}}'
+      The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success"},"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"}}}'
     End
   End
 
