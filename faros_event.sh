@@ -6,14 +6,14 @@ version="0.3.0"
 canonical_model_version="0.10.6"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
-declare -a arr=("curl" "jq")
+declare -a arr=("curl" "jq" "sed" "awk")
 for i in "${arr[@]}"; do
     which $i &> /dev/null || 
         { echo "Error: $i is required." && missing_require=1; }
 done
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl, and jq are available before running the script."
+    echo "Please ensure curl, jq, sed, and an implementation of awk (we recommend gawk) are available before running the script."
     exit 1
 fi
 
@@ -89,7 +89,7 @@ function help() {
     echo "--commit                | Yes | URI of the form: $commit_uri_form"
     echo "--artifact              | Yes | URI of the form: $artifact_uri_form"
     echo "--run                   |     | URI of the form: $run_uri_form"
-    echo "--run_status            | *1  | ${run_statuses}"
+    echo "--run_status            | *1  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019"
@@ -101,7 +101,7 @@ function help() {
     echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
     echo "--deploy                | Yes | URI of the form: $deploy_uri_form *1"
-    echo "--deploy_status         | Yes | ${deploy_statuses}"
+    echo "--deploy_status         | Yes | $deploy_statuses"
     echo "--artifact              | *2  | URI of the form: $artifact_uri_form"
     echo "--commit                | *2  | URI of the form: $commit_uri_form"
     echo "--deploy_status_details |     |"
@@ -110,12 +110,12 @@ function help() {
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
     echo "--run                   |     | URI of the form: $run_uri_form"
-    echo "--run_status            | *3  | ${run_statuses}"
+    echo "--run_status            | *3  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019"
     echo "--run_end_time          |     | e.g. 1626804346019"
-    echo "*1 env must be: ${envs}"
+    echo "*1 env must be: $envs"
     echo "*2 Either --artifact or --commit required"
     echo "*3 If --run included"
     echo
@@ -136,7 +136,7 @@ main() {
     set -- ${POSITIONAL[@]:-}   # Restore positional args
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
-    processEventTypes           # resolve input and populate event
+    processEventTypes           # Resolve input and populate event
 
     if ((debug)); then
         echo "Faros url: $url"
@@ -311,10 +311,10 @@ function processEventTypes() {
         event_type="CD"
         makeEvent
         resolveCDInput
+        addDeployToData
         addArtifactToData
         addCommitToData
         addRunToData
-        addDeployToData
     fi
 }
 
