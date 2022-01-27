@@ -2,7 +2,7 @@ Describe 'faros_event.sh'
   export FAROS_DRY_RUN=1
   export FAROS_NO_FORMAT=1
   Describe 'CD event'
-    CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>"},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
+    CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
 
     It 'constructs correct event when artifact included using flags'
       cd_event_test() {
@@ -51,7 +51,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithArtifactExpectedOutput"
     End
 
-    CDWithCommitExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
+    CDWithCommitExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4}}}'
     
     It 'constructs correct event when commmit included using flags'
       cd_event_test() {
@@ -110,13 +110,13 @@ Describe 'faros_event.sh'
         )
       }
       When call cd_event_test
-      The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>"},"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","status":"Success"}}}'
+      The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"deploy":{"source":"<deploy_source>","application":"<app_name>","environment":"QA","id":"<deploy_uid>","status":"Success"}}}'
     End
   End
 
   Describe 'CI event'
 
-    CIWithArtifactExpectedOutput='{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","status":"Success"}}}'
+    CIWithArtifactExpectedOutput='{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success"}}}'
 
     It 'constructs correct event when artifact included using flags'
       ci_event_test() {
@@ -147,7 +147,7 @@ Describe 'faros_event.sh'
       The output should include "$CIWithArtifactExpectedOutput"
     End
 
-    CIWithoutArtifactExpectedOutput='{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2}}}'
+    CIWithoutArtifactExpectedOutput=' {"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"source":"<cicd_source>","organization":"<cicd_organization>","pipeline":"<cicd_pipeline>","id":"<build_uid>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2}}}'
 
     It 'constructs correct event when artifact excluded using flags'
       ci_event_test() {
@@ -191,7 +191,7 @@ Describe 'faros_event.sh'
         )
       }
       When call ci_event_test
-      The output should include '{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"}}}'
+      The output should include '{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event-0.3.0","data":{"artifact":{"source":"<artifact_source>","organization":"<artifact_org>","repository":"<artifact_repo>","id":"<artifact>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"}}}'
     End
   End
 
@@ -242,7 +242,7 @@ Describe 'faros_event.sh'
         )
       }
       When call bad_input_test "bad://uri"
-      The output should equal 'Resource URI could not be parsed: bad://uri The URI should be of the form: source://org/repo/commit Failed.'
+      The output should equal 'Resource URI could not be parsed: bad://uri The URI should be of the form: commit_source://commit_organization/commit_repository/commit_sha Failed.'
     End
   End
 End

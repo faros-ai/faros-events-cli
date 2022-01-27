@@ -29,6 +29,11 @@ run_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOY_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deploy_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOY_STATUSES[*]}")")
 
+commit_uri_form="commit_source://commit_organization/commit_repository/commit_sha"
+artifact_uri_form="artifact_source://artifact_organization/artifact_repository/artifact_id"
+run_uri_form="run_source://run_organization/run_pipeline/run_id"
+deploy_uri_form="deploy_source://deploy_application/deploy_environment/deploy_id"
+
 # Script settings' defaults
 dry_run=${FAROS_DRY_RUN:-0}
 silent=${FAROS_SILENT:-0}
@@ -81,9 +86,9 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
-    echo "--commit                | Yes | URI of the form: source://org/repo/commit"
-    echo "--artifact              | Yes | URI of the form: source://org/repo/artifact"
-    echo "--run                   |     | URI of the form: source://org/pipeline/run"
+    echo "--commit                | Yes | URI of the form: $commit_uri_form"
+    echo "--artifact              | Yes | URI of the form: $artifact_uri_form"
+    echo "--run                   |     | URI of the form: $run_uri_form"
     echo "--run_status            | *1  | ${run_statuses}"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
@@ -95,16 +100,16 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req | Allowed Values"
     echo "-----------------------------------------------------------------------------"
-    echo "--deploy                | Yes | URI of the form: source://app/env/deploy *1"
+    echo "--deploy                | Yes | URI of the form: $deploy_uri_form *1"
     echo "--deploy_status         | Yes | ${deploy_statuses}"
-    echo "--artifact              | *2  | URI of the form: source://org/repo/artifact"
-    echo "--commit                | *2  | URI of the form: source://org/repo/commit"
+    echo "--artifact              | *2  | URI of the form: $artifact_uri_form"
+    echo "--commit                | *2  | URI of the form: $commit_uri_form"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
-    echo "--run                   |     | URI of the form: source://org/pipeline/run"
+    echo "--run                   |     | URI of the form: $run_uri_form"
     echo "--run_status            | *3  | ${run_statuses}"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
@@ -120,6 +125,7 @@ function help() {
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
+    echo "--validate_only     Only validate event body against event api."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -232,6 +238,9 @@ function parseFlags() {
             --dry_run)
                 dry_run=1
                 shift ;;
+            --validate_only)
+                validate_only="true"
+                shift ;;
             -s|--silent)
                 silent=1
                 shift ;;
@@ -326,6 +335,7 @@ function resolveInput() {
     
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
+    validate_only=${validate_only:-"false"}
 }
 
 function resolveDefaults() {
@@ -400,24 +410,24 @@ function parseUri() {
 }
 
 function parseCommitUri() {
-    parseUri "${commit_uri:-$FAROS_COMMIT}" "vcs_source" "vcs_org" "vcs_repo" "commit_sha" "source://org/repo/commit"
+    parseUri "${commit_uri:-$FAROS_COMMIT}" "commit_source" "commit_org" "commit_repo" "commit_sha" $commit_uri_form
 
     if !((no_lowercase_vcs)); then
-        vcs_org=$(echo "$vcs_org" | awk '{print tolower($0)}')
-        vcs_repo=$(echo "$vcs_repo" | awk '{print tolower($0)}')
+        commit_org=$(echo "$commit_org" | awk '{print tolower($0)}')
+        commit_repo=$(echo "$commit_repo" | awk '{print tolower($0)}')
     fi
 }
 
 function parseRunUri() {
-    parseUri "${run_uri:-$FAROS_RUN}" "cicd_source" "cicd_org" "pipeline" "build" "source://org/pipeline/run"
+    parseUri "${run_uri:-$FAROS_RUN}" "run_source" "run_org" "run_pipeline" "run_id" $run_uri_form
 }
 
 function parseDeployUri() {
-    parseUri "${deploy_uri:-$FAROS_DEPLOY}" "deploy_source" "app" "deploy_env" "deploy" "source://app/env/deploy"
+    parseUri "${deploy_uri:-$FAROS_DEPLOY}" "deploy_source" "deploy_app" "deploy_env" "deploy_id" $deploy_uri_form
 }
 
 function parseArtifactUri() {
-    parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact" "source://org/repo/artifact"    
+    parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact_id" $artifact_uri_form    
 }
 
 function makeEvent() {
@@ -427,18 +437,27 @@ function makeEvent() {
         '{ 
             "type": $event_type,
             "version": "0.0.1",
-            "origin": $origin
+            "origin": $origin,
         }'
     )
 }
 
 function addDeployToData() {
-    if ! [ -z "$deploy_uri" ]; then
+    if ! [ -z "$deploy_source" ] &&
+       ! [ -z "$deploy_app" ] &&
+       ! [ -z "$deploy_env" ] &&
+       ! [ -z "$deploy_id" ]; then
         request_body=$(jq \
-            --arg deploy_uri "$deploy_uri" \
+            --arg deploy_source "$deploy_source" \
+            --arg deploy_app "$deploy_app" \
+            --arg deploy_env "$deploy_env" \
+            --arg deploy_id "$deploy_id" \
             '.data.deploy +=
             {
-                "uri": $deploy_uri
+                "source": $deploy_source,
+                "application": $deploy_app,
+                "environment": $deploy_env,
+                "id": $deploy_id
             }' <<< $request_body
         )
     fi
@@ -491,44 +510,63 @@ function addDeployToData() {
 
 function addCommitToData() {
     if ! [ -z "$commit_sha" ] && 
-       ! [ -z "$vcs_repo" ] &&
-       ! [ -z "$vcs_org" ] && 
-       ! [ -z "$vcs_source" ]; then
+       ! [ -z "$commit_repo" ] &&
+       ! [ -z "$commit_org" ] && 
+       ! [ -z "$commit_source" ]; then
         request_body=$(jq \
             --arg commit_sha "$commit_sha" \
-            --arg vcs_repo "$vcs_repo" \
-            --arg vcs_org "$vcs_org" \
-            --arg vcs_source "$vcs_source" \
+            --arg commit_repo "$commit_repo" \
+            --arg commit_org "$commit_org" \
+            --arg commit_source "$commit_source" \
             '.data.commit +=
             {
                 "sha": $commit_sha,
-                "repository": $vcs_repo,
-                "organization": $vcs_org,
-                "source": $vcs_source
+                "repository": $commit_repo,
+                "organization": $commit_org,
+                "source": $commit_source
             }' <<< $request_body
         )
     fi
 }
 
 function addArtifactToData() {
-    if ! [ -z "$artifact_uri" ]; then
+    if ! [ -z "$artifact_source" ] &&
+       ! [ -z "$artifact_org" ] &&
+       ! [ -z "$artifact_repo" ] &&
+       ! [ -z "$artifact_id" ]; then
         request_body=$(jq \
-            --arg artifact_uri "$artifact_uri" \
+            --arg artifact_source "$artifact_source" \
+            --arg artifact_org "$artifact_org" \
+            --arg artifact_repo "$artifact_repo" \
+            --arg artifact_id "$artifact_id" \
             '.data.artifact +=
             {
-                "uri": $artifact_uri
+                "source": $artifact_source,
+                "organization": $artifact_org,
+                "repository": $artifact_repo,
+                "id": $artifact_id
+
             }' <<< $request_body
         )
     fi
 }
 
 function addRunToData() {
-    if ! [ -z "$run_uri" ]; then
+    if ! [ -z "$run_source" ] &&
+       ! [ -z "$run_org" ] &&
+       ! [ -z "$run_pipeline" ] &&
+       ! [ -z "$run_id" ]; then
         request_body=$(jq \
-            --arg run_uri "$run_uri" \
+            --arg run_source "$run_source" \
+            --arg run_org "$run_org" \
+            --arg run_pipeline "$run_pipeline" \
+            --arg run_id "$run_id" \
             '.data.run +=
             {
-                "uri": $run_uri
+                "source": $run_source,
+                "organization": $run_org,
+                "pipeline": $run_pipeline,
+                "id": $run_id
             }' <<< $request_body
         )
     fi
@@ -575,7 +613,7 @@ function sendEventToFaros() {
 
     http_response=$(curl --retry 5 --retry-delay 5 \
         --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        $url/graphs/$graph/events \
+        "$url/graphs/$graph/events?validateOnly=$validate_only" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body") 
