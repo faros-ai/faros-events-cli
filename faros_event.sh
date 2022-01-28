@@ -125,6 +125,7 @@ function help() {
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
+    echo "--no_build_object   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
     echo
     echo "For more usage information please visit: $github_url"
@@ -238,6 +239,9 @@ function parseFlags() {
             --dry_run)
                 dry_run=1
                 shift ;;
+            --no_build_object)
+                no_build_object="true"
+                shift ;;
             --validate_only)
                 validate_only="true"
                 shift ;;
@@ -335,6 +339,7 @@ function resolveInput() {
     
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
+    no_build_object=${no_build_object:-"false"}
     validate_only=${validate_only:-"false"}
 }
 
@@ -613,7 +618,7 @@ function sendEventToFaros() {
 
     http_response=$(curl --retry 5 --retry-delay 5 \
         --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&noBuild=$no_build_object" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body") 
