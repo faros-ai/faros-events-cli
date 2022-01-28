@@ -20,7 +20,7 @@ fi
 # Defaults
 FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
-FAROS_ORIGIN_DEFAULT="Faros_Script_Event-$version"
+FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -29,10 +29,10 @@ run_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOY_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deploy_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOY_STATUSES[*]}")")
 
-commit_uri_form="commit_source://commit_organization/commit_repository/commit_sha"
-artifact_uri_form="artifact_source://artifact_organization/artifact_repository/artifact_id"
-run_uri_form="run_source://run_organization/run_pipeline/run_id"
-deploy_uri_form="deploy_source://deploy_application/deploy_environment/deploy_id"
+commit_uri_form="source://organization/repository/commit_sha"
+artifact_uri_form="source://organization/repository/artifact_id"
+run_uri_form="source://organization/pipeline/run_id"
+deploy_uri_form="source://application/environment/deploy_id"
 
 # Script settings' defaults
 dry_run=${FAROS_DRY_RUN:-0}
@@ -65,9 +65,9 @@ function help() {
     echo
     printf "${BLUE}Example Event:${NC}\\n"
     echo "./faros_event.sh CD -k \"<faros_api_key>\" \\"
-    echo "--artifact \"<artifact_source>://<org>/<repo>/<artifact_uid>\" \\"
-    echo "--deploy \"<deploy_source>://<app_name>/<environment>/<deploy_uid>\" \\"
-    echo "--deploy_status \"Success\" \\"
+    echo "--artifact \"$artifact_uri_form\" \\"
+    echo "--deploy \"$deploy_uri_form\" \\"
+    echo "--deploy_status \"Success\""
     echo 
     printf "${RED}Arguments:${NC}\\n"
     echo "Arguments can be provided either by flag or by environment variable."
@@ -84,11 +84,11 @@ function help() {
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
-    echo "Argument                | Req | Allowed Values"
+    echo "Argument                | Req | Allowed Values / URI form"
     echo "-----------------------------------------------------------------------------"
-    echo "--commit                | Yes | URI of the form: $commit_uri_form"
-    echo "--artifact              | Yes | URI of the form: $artifact_uri_form"
-    echo "--run                   |     | URI of the form: $run_uri_form"
+    echo "--commit                | Yes | $commit_uri_form"
+    echo "--artifact              | Yes | $artifact_uri_form"
+    echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *1  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
@@ -98,18 +98,18 @@ function help() {
     echo   
     printf "${BLUE}CD Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
-    echo "Argument                | Req | Allowed Values"
+    echo "Argument                | Req | Allowed Values / URI form"
     echo "-----------------------------------------------------------------------------"
-    echo "--deploy                | Yes | URI of the form: $deploy_uri_form *1"
+    echo "--deploy                | Yes | $deploy_uri_form *1"
     echo "--deploy_status         | Yes | $deploy_statuses"
-    echo "--artifact              | *2  | URI of the form: $artifact_uri_form"
-    echo "--commit                | *2  | URI of the form: $commit_uri_form"
+    echo "--artifact              | *2  | $artifact_uri_form"
+    echo "--commit                | *2  | $commit_uri_form"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019"
     echo "--deploy_end_time       |     | e.g. 1626804346019"
-    echo "--run                   |     | URI of the form: $run_uri_form"
+    echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *3  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
@@ -443,21 +443,21 @@ function makeEvent() {
 }
 
 function addDeployToData() {
-    if ! [ -z "$deploy_source" ] &&
-       ! [ -z "$deploy_app" ] &&
+    if ! [ -z "$deploy_id" ] &&
        ! [ -z "$deploy_env" ] &&
-       ! [ -z "$deploy_id" ]; then
+       ! [ -z "$deploy_app" ] &&
+       ! [ -z "$deploy_source" ]; then
         request_body=$(jq \
-            --arg deploy_source "$deploy_source" \
+            --arg deploy_id "$deploy_id" \
             --arg deploy_app "$deploy_app" \
             --arg deploy_env "$deploy_env" \
-            --arg deploy_id "$deploy_id" \
+            --arg deploy_source "$deploy_source" \
             '.data.deploy +=
             {
-                "source": $deploy_source,
-                "application": $deploy_app,
+                "id": $deploy_id,
                 "environment": $deploy_env,
-                "id": $deploy_id
+                "application": $deploy_app,
+                "source": $deploy_source,
             }' <<< $request_body
         )
     fi
@@ -493,7 +493,7 @@ function addDeployToData() {
             --arg deploy_start_time "$deploy_start_time" \
             '.data.deploy +=
             {
-                startTime: $deploy_start_time|tonumber
+                "startTime": $deploy_start_time|tonumber
             }' <<< $request_body
         )
     fi
@@ -502,7 +502,7 @@ function addDeployToData() {
             --arg deploy_end_time "$deploy_end_time" \
             '.data.deploy +=
             {
-                endTime: $deploy_end_time|tonumber
+                "endTime": $deploy_end_time|tonumber
             }' <<< $request_body
         )
     fi
@@ -530,21 +530,21 @@ function addCommitToData() {
 }
 
 function addArtifactToData() {
-    if ! [ -z "$artifact_source" ] &&
-       ! [ -z "$artifact_org" ] &&
+    if ! [ -z "$artifact_id" ] &&
        ! [ -z "$artifact_repo" ] &&
-       ! [ -z "$artifact_id" ]; then
+       ! [ -z "$artifact_org" ] &&
+       ! [ -z "$artifact_source" ]; then
         request_body=$(jq \
-            --arg artifact_source "$artifact_source" \
-            --arg artifact_org "$artifact_org" \
-            --arg artifact_repo "$artifact_repo" \
             --arg artifact_id "$artifact_id" \
+            --arg artifact_repo "$artifact_repo" \
+            --arg artifact_org "$artifact_org" \
+            --arg artifact_source "$artifact_source" \
             '.data.artifact +=
             {
-                "source": $artifact_source,
-                "organization": $artifact_org,
+                "id": $artifact_id,
                 "repository": $artifact_repo,
-                "id": $artifact_id
+                "organization": $artifact_org,
+                "source": $artifact_source
 
             }' <<< $request_body
         )
@@ -552,21 +552,21 @@ function addArtifactToData() {
 }
 
 function addRunToData() {
-    if ! [ -z "$run_source" ] &&
+    if ! [ -z "$run_id" ] &&
        ! [ -z "$run_org" ] &&
        ! [ -z "$run_pipeline" ] &&
-       ! [ -z "$run_id" ]; then
+       ! [ -z "$run_source" ]; then
         request_body=$(jq \
-            --arg run_source "$run_source" \
-            --arg run_org "$run_org" \
-            --arg run_pipeline "$run_pipeline" \
             --arg run_id "$run_id" \
+            --arg run_pipeline "$run_pipeline" \
+            --arg run_org "$run_org" \
+            --arg run_source "$run_source" \
             '.data.run +=
             {
-                "source": $run_source,
-                "organization": $run_org,
+                "id": $run_id,
                 "pipeline": $run_pipeline,
-                "id": $run_id
+                "organization": $run_org,
+                "source": $run_source
             }' <<< $request_body
         )
     fi
