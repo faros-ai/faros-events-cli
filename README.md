@@ -10,7 +10,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.2.6/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.3.0/faros_event.sh) and execute it:
 
 ```sh
 $ ./faros_event.sh help
