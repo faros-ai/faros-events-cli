@@ -43,6 +43,7 @@ no_format=${FAROS_NO_FORMAT:-0}
 # Theme
 RED='\033[0;31m'
 BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
 GREY='\033[30;1m'
 NC='\033[0m' # No Color
 
@@ -125,7 +126,7 @@ function help() {
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
-    echo "--no_build_object   Do not include a cicd_Build in event."
+    echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
     echo
     echo "For more usage information please visit: $github_url"
@@ -144,6 +145,8 @@ main() {
         echo "Faros graph: $graph"
         echo "Dry run: $dry_run"
         echo "Silent: $silent"
+        echo "No Lowercase VCS: $no_lowercase_vcs"
+        echo "Skip Saving Run: $skip_saving_run"
         echo "Debug: $debug"
     fi
 
@@ -240,7 +243,11 @@ function parseFlags() {
                 dry_run=1
                 shift ;;
             --no_build_object)
-                no_build_object="true"
+                warn "no_build_object flag is deprecated, use skip_saving_run"
+                skip_saving_run="true"
+                shift ;;
+            --skip_saving_run)
+                skip_saving_run="true"
                 shift ;;
             --validate_only)
                 validate_only="true"
@@ -339,7 +346,7 @@ function resolveInput() {
     
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
-    no_build_object=${no_build_object:-"false"}
+    skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
 }
 
@@ -618,7 +625,7 @@ function sendEventToFaros() {
 
     http_response=$(curl --retry 5 --retry-delay 5 \
         --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&noBuild=$no_build_object" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body") 
@@ -634,6 +641,8 @@ function fmtLog(){
         fmtTime="[$(date +"%Y-%m-%d %T"])"
         if [ $1 == "error" ]; then
             fmtLog="$fmtTime ${RED}ERROR${NC} "
+        elif [ $1 == "warn" ]; then
+            fmtLog="$fmtTime ${YELLOW}WARN${NC} "
         else
             fmtLog="$fmtTime ${BLUE}INFO${NC} "
         fi
@@ -658,6 +667,13 @@ function printLog() {
 function log() {
     if !((silent)); then
         fmtLog "info"
+        printLog "$*"
+    fi
+}
+
+function warn() {
+    if !((silent)); then
+        fmtLog "warn"
         printLog "$*"
     fi
 }

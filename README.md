@@ -85,7 +85,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;dry_run          | Print the event instead of sending. (no value accepted, true if flag is present)                                                         |          | False                       |
 | &#x2011;&#x2011;silent           | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                      |          | False                       |
 | &#x2011;&#x2011;debug            | Helpful information will be printed. (no value accepted, true if flag is present)                                                        |          | False                       |
-| &#x2011;&#x2011;no_build_object  | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                     |          | False                       |
+| &#x2011;&#x2011;skip_saving_run  | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                     |          | False                       |
 | &#x2011;&#x2011;no_lowercase_vcs | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)                                       |          | False                       |
 | &#x2011;&#x2011;validate_only    | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)         |          | False                       |
 
