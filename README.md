@@ -10,7 +10,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.2.6/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.3.0/faros_event.sh) and execute it:
 
 ```sh
 $ ./faros_event.sh help
@@ -19,7 +19,7 @@ $ ./faros_event.sh help
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-$ export FAROS_CLI_VERSION="v0.2.6"
+$ export FAROS_CLI_VERSION="v0.3.0"
 $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -30,13 +30,13 @@ $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI
 1. Pull the image:
 
 ```sh
-$ docker pull farosai/faros-events-cli:v0.2.6
+$ docker pull farosai/faros-events-cli:v0.3.0
 ```
 
 2. Run it:
 
 ```sh
-$ docker run farosai/faros-events-cli:v0.2.6 help
+$ docker run farosai/faros-events-cli:v0.3.0 help
 ```
 
 ### :book: Event Types
@@ -47,10 +47,10 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
 
 ```sh
 $ ./faros_event.sh CI -k "<faros_api_key>" \
-    --run "<ci_source>://<ci_organization>/<ci_pipeline>/<run_id>" \
-    --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_id>" \
-    --run_status Success \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --run_status "Success" \
     --run_start_time "1626804346000" \
     --run_end_time "1626804358000"
 ```
@@ -59,9 +59,9 @@ $ ./faros_event.sh CI -k "<faros_api_key>" \
 
 ```sh
 $ ./faros_event.sh CD -k "<faros_api_key>" \
-    --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact_id>" \
-    --deploy "<deploy_source>://<application>/<deploy_env>/<deploy_id>" \
-    --deploy_status Success \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+    --deploy_status "Success" \
     --deploy_start_time "1626804356000" \
     --deploy_end_time "1626804357000"
 ```
@@ -86,7 +86,8 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;silent           | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                      |          | False                       |
 | &#x2011;&#x2011;debug            | Helpful information will be printed. (no value accepted, true if flag is present)                                                        |          | False                       |
 | &#x2011;&#x2011;no_build_object  | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                     |          | False                       |
-| &#x2011;&#x2011;no_lowercase_vcs | Do not lowercase vcs_organization and vcs_repo. (no value accepted, true if flag is present)                                             |          | False                       |
+| &#x2011;&#x2011;no_lowercase_vcs | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)                                       |          | False                       |
+| &#x2011;&#x2011;validate_only    | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)         |          | False                       |
 
 #### CI Event - `CI`
 
@@ -96,16 +97,16 @@ A `CI` event communicates the outcome of a code build pipeline execution, and it
 
 > You may need to scroll to the right to view the entire table.
 
-| Argument                           | Description                                                                                                                                                                        | Required                        | Default | Allowed Value                                               |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------- | ----------------------------------------------------------- |
-| &#x2011;&#x2011;commit             | The URI of the commit. (`<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)                     | Yes                             |         |                                                             |
-| &#x2011;&#x2011;artifact           | The URI of the artifact. (`<artifact_source>://<artifact_organization>/<artifact_repo>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) |                                 |         |                                                             |
-| &#x2011;&#x2011;run                | The URI of the job run that built the code. (`<ci_source>://<ci_organization>/<ci_pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                                  |                                 |         |                                                             |
-| &#x2011;&#x2011;run_status         | The status of the job run that built the code.                                                                                                                                     | If &#x2011;&#x2011;run provided |         | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
-| &#x2011;&#x2011;run_name           | The name of the job run that built the code.                                                                                                                                       |                                 | ""      |                                                             |
-| &#x2011;&#x2011;run_status_details | Any extra details about the status of the job run.                                                                                                                                 |                                 | ""      |                                                             |
-| &#x2011;&#x2011;run_start_time     | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                              |                                 | Now     |                                                             |
-| &#x2011;&#x2011;run_end_time       | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                |                                 | Now     |                                                             |
+| Argument                           | Description                                                                                                                                                   | Required                        | Allowed Value                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------- |
+| &#x2011;&#x2011;commit             | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Yes                             |                                                             |
+| &#x2011;&#x2011;artifact           | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) |                                 |                                                             |
+| &#x2011;&#x2011;run                | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                      |                                 |                                                             |
+| &#x2011;&#x2011;run_status         | The status of the job run that built the code.                                                                                                                | If &#x2011;&#x2011;run provided | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
+| &#x2011;&#x2011;run_name           | The name of the job run that built the code.                                                                                                                  |                                 |                                                             |
+| &#x2011;&#x2011;run_status_details | Any extra details about the status of the job run.                                                                                                            |                                 |                                                             |
+| &#x2011;&#x2011;run_start_time     | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                         |                                 |                                                             |
+| &#x2011;&#x2011;run_end_time       | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                           |                                 |                                                             |
 
 #### CD Event - `CD`
 
@@ -115,23 +116,22 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 
 > You may need to scroll to the right to view the entire table.
 
-| Argument                              | Description                                                                                                                                                                        | Required                                                  | Default | Allowed Value                                                  |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<deploy_source>://<application>/<deploy_env>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                                              | Yes                                                       |         | `deploy_env`: Prod, Staging, QA, Dev, Sandbox, Custom          |
-| &#x2011;&#x2011;deploy_status         | The status of the deployment.                                                                                                                                                      | Yes                                                       |         | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;artifact              | The URI of the artifact. (`<artifact_source>://<artifact_organization>/<artifact_repo>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |         |                                                                |
-| &#x2011;&#x2011;commit                | The URI of the commit. (`<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)                     | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |         |                                                                |
-| &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                                                    |                                                           | ""      |                                                                |
-| &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                                                |                                                           | ""      |                                                                |
-| &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                                              |                                                           | ""      |                                                                |
-| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                           |                                                           | Now     |                                                                |
-| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                             |                                                           | Now     |                                                                |
-| &#x2011;&#x2011;run                   | The URI of the job run executing the deployment. (`<ci_source>://<ci_organization>/<ci_pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                             |                                                           |         |                                                                |
-| &#x2011;&#x2011;run_status            | The status of the job run executing the deployment.                                                                                                                                | If &#x2011;&#x2011;run provided                           |         | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
-| &#x2011;&#x2011;run_name              | The name of the job run executing the deployment.                                                                                                                                  |                                                           | ""      |                                                                |
-| &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                                        |                                                           | ""      |                                                                |
-| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                              |                                                           | Now     |                                                                |
-| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                                                |                                                           | Now     |                                                                |
+| Argument                              | Description                                                                                                                                                   | Required                                                  | Allowed Value                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Custom          |
+| &#x2011;&#x2011;deploy_status         | The status of the deployment.                                                                                                                                 | Yes                                                       | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
+| &#x2011;&#x2011;artifact              | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
+| &#x2011;&#x2011;commit                | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
+| &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                               |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                           |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                         |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                      |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                        |                                                           |                                                                |
+| &#x2011;&#x2011;run                   | The URI of the job run executing the deployment. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                 |                                                           |                                                                |
+| &#x2011;&#x2011;run_status            | The status of the job run executing the deployment.                                                                                                           | If &#x2011;&#x2011;run provided                           | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
+| &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                   |                                                           |                                                                |
+| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                         |                                                           |                                                                |
+| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                           |                                                           |                                                                |
 
 ### :herb: Real life examples
 
