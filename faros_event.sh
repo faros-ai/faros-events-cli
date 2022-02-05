@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-version="0.3.1"
+version="0.3.2"
 canonical_model_version="0.10.6"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -479,6 +479,15 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "status": $deploy_status
+            }' <<< $request_body
+        )
+    fi
+    if ! [ -z "$deploy_app_platform" ]; then
+        request_body=$(jq \
+            --arg deploy_app_platform "$deploy_app_platform" \
+            '.data.deploy +=
+            {
+                "applicationPlatform": $deploy_app_platform
             }' <<< $request_body
         )
     fi
