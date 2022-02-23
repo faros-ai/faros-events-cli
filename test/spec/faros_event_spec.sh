@@ -245,4 +245,96 @@ Describe 'faros_event.sh'
       The output should equal 'Resource URI could not be parsed: bad://uri The URI should be of the form: source://organization/repository/commit_sha Failed.'
     End
   End
+  Describe 'Community edition CI event'
+    cicd_organization_from_run='Calling Hasura rest endpoint cicd_organization_from_run with payload { "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_pipeline='Calling Hasura rest endpoint cicd_pipeline with payload { "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_build_with_start_end='Calling Hasura rest endpoint cicd_build_with_start_end with payload { "run_status": { "category": "Success", "detail": "Some extra details" }, "run_start_time": "1970-01-01T00:00:01Z", "run_end_time": "1970-01-01T00:00:02Z", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_artifact_with_build='Calling Hasura rest endpoint cicd_artifact_with_build with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_organization='Calling Hasura rest endpoint cicd_organization with payload { "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>" }'
+    cicd_repository='Calling Hasura rest endpoint cicd_repository with payload { "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>" }'
+    cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>" }'
+    cicd_artifact='Calling Hasura rest endpoint cicd_artifact with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>" }'
+    cicd_build='Calling Hasura rest endpoint cicd_build with payload { "run_status": { "category": "Success", "detail": "Some extra details" }, "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+
+    It 'All data present'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1" \
+          --run_end_time "2" \
+          --community_edition
+        )
+      }
+      When call ci_event_test
+      The output should include "$cicd_organization_from_run"
+      The output should include "$cicd_pipeline"
+      The output should include "$cicd_build_with_start_end"
+      The output should include "$cicd_artifact_with_build"
+      The output should include "$cicd_organization"
+      The output should include "$cicd_repository"
+      The output should include "$cicd_artifact_commit_association"
+    End
+    It 'No run data'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --community_edition
+        )
+      }
+      When call ci_event_test
+      The output should include "$cicd_organization"
+      The output should include "$cicd_repository"
+      The output should include "$cicd_artifact_commit_association"
+      The output should include "$cicd_artifact"
+    End
+    It 'No run start/end time'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --community_edition
+        )
+      }
+      When call ci_event_test
+      The output should include "$cicd_organization_from_run"
+      The output should include "$cicd_pipeline"
+      The output should include "$cicd_build"
+      The output should include "$cicd_artifact_with_build"
+      The output should include "$cicd_organization"
+      The output should include "$cicd_repository"
+      The output should include "$cicd_artifact_commit_association"
+    End
+It 'All data present and skip_saving_run'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1" \
+          --run_end_time "2" \
+          --community_edition \
+          --skip_saving_run
+        )
+      }
+      When call ci_event_test
+      The output should include "$cicd_artifact_with_build"
+      The output should include "$cicd_organization"
+      The output should include "$cicd_repository"
+      The output should include "$cicd_artifact_commit_association"
+    End
+  End
 End
