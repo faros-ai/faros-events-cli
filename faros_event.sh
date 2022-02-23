@@ -73,16 +73,17 @@ function help() {
     echo 
     printf "${RED}Arguments:${NC}\\n"
     echo "Arguments can be provided either by flag or by environment variable."
-    echo "By convension, you can switch to using environment variables by prefixing the"
+    echo "By convention, you can switch to using environment variables by prefixing the"
     echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and" 
     echo "--deploy becomes FAROS_DEPLOY"
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
-    echo "-k / --api_key          | Yes |"
+    echo "-k / --api_key          | *1 |"
     echo "-u / --url              |     | $FAROS_URL_DEFAULT"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "*1 Unless --community_edition specified"
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
@@ -129,6 +130,7 @@ function help() {
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
+    echo "--community_edition Events will be sent to local Hasura."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -152,25 +154,32 @@ main() {
         echo "Community edition: $community_edition"
     fi
 
-    log "Request Body:"
-    log "$request_body"
+    if !(($community_edition)); then
+        log "Request Body:"
+        log "$request_body"
 
-    if !(($dry_run)) && !(($community_edition)); then
-        sendEventToFaros
+        if !(($dry_run)); then
+            sendEventToFaros
 
-        # Log error response as an error and fail
-        if [ ! $http_response_status -eq 202 ]; then
-            err "[HTTP status: $http_response_status]"
-            err "Response Body:"
-            err "$http_response_body"
-            fail
+            # Log error response as an error and fail
+            if [ ! $http_response_status -eq 202 ]; then
+                err "[HTTP status: $http_response_status]"
+                err "Response Body:"
+                err "$http_response_body"
+                fail
+            else
+                log "[HTTP status ACCEPTED: $http_response_status]"
+                log "Response Body:"
+                log "$http_response_body"
+            fi
         else
-            log "[HTTP status ACCEPTED: $http_response_status]"
-            log "Response Body:"
-            log "$http_response_body"
+            log "Dry run: Event NOT sent to Faros."
         fi
     else
-        log "Dry run and/or Community edition: Event NOT sent to Faros."
+        if ((ci_event)); then
+            doCIMutations
+        fi
+        # TODO: doCEMutations
     fi
 
     log "Done."
@@ -323,9 +332,6 @@ function processEventTypes() {
         addArtifactToData
         addCommitToData
         addRunToData
-        if ((community_edition)); then
-            doCIMutations
-        fi
     elif ((cd_event)); then
         event_type="CD"
         makeEvent
@@ -334,7 +340,6 @@ function processEventTypes() {
         addArtifactToData
         addCommitToData
         addRunToData
-        # TODO: doCEMutations
     fi
 }
 
@@ -470,6 +475,8 @@ function make_mutation() {
             log "Response Body:"
             log "$http_response_body"
         fi
+    else
+        log "Dry run: Event NOT sent to Faros."
     fi
 }
 
