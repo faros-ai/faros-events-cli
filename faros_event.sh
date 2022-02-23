@@ -95,8 +95,8 @@ function help() {
     echo "--run_status            | *1  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
-    echo "--run_start_time        |     | e.g. 1626804346019"
-    echo "--run_end_time          |     | e.g. 1626804346019"
+    echo "--run_start_time        |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--run_end_time          |     | e.g. 1626804346019" (milliseconds since epoch)
     echo "*1 If --run included"
     echo   
     printf "${BLUE}CD Event Arguments:${NC}\\n"
@@ -110,14 +110,14 @@ function help() {
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
-    echo "--deploy_start_time     |     | e.g. 1626804346019"
-    echo "--deploy_end_time       |     | e.g. 1626804346019"
+    echo "--deploy_start_time     |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--deploy_end_time       |     | e.g. 1626804346019" (milliseconds since epoch)
     echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *3  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
-    echo "--run_start_time        |     | e.g. 1626804346019"
-    echo "--run_end_time          |     | e.g. 1626804346019"
+    echo "--run_start_time        |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--run_end_time          |     | e.g. 1626804346019" (milliseconds since epoch)
     echo "*1 env must be: $envs"
     echo "*2 Either --artifact or --commit required"
     echo "*3 If --run included"
@@ -343,8 +343,8 @@ function processEventTypes() {
     fi
 }
 
-function unix_seconds_to_iso8601() {
-    echo $(jq -r 'todate' <<< $1)
+function unix_millis_to_iso8601() {
+    echo $(jq -r '. / 1000 | todate' <<< $1)
 }
 
 function make_commit_key() {
@@ -394,8 +394,8 @@ function doCIMutations() {
             fi
             if ! [ -z "$has_run_start_time" ] &&
                ! [ -z "$has_run_end_time" ]; then
-                start_time=$(unix_seconds_to_iso8601 $run_start_time)
-                end_time=$(unix_seconds_to_iso8601 $run_end_time)
+                start_time=$(unix_millis_to_iso8601 $run_start_time)
+                end_time=$(unix_millis_to_iso8601 $run_end_time)
                 cicd_Build_with_start_end=$( jq -n \
                                 --arg run_status "$run_status" \
                                 --arg run_status_details "$run_status_details" \
