@@ -95,8 +95,8 @@ function help() {
     echo "--run_status            | *1  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
-    echo "--run_start_time        |     | e.g. 1626804346019" (milliseconds since epoch)
-    echo "--run_end_time          |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "*1 If --run included"
     echo   
     printf "${BLUE}CD Event Arguments:${NC}\\n"
@@ -110,14 +110,14 @@ function help() {
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
-    echo "--deploy_start_time     |     | e.g. 1626804346019" (milliseconds since epoch)
-    echo "--deploy_end_time       |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--deploy_start_time     |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--deploy_end_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *3  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
-    echo "--run_start_time        |     | e.g. 1626804346019" (milliseconds since epoch)
-    echo "--run_end_time          |     | e.g. 1626804346019" (milliseconds since epoch)
+    echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "*1 env must be: $envs"
     echo "*2 Either --artifact or --commit required"
     echo "*3 If --run included"
