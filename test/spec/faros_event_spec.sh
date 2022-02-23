@@ -265,8 +265,8 @@ Describe 'faros_event.sh'
           --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
           --run_status "Success" \
           --run_status_details "Some extra details" \
-          --run_start_time "1" \
-          --run_end_time "2" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
           --community_edition
         )
       }
