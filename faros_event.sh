@@ -339,7 +339,7 @@ function processEventTypes() {
 }
 
 function unix_seconds_to_iso8601() {
-    echo $(date -r "$1" -u +%FT%TZ)
+    echo $(date -r "$1" -u "+%FT%TZ")
 }
 
 function make_commit_key() {
