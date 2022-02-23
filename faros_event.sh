@@ -39,6 +39,7 @@ dry_run=${FAROS_DRY_RUN:-0}
 silent=${FAROS_SILENT:-0}
 debug=${FAROS_DEBUG:-0}
 no_format=${FAROS_NO_FORMAT:-0}
+community_edition=${FAROS_COMMUNITY_EDITION:-0}
 
 # Theme
 RED='\033[0;31m'
@@ -72,16 +73,17 @@ function help() {
     echo 
     printf "${RED}Arguments:${NC}\\n"
     echo "Arguments can be provided either by flag or by environment variable."
-    echo "By convension, you can switch to using environment variables by prefixing the"
+    echo "By convention, you can switch to using environment variables by prefixing the"
     echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and" 
     echo "--deploy becomes FAROS_DEPLOY"
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
-    echo "-k / --api_key          | Yes |"
+    echo "-k / --api_key          | *1 |"
     echo "-u / --url              |     | $FAROS_URL_DEFAULT"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "*1 Unless --community_edition specified"
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
@@ -128,6 +130,7 @@ function help() {
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
+    echo "--community_edition Events will be sent to local Hasura."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -148,27 +151,35 @@ main() {
         echo "No Lowercase VCS: $no_lowercase_vcs"
         echo "Skip Saving Run: $skip_saving_run"
         echo "Debug: $debug"
+        echo "Community edition: $community_edition"
     fi
 
-    log "Request Body:"
-    log "$request_body"
+    if !(($community_edition)); then
+        log "Request Body:"
+        log "$request_body"
 
-    if !(($dry_run)); then
-        sendEventToFaros
+        if !(($dry_run)); then
+            sendEventToFaros
 
-        # Log error response as an error and fail
-        if [ ! $http_response_status -eq 202 ]; then
-            err "[HTTP status: $http_response_status]"
-            err "Response Body:"
-            err "$http_response_body"
-            fail
+            # Log error response as an error and fail
+            if [ ! $http_response_status -eq 202 ]; then
+                err "[HTTP status: $http_response_status]"
+                err "Response Body:"
+                err "$http_response_body"
+                fail
+            else
+                log "[HTTP status ACCEPTED: $http_response_status]"
+                log "Response Body:"
+                log "$http_response_body"
+            fi
         else
-            log "[HTTP status ACCEPTED: $http_response_status]"
-            log "Response Body:"
-            log "$http_response_body"
+            log "Dry run: Event NOT sent to Faros."
         fi
     else
-        log "Dry run: Event NOT sent to Faros."
+        if ((ci_event)); then
+            doCIMutations
+        fi
+        # TODO: doCEMutations
     fi
 
     log "Done."
@@ -261,6 +272,9 @@ function parseFlags() {
             --no_format)
                 no_format=1
                 shift ;;
+            --community_edition)
+                community_edition=1
+                shift ;;
             --help)
                 help ;;
             -v|--version)
@@ -329,13 +343,168 @@ function processEventTypes() {
     fi
 }
 
+function unix_seconds_to_iso8601() {
+    echo $(jq -r 'todate' <<< $1)
+}
+
+function make_commit_key() {
+    echo $(keys_matching "$flat" "data_commit_.*")
+}
+
+function make_artifact_key() {
+    if ! [ -z "$has_artifact" ]; then
+        echo $(keys_matching "$flat" "data_artifact_.*")
+    else
+        echo $( jq -n \
+                    --arg commit_sha "$commit_sha" \
+                    --arg commit_repo "$commit_repo" \
+                    --arg commit_org "$commit_org" \
+                    --arg commit_source "$commit_source" \
+                    '{ 
+                        "data_artifact_id": $commit_sha,
+                        "data_artifact_repository": $commit_repo,
+                        "data_artifact_organization": $commit_org,
+                        "data_artifact_source": $commit_source,
+                    }'
+                )
+    fi
+}
+
+function doCIMutations() {
+    flat=$(flatten "$request_body")
+
+    artifact_key=$(make_artifact_key)
+    commit_key=$(make_commit_key)
+
+    if ! [ -z "$has_run" ]; then
+        buildKey=$(jq \
+            '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+            )
+        cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
+        make_mutation cicd_artifact_with_build "$cicd_Artifact_with_build"
+
+        if !(($skip_saving_run)); then
+            if [ -z "$has_run_status" ]; then
+                fail
+            fi
+            if ! [ -z "$has_run_status_details" ]; then
+                status_details=$run_status_details
+            else
+                status_details=""
+            fi
+            if ! [ -z "$has_run_start_time" ] &&
+               ! [ -z "$has_run_end_time" ]; then
+                start_time=$(unix_seconds_to_iso8601 $run_start_time)
+                end_time=$(unix_seconds_to_iso8601 $run_end_time)
+                cicd_Build_with_start_end=$( jq -n \
+                                --arg run_status "$run_status" \
+                                --arg run_status_details "$run_status_details" \
+                                --arg run_start_time "$start_time" \
+                                --arg run_end_time "$end_time" \
+                                '{ 
+                                    "run_status": {"category": $run_status, "detail": $run_status_details},
+                                    "run_start_time": $run_start_time,
+                                    "run_end_time": $run_end_time,
+                                }'
+                            )
+                cicd_Build_with_start_end=$(concat "$cicd_Build_with_start_end" "$buildKey")
+                make_mutation cicd_build_with_start_end "$cicd_Build_with_start_end"
+            else
+                cicd_Build=$( jq -n \
+                                --arg run_status "$run_status" \
+                                --arg run_status_details "$run_status_details" \
+                                '{
+                                    "run_status": {"category": $run_status, "detail": $run_status_details},
+                                }'
+                            )
+                cicd_Build=$(concat "$cicd_Build" "$buildKey")
+                make_mutation cicd_build "$cicd_Build"
+            fi
+
+            cicd_Pipeline=$(jq \
+            '{data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+            )
+            make_mutation cicd_pipeline "$cicd_Pipeline"
+
+            cicd_Organization_from_run=$(jq \
+            '{data_run_organization,data_run_source}' <<< $flat
+            )
+            make_mutation cicd_organization_from_run "$cicd_Organization_from_run"
+        fi
+    else
+        make_mutation cicd_artifact "$artifact_key"
+    fi
+
+    cicd_ArtifactCommitAssociation=$(concat "$artifact_key" "$commit_key")
+    make_mutation cicd_artifact_commit_association "$cicd_ArtifactCommitAssociation"
+
+    cicd_Repository=$(jq \
+            '{data_artifact_repository,data_artifact_organization,data_artifact_source}' <<< $artifact_key
+            )
+    make_mutation cicd_repository "$cicd_Repository"
+
+    cicd_Organization=$(jq \
+            '{data_artifact_organization,data_artifact_source}' <<< $artifact_key
+            )
+    make_mutation cicd_organization "$cicd_Organization"
+}
+
+function make_mutation() {
+    log Calling Hasura rest endpoint $1 with payload $2
+
+    if !(($dry_run)); then
+        log "Sending mutation to Hasura..."
+
+        hasura_url="http://localhost:8080/api/rest"
+
+        http_response=$(curl --retry 5 --retry-delay 5 \
+            --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
+            "$hasura_url/$1" \
+            -H "content-type: application/json" \
+            -d "$2") 
+
+        http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+        http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
+        if [ ! $http_response_status -eq 200 ]; then
+            err "[HTTP status: $http_response_status]"
+            err "Response Body:"
+            err "$http_response_body"
+            fail
+        else
+            log "[HTTP status OK: $http_response_status]"
+            log "Response Body:"
+            log "$http_response_body"
+        fi
+    else
+        log "Dry run: Mutation NOT sent to Faros."
+    fi
+}
+
+function keys_matching() {
+    echo $(jq --arg regexp "$2" \
+            'with_entries(if (.key|test($regexp)) then ( {key: .key, value: .value } ) else empty end )' <<< $1
+            )
+}
+
+function concat() {
+    echo $(jq --argjson json_2 "$2" \
+            '.+=$json_2' <<< $1
+            )
+}
+
+function flatten() {
+    echo $(jq '[paths(scalars) as $path | { ($path | map(tostring) | join("_")): getpath($path) } ] | add' <<< $1)
+}
+
 function resolveInput() {
     # Required fields:
     if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
         api_key=${api_key:-$FAROS_API_KEY}
     else
-        err "A Faros API key must be provided"
-        fail
+        if !(($community_edition)); then
+            err "A Faros API key must be provided"
+            fail
+        fi
     fi
 
     # Optional fields:
@@ -534,6 +703,7 @@ function addCommitToData() {
        ! [ -z "$commit_repo" ] &&
        ! [ -z "$commit_org" ] && 
        ! [ -z "$commit_source" ]; then
+        has_commit=1
         request_body=$(jq \
             --arg commit_sha "$commit_sha" \
             --arg commit_repo "$commit_repo" \
@@ -555,6 +725,7 @@ function addArtifactToData() {
        ! [ -z "$artifact_repo" ] &&
        ! [ -z "$artifact_org" ] &&
        ! [ -z "$artifact_source" ]; then
+        has_artifact=1
         request_body=$(jq \
             --arg artifact_id "$artifact_id" \
             --arg artifact_repo "$artifact_repo" \
@@ -577,6 +748,7 @@ function addRunToData() {
        ! [ -z "$run_org" ] &&
        ! [ -z "$run_pipeline" ] &&
        ! [ -z "$run_source" ]; then
+        has_run=1
         request_body=$(jq \
             --arg run_id "$run_id" \
             --arg run_pipeline "$run_pipeline" \
@@ -592,6 +764,7 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_status" ]; then
+        has_run_status=1
         request_body=$(jq \
             --arg run_status "$run_status" \
             '.data.run +=
@@ -601,6 +774,7 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_status_details" ]; then
+        has_run_status_details=1
         request_body=$(jq \
             --arg run_status_details "$run_status_details" \
             '.data.run +=
@@ -610,6 +784,7 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_start_time" ]; then
+        has_run_start_time=1
         request_body=$(jq \
             --arg run_start_time "$run_start_time" \
             '.data.run +=
@@ -619,6 +794,7 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_end_time" ]; then
+        has_run_end_time=1
         request_body=$(jq \
             --arg run_end_time "$run_end_time" \
             '.data.run +=
@@ -647,7 +823,7 @@ function fmtLog(){
     if ((no_format)); then
         fmtLog=""
     else 
-        fmtTime="[$(date +"%Y-%m-%d %T"])"
+        fmtTime="[$(jq -r -n 'now|strflocaltime("%Y-%m-%d %T")')]"
         if [ $1 == "error" ]; then
             fmtLog="$fmtTime ${RED}ERROR${NC} "
         elif [ $1 == "warn" ]; then
