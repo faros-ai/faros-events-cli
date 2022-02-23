@@ -339,8 +339,7 @@ function processEventTypes() {
 }
 
 function unix_seconds_to_iso8601() {
-    date_command=$(command -v date)
-    echo $("$date_command" -r "$1" -u "+%FT%TZ")
+    echo $(jq -r 'todate' <<< $1)
 }
 
 function make_commit_key() {
@@ -392,7 +391,6 @@ function doCIMutations() {
                ! [ -z "$has_run_end_time" ]; then
                 start_time=$(unix_seconds_to_iso8601 $run_start_time)
                 end_time=$(unix_seconds_to_iso8601 $run_end_time)
-
                 cicd_Build_with_start_end=$( jq -n \
                                 --arg run_status "$run_status" \
                                 --arg run_status_details "$run_status_details" \
