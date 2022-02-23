@@ -476,7 +476,7 @@ function make_mutation() {
             log "$http_response_body"
         fi
     else
-        log "Dry run: Event NOT sent to Faros."
+        log "Dry run: Mutation NOT sent to Faros."
     fi
 }
 
@@ -823,7 +823,7 @@ function fmtLog(){
     if ((no_format)); then
         fmtLog=""
     else 
-        fmtTime="[$(date +"%Y-%m-%d %T"])"
+        fmtTime="[$(jq -r -n 'now|strflocaltime("%Y-%m-%d %T")')]"
         if [ $1 == "error" ]; then
             fmtLog="$fmtTime ${RED}ERROR${NC} "
         elif [ $1 == "warn" ]; then
