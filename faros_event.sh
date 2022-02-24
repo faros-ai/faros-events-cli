@@ -81,10 +81,9 @@ function help() {
     echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
     echo "-k / --api_key          | *1 |"
-    echo "-u / --url              |     | $FAROS_URL_DEFAULT"
+    echo "-u / --url              |     | $FAROS_URL_DEFAULT ($HASURA_URL_DEFAULT if --community_edition specified)"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
-    echo "--hasura_url            |     | $HASURA_URL_DEFAULT"
     echo "*1 Unless --community_edition specified"
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
@@ -249,9 +248,6 @@ function parseFlags() {
                 shift 2 ;;
             -u|--url)
                 url="$2"
-                shift 2 ;;
-            --hasura_url)
-                hasura_url="$2"
                 shift 2 ;;
             --no_lowercase_vcs)
                 no_lowercase_vcs=1
@@ -557,7 +553,7 @@ function make_mutation() {
 
         http_response=$(curl --retry 5 --retry-delay 5 \
             --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-            "$hasura_url/api/rest/$1" \
+            "$url/api/rest/$1" \
             -H "content-type: application/json" \
             -d "$2") 
 
@@ -608,9 +604,13 @@ function resolveInput() {
     # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
-    url=${url:-$FAROS_URL}
+
+    if !(($community_edition)); then
+        url=${url:-$FAROS_URL}
+    else
+        url=${url:-$HASURA_URL}
+    fi
     origin=${origin:-$FAROS_ORIGIN}
-    hasura_url=${hasura_url:-$HASURA_URL}
     
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
