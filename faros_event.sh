@@ -21,6 +21,7 @@ fi
 FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
+HASURA_URL_DEFAULT="http://localhost:8080"
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -79,8 +80,8 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
-    echo "-k / --api_key          | *1 |"
-    echo "-u / --url              |     | $FAROS_URL_DEFAULT"
+    echo "-k / --api_key          | *1  |"
+    echo "-u / --url              |     | $FAROS_URL_DEFAULT ($HASURA_URL_DEFAULT if --community_edition specified)"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
     echo "*1 Unless --community_edition specified"
@@ -130,7 +131,7 @@ function help() {
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
-    echo "--community_edition Events will be sent to local Hasura."
+    echo "--community_edition Mutations derived from events will be sent to local Hasura."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -178,8 +179,9 @@ main() {
     else
         if ((ci_event)); then
             doCIMutations
+        elif ((cd_event)); then
+            doCDMutations
         fi
-        # TODO: doCEMutations
     fi
 
     log "Done."
@@ -370,6 +372,150 @@ function make_artifact_key() {
     fi
 }
 
+function doCDMutations() {
+    flat=$(flatten "$request_body")
+
+    deploy=$(keys_matching "$flat" "data_deploy_(id|environment|application|source)")
+
+    compute_Application=$( jq -n \
+                --arg name "$deploy_app" \
+                --arg platform "${deploy_app_platform:-}" \
+                '{ 
+                    "name": $name,
+                    "platform": $platform,
+                }'
+            )
+    compute_Application_Mutation=$( jq -n \
+                --arg name "$deploy_app" \
+                --arg platform "${deploy_app_platform:-}" \
+                --argjson compute_Application "$compute_Application" \
+                '{ 
+                    "name": $name,
+                    "platform": $platform,
+                    "uid": $compute_Application|tostring
+                }'
+            )
+    make_mutation compute_application "$compute_Application_Mutation"
+
+    cicd_Deployment_base=$(keys_matching "$flat" "data_deploy_(id|source)")
+    status_env=$( jq -n \
+                --arg status_category "$deploy_status" \
+                --arg status_detail "${deploy_status_details:-}" \
+                --arg env_category "$deploy_env" \
+                --arg env_detail "${deploy_env_details:-}" \
+                --argjson compute_Application "$compute_Application" \
+                '{ 
+                    "status": {"category" : $status_category, "detail" : $status_detail},
+                    "env": {"category" : $env_category, "detail" : $env_detail},
+                    "compute_Application": $compute_Application|tostring
+                }'
+            )
+    cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
+    if ! [ -z "$deploy_start_time" ] &&
+        ! [ -z "$deploy_end_time" ]; then
+        start_time=$(unix_millis_to_iso8601 $deploy_start_time)
+        end_time=$(unix_millis_to_iso8601 $deploy_end_time)
+        start_end=$( jq -n \
+                        --arg start_time "$start_time" \
+                        --arg end_time "$end_time" \
+                        '{
+                            "deploy_start_time": $start_time,
+                            "deploy_end_time": $end_time,
+                        }'
+                )
+    else
+        start_end=$( jq -n \
+                        '{
+                            "deploy_start_time": null,
+                            "deploy_end_time": null,
+                        }'
+                )
+    fi
+    cicd_Deployment_with_start_end=$(concat "$cicd_Deployment_base" "$start_end")
+
+    artifact_key=$(make_artifact_key)
+
+    cicd_ArtifactDeployment=$(keys_matching "$flat" "data_deploy_(id|source)")
+    cicd_ArtifactDeployment=$(concat "$cicd_ArtifactDeployment" "$artifact_key")
+    make_mutation cicd_artifact_deployment "$cicd_ArtifactDeployment"
+
+    if ! [ -z "$has_run" ]; then
+        make_mutations_from_run
+
+        cicd_Deployment=$(concat "$cicd_Deployment_with_start_end" "$buildKey")
+        make_mutation cicd_deployment_with_build "$cicd_Deployment"
+    else
+        make_mutation cicd_deployment "$cicd_Deployment_with_start_end"
+    fi
+
+    if [ -z "$has_artifact" ]; then
+        if ! [ -z "$has_run" ]; then
+            cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
+            make_mutation cicd_artifact_with_build "$cicd_Artifact_with_build"
+        else
+            make_mutation cicd_artifact "$artifact_key"
+        fi
+
+        commit_key=$(make_commit_key)
+        cicd_ArtifactCommitAssociation=$(concat "$artifact_key" "$commit_key")
+        make_mutation cicd_artifact_commit_association "$cicd_ArtifactCommitAssociation"
+    fi
+}
+
+function make_mutations_from_run {
+    buildKey=$(jq \
+        '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+        )
+    if !(($skip_saving_run)); then
+        if [ -z "$has_run_status" ]; then
+            fail
+        fi
+        if ! [ -z "$has_run_status_details" ]; then
+            status_details=$run_status_details
+        else
+            status_details=""
+        fi
+        if ! [ -z "$has_run_start_time" ] &&
+            ! [ -z "$has_run_end_time" ]; then
+            start_time=$(unix_millis_to_iso8601 $run_start_time)
+            end_time=$(unix_millis_to_iso8601 $run_end_time)
+            cicd_Build_with_start_end=$( jq -n \
+                            --arg run_status "$run_status" \
+                            --arg run_status_details "$run_status_details" \
+                            --arg run_start_time "$start_time" \
+                            --arg run_end_time "$end_time" \
+                            '{ 
+                                "run_status": {"category": $run_status, "detail": $run_status_details},
+                                "run_start_time": $run_start_time,
+                                "run_end_time": $run_end_time,
+                            }'
+                        )
+            cicd_Build_with_start_end=$(concat "$cicd_Build_with_start_end" "$buildKey")
+            make_mutation cicd_build_with_start_end "$cicd_Build_with_start_end"
+        else
+            cicd_Build=$( jq -n \
+                            --arg run_status "$run_status" \
+                            --arg run_status_details "$run_status_details" \
+                            '{
+                                "run_status": {"category": $run_status, "detail": $run_status_details},
+                            }'
+                        )
+            cicd_Build=$(concat "$cicd_Build" "$buildKey")
+            make_mutation cicd_build "$cicd_Build"
+        fi
+
+        cicd_Pipeline=$(jq \
+        '{data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+        )
+        make_mutation cicd_pipeline "$cicd_Pipeline"
+
+        cicd_Organization_from_run=$(jq \
+        '{data_run_organization,data_run_source}' <<< $flat
+        )
+        make_mutation cicd_organization_from_run "$cicd_Organization_from_run"
+    fi
+}
+
 function doCIMutations() {
     flat=$(flatten "$request_body")
 
@@ -377,60 +523,10 @@ function doCIMutations() {
     commit_key=$(make_commit_key)
 
     if ! [ -z "$has_run" ]; then
-        buildKey=$(jq \
-            '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
-            )
+        make_mutations_from_run
+
         cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
         make_mutation cicd_artifact_with_build "$cicd_Artifact_with_build"
-
-        if !(($skip_saving_run)); then
-            if [ -z "$has_run_status" ]; then
-                fail
-            fi
-            if ! [ -z "$has_run_status_details" ]; then
-                status_details=$run_status_details
-            else
-                status_details=""
-            fi
-            if ! [ -z "$has_run_start_time" ] &&
-               ! [ -z "$has_run_end_time" ]; then
-                start_time=$(unix_millis_to_iso8601 $run_start_time)
-                end_time=$(unix_millis_to_iso8601 $run_end_time)
-                cicd_Build_with_start_end=$( jq -n \
-                                --arg run_status "$run_status" \
-                                --arg run_status_details "$run_status_details" \
-                                --arg run_start_time "$start_time" \
-                                --arg run_end_time "$end_time" \
-                                '{ 
-                                    "run_status": {"category": $run_status, "detail": $run_status_details},
-                                    "run_start_time": $run_start_time,
-                                    "run_end_time": $run_end_time,
-                                }'
-                            )
-                cicd_Build_with_start_end=$(concat "$cicd_Build_with_start_end" "$buildKey")
-                make_mutation cicd_build_with_start_end "$cicd_Build_with_start_end"
-            else
-                cicd_Build=$( jq -n \
-                                --arg run_status "$run_status" \
-                                --arg run_status_details "$run_status_details" \
-                                '{
-                                    "run_status": {"category": $run_status, "detail": $run_status_details},
-                                }'
-                            )
-                cicd_Build=$(concat "$cicd_Build" "$buildKey")
-                make_mutation cicd_build "$cicd_Build"
-            fi
-
-            cicd_Pipeline=$(jq \
-            '{data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
-            )
-            make_mutation cicd_pipeline "$cicd_Pipeline"
-
-            cicd_Organization_from_run=$(jq \
-            '{data_run_organization,data_run_source}' <<< $flat
-            )
-            make_mutation cicd_organization_from_run "$cicd_Organization_from_run"
-        fi
     else
         make_mutation cicd_artifact "$artifact_key"
     fi
@@ -455,11 +551,9 @@ function make_mutation() {
     if !(($dry_run)); then
         log "Sending mutation to Hasura..."
 
-        hasura_url="http://localhost:8080/api/rest"
-
         http_response=$(curl --retry 5 --retry-delay 5 \
             --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-            "$hasura_url/$1" \
+            "$url/api/rest/$1" \
             -H "content-type: application/json" \
             -d "$2") 
 
@@ -510,7 +604,12 @@ function resolveInput() {
     # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
-    url=${url:-$FAROS_URL}
+
+    if !(($community_edition)); then
+        url=${url:-$FAROS_URL}
+    else
+        url=${url:-$HASURA_URL}
+    fi
     origin=${origin:-$FAROS_ORIGIN}
     
     # Optional script settings: If unset then false
@@ -523,6 +622,7 @@ function resolveDefaults() {
     FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
     FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
     FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
+    HASURA_URL=${HASURA_URL:-$HASURA_URL_DEFAULT}
 }
 
 function resolveCDInput() {
@@ -628,6 +728,7 @@ function addDeployToData() {
        ! [ -z "$deploy_env" ] &&
        ! [ -z "$deploy_app" ] &&
        ! [ -z "$deploy_source" ]; then
+       has_deploy=1
         request_body=$(jq \
             --arg deploy_id "$deploy_id" \
             --arg deploy_app "$deploy_app" \
