@@ -80,7 +80,7 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req |  Default Value"
     echo "-----------------------------------------------------------------------------"
-    echo "-k / --api_key          | *1 |"
+    echo "-k / --api_key          | *1  |"
     echo "-u / --url              |     | $FAROS_URL_DEFAULT ($HASURA_URL_DEFAULT if --community_edition specified)"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
