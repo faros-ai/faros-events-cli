@@ -21,6 +21,7 @@ fi
 FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
+HASURA_URL_DEFAULT="http://localhost:8080"
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -83,6 +84,7 @@ function help() {
     echo "-u / --url              |     | $FAROS_URL_DEFAULT"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
+    echo "--hasura_url            |     | $HASURA_URL_DEFAULT"
     echo "*1 Unless --community_edition specified"
     echo
     printf "${BLUE}CI Event Arguments:${NC}\\n"
@@ -130,7 +132,7 @@ function help() {
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
-    echo "--community_edition Events will be sent to local Hasura."
+    echo "--community_edition Mutations derived from events will be sent to local Hasura."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -247,6 +249,9 @@ function parseFlags() {
                 shift 2 ;;
             -u|--url)
                 url="$2"
+                shift 2 ;;
+            --hasura_url)
+                hasura_url="$2"
                 shift 2 ;;
             --no_lowercase_vcs)
                 no_lowercase_vcs=1
@@ -550,11 +555,9 @@ function make_mutation() {
     if !(($dry_run)); then
         log "Sending mutation to Hasura..."
 
-        hasura_url="http://localhost:8080/api/rest"
-
         http_response=$(curl --retry 5 --retry-delay 5 \
             --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
-            "$hasura_url/$1" \
+            "$hasura_url/api/rest/$1" \
             -H "content-type: application/json" \
             -d "$2") 
 
@@ -607,6 +610,7 @@ function resolveInput() {
     graph=${graph:-$FAROS_GRAPH}
     url=${url:-$FAROS_URL}
     origin=${origin:-$FAROS_ORIGIN}
+    hasura_url=${hasura_url:-$HASURA_URL}
     
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
@@ -618,6 +622,7 @@ function resolveDefaults() {
     FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
     FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
     FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
+    HASURA_URL=${HASURA_URL:-$HASURA_URL_DEFAULT}
 }
 
 function resolveCDInput() {
