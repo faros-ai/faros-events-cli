@@ -337,4 +337,106 @@ It 'All data present and skip_saving_run'
       The output should include "$cicd_artifact_commit_association"
     End
   End
+  Describe 'Community edition CD event'
+    compute_application='Calling Hasura rest endpoint compute_application with payload { "name": "<application>", "platform": "", "uid": "{"name":"<application>","platform":""}" }'
+    cicd_artifact_deployment='Calling Hasura rest endpoint cicd_artifact_deployment with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>" }'
+    cicd_build_with_start_end='Calling Hasura rest endpoint cicd_build_with_start_end with payload { "run_status": { "category": "Success", "detail": "Some extra details" }, "run_start_time": "1970-01-01T00:00:01Z", "run_end_time": "1970-01-01T00:00:02Z", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_pipeline='Calling Hasura rest endpoint cicd_pipeline with payload { "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_organization_from_run='Calling Hasura rest endpoint cicd_organization_from_run with payload { "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_deployment_with_build='Calling Hasura rest endpoint cicd_deployment_with_build with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "status": { "category": "Success", "detail": "" }, "env": { "category": "<environment>", "detail": "" }, "compute_Application": "{"name":"<application>","platform":""}", "deploy_start_time": "1970-01-01T00:00:03Z", "deploy_end_time": "1970-01-01T00:00:04Z", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_deployment='Calling Hasura rest endpoint cicd_deployment with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "status": { "category": "Success", "detail": "" }, "env": { "category": "<environment>", "detail": "" }, "compute_Application": "{"name":"<application>","platform":""}", "deploy_start_time": "1970-01-01T00:00:03Z", "deploy_end_time": "1970-01-01T00:00:04Z" }'
+    cicd_artifact_from_commit_info='Calling Hasura rest endpoint cicd_artifact_with_build with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>" }'
+    cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>" }'
+    cicd_artifact_deployment_from_commit='Calling Hasura rest endpoint cicd_artifact_deployment with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>" }'
+
+    It 'All data present'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000" \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include "$compute_application"
+      The output should include "$cicd_artifact_deployment"
+      The output should include "$cicd_build_with_start_end"
+      The output should include "$cicd_pipeline"
+      The output should include "$cicd_organization_from_run"
+      The output should include "$cicd_deployment_with_build"
+    End
+    It 'No run data'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000" \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include "$compute_application"
+      The output should include "$cicd_artifact_deployment"
+      The output should include "$cicd_deployment"
+    End
+    It 'All data present and skip_saving_run'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000" \
+          --skip_saving_run \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include "$compute_application"
+      The output should include "$cicd_artifact_deployment"
+      The output should include "$cicd_deployment_with_build"
+    End
+    It 'Creates dummy cicd_Artifact from commit info'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000" \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include "$compute_application"
+      The output should include "$cicd_artifact_deployment_from_commit"
+      The output should include "$cicd_deployment_with_build"
+      The output should include "$cicd_artifact_commit_association"
+      The output should include "$cicd_artifact_from_commit_info"
+    End
+  End
 End
