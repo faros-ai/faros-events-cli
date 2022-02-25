@@ -131,7 +131,7 @@ function help() {
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
-    echo "--community_edition Mutations derived from events will be sent to local Hasura."
+    echo "--community_edition Format and send event to Faros Community Edition."
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
