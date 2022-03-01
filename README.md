@@ -22,14 +22,14 @@ The following arguments are **no longer** defaulted to the current time. Please 
 1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.0/faros_event.sh) and execute it:
 
 ```sh
-$ ./faros_event.sh help
+./faros_event.sh help
 ```
 
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-$ export FAROS_CLI_VERSION="v0.4.0"
-$ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
+export FAROS_CLI_VERSION="v0.4.0"
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
 ### Execute with Docker
@@ -39,13 +39,13 @@ $ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI
 1. Pull the image:
 
 ```sh
-$ docker pull farosai/faros-events-cli:v0.4.0
+docker pull farosai/faros-events-cli:v0.4.0
 ```
 
 2. Run it:
 
 ```sh
-$ docker run farosai/faros-events-cli:v0.4.0 help
+docker run farosai/faros-events-cli:v0.4.0 help
 ```
 
 ### :book: Event Types
@@ -55,7 +55,7 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
 - Use `CI` events to instrument code build pipelines. For example, you can report the result of a successful code build:
 
 ```sh
-$ ./faros_event.sh CI -k "<faros_api_key>" \
+./faros_event.sh CI -k "<faros_api_key>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
@@ -67,7 +67,7 @@ $ ./faros_event.sh CI -k "<faros_api_key>" \
 - Use `CD` events to instrument deployment pipelines. For example, you can report the result of a successful deployment:
 
 ```sh
-$ ./faros_event.sh CD -k "<faros_api_key>" \
+./faros_event.sh CD -k "<faros_api_key>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
     --deploy_status "Success" \
@@ -148,7 +148,7 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
 
 ```sh
-$ ./faros_event.sh CI \
+./faros_event.sh CI \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
@@ -163,7 +163,7 @@ $ ./faros_event.sh CI \
 The following sends an event that communicates that a deployment pipeline that is run by `Buildkite` which is called `payments-service-deploy-prod` was successful. It communicated that the application `payments-service` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the job run and the deployment.
 
 ```sh
-$ ./faros_event.sh CD -k "<api_key>" \
+./faros_event.sh CD -k "<api_key>" \
     --run "Buildkite://faros-ai/payments-service-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
     --run_status "Success" \
     --run_start_time "1626804346000" \
