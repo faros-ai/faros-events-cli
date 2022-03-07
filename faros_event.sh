@@ -547,11 +547,11 @@ function doCIMutations() {
 
 function make_mutation() {
     # log Calling Hasura rest endpoint $1 with payload $2
-    origin=$( jq -n \
+    entity_origin=$( jq -n \
                 --arg data_origin "$FAROS_ORIGIN" \
                 '{"data_origin": $data_origin}'
             )
-    data=$(concat "$2" "$origin")
+    data=$(concat "$2" "$entity_origin")
     log Calling Hasura rest endpoint $1 with payload $data
 
     if !(($dry_run)); then
