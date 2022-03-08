@@ -546,7 +546,6 @@ function doCIMutations() {
 }
 
 function make_mutation() {
-    # log Calling Hasura rest endpoint $1 with payload $2
     entity_origin=$( jq -n \
                 --arg data_origin "$FAROS_ORIGIN" \
                 '{"data_origin": $data_origin}'
