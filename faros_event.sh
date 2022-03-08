@@ -8,7 +8,7 @@ github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "sed" "awk")
 for i in "${arr[@]}"; do
-    which $i &> /dev/null || 
+    which $i &> /dev/null ||
         { echo "Error: $i is required." && missing_require=1; }
 done
 
@@ -71,11 +71,11 @@ function help() {
     echo "--artifact \"$artifact_uri_form\" \\"
     echo "--deploy \"$deploy_uri_form\" \\"
     echo "--deploy_status \"Success\""
-    echo 
+    echo
     printf "${RED}Arguments:${NC}\\n"
     echo "Arguments can be provided either by flag or by environment variable."
     echo "By convention, you can switch to using environment variables by prefixing the"
-    echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and" 
+    echo "flag name with 'FAROS_'. For example, --commit becomes FAROS_COMMIT and"
     echo "--deploy becomes FAROS_DEPLOY"
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req |  Default Value"
@@ -99,7 +99,7 @@ function help() {
     echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "*1 If --run included"
-    echo   
+    echo
     printf "${BLUE}CD Event Arguments:${NC}\\n"
     echo "-----------------------------------------------------------------------------"
     echo "Argument                | Req | Allowed Values / URI form"
@@ -362,7 +362,7 @@ function make_artifact_key() {
                     --arg commit_repo "$commit_repo" \
                     --arg commit_org "$commit_org" \
                     --arg commit_source "$commit_source" \
-                    '{ 
+                    '{
                         "data_artifact_id": $commit_sha,
                         "data_artifact_repository": $commit_repo,
                         "data_artifact_organization": $commit_org,
@@ -380,7 +380,7 @@ function doCDMutations() {
     compute_Application=$( jq -n \
                 --arg name "$deploy_app" \
                 --arg platform "${deploy_app_platform:-}" \
-                '{ 
+                '{
                     "name": $name,
                     "platform": $platform,
                 }'
@@ -389,7 +389,7 @@ function doCDMutations() {
                 --arg name "$deploy_app" \
                 --arg platform "${deploy_app_platform:-}" \
                 --argjson compute_Application "$compute_Application" \
-                '{ 
+                '{
                     "name": $name,
                     "platform": $platform,
                     "uid": $compute_Application|tostring
@@ -404,7 +404,7 @@ function doCDMutations() {
                 --arg env_category "$deploy_env" \
                 --arg env_detail "${deploy_env_details:-}" \
                 --argjson compute_Application "$compute_Application" \
-                '{ 
+                '{
                     "status": {"category" : $status_category, "detail" : $status_detail},
                     "env": {"category" : $env_category, "detail" : $env_detail},
                     "compute_Application": $compute_Application|tostring
@@ -484,7 +484,7 @@ function make_mutations_from_run {
                             --arg run_status_details "$run_status_details" \
                             --arg run_start_time "$start_time" \
                             --arg run_end_time "$end_time" \
-                            '{ 
+                            '{
                                 "run_status": {"category": $run_status, "detail": $run_status_details},
                                 "run_start_time": $run_start_time,
                                 "run_end_time": $run_end_time,
@@ -546,7 +546,12 @@ function doCIMutations() {
 }
 
 function make_mutation() {
-    log Calling Hasura rest endpoint $1 with payload $2
+    entity_origin=$( jq -n \
+                --arg data_origin "$FAROS_ORIGIN" \
+                '{"data_origin": $data_origin}'
+            )
+    data=$(concat "$2" "$entity_origin")
+    log Calling Hasura rest endpoint $1 with payload $data
 
     if !(($dry_run)); then
         log "Sending mutation to Hasura..."
@@ -555,7 +560,7 @@ function make_mutation() {
             --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
             "$url/api/rest/$1" \
             -H "content-type: application/json" \
-            -d "$2") 
+            -d "$data")
 
         http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
         http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
@@ -611,7 +616,7 @@ function resolveInput() {
         url=${url:-$HASURA_URL}
     fi
     origin=${origin:-$FAROS_ORIGIN}
-    
+
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
     skip_saving_run=${skip_saving_run:-"false"}
@@ -660,7 +665,7 @@ function resolveRunInput() {
     if ! [ -z ${run_uri+x} ] || ! [ -z ${FAROS_RUN+x} ]; then
         parseRunUri
     fi
-    
+
     run_status=${run_status:-$FAROS_RUN_STATUS}
     # run_name=${run_name:-$FAROS_RUN_NAME}
     run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}
@@ -708,14 +713,14 @@ function parseDeployUri() {
 }
 
 function parseArtifactUri() {
-    parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact_id" $artifact_uri_form    
+    parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact_id" $artifact_uri_form
 }
 
 function makeEvent() {
     request_body=$( jq -n \
         --arg origin "$origin" \
         --arg event_type "$event_type" \
-        '{ 
+        '{
             "type": $event_type,
             "version": "0.0.1",
             "origin": $origin,
@@ -800,9 +805,9 @@ function addDeployToData() {
 }
 
 function addCommitToData() {
-    if ! [ -z "$commit_sha" ] && 
+    if ! [ -z "$commit_sha" ] &&
        ! [ -z "$commit_repo" ] &&
-       ! [ -z "$commit_org" ] && 
+       ! [ -z "$commit_org" ] &&
        ! [ -z "$commit_source" ]; then
         has_commit=1
         request_body=$(jq \
@@ -914,7 +919,7 @@ function sendEventToFaros() {
         "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
-        -d "$request_body") 
+        -d "$request_body")
 
     http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
     http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
@@ -923,7 +928,7 @@ function sendEventToFaros() {
 function fmtLog(){
     if ((no_format)); then
         fmtLog=""
-    else 
+    else
         fmtTime="[$(jq -r -n 'now|strflocaltime("%Y-%m-%d %T")')]"
         if [ $1 == "error" ]; then
             fmtLog="$fmtTime ${RED}ERROR${NC} "
