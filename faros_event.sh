@@ -8,7 +8,7 @@ github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "sed" "awk")
 for i in "${arr[@]}"; do
-    which $i &> /dev/null ||
+    which "$i" &> /dev/null ||
         { echo "Error: $i is required." && missing_require=1; }
 done
 
@@ -46,7 +46,6 @@ community_edition=${FAROS_COMMUNITY_EDITION:-0}
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
-GREY='\033[30;1m'
 NC='\033[0m' # No Color
 
 function help() {
@@ -139,7 +138,7 @@ function help() {
 
 main() {
     parseFlags "$@"
-    set -- ${POSITIONAL[@]:-}   # Restore positional args
+    set -- "${POSITIONAL[@]:-}" # Restore positional args
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
     processEventTypes           # Resolve input and populate event
@@ -155,15 +154,15 @@ main() {
         echo "Community edition: $community_edition"
     fi
 
-    if !(($community_edition)); then
+    if ! (($community_edition)); then
         log "Request Body:"
         log "$request_body"
 
-        if !(($dry_run)); then
+        if ! (($dry_run)); then
             sendEventToFaros
 
             # Log error response as an error and fail
-            if [ ! $http_response_status -eq 202 ]; then
+            if [ ! "$http_response_status" -eq 202 ]; then
                 err "[HTTP status: $http_response_status]"
                 err "Response Body:"
                 err "$http_response_body"
@@ -292,7 +291,7 @@ function parseFlags() {
 # Determine which event types are present
 function processArgs() {
     # No positional arg passed - show help
-    if !(($#)) || [ "$1" == "help" ]; then
+    if ! (($#)) || [ "$1" == "help" ]; then
         help
         exit 0
     fi
@@ -318,8 +317,8 @@ function processArgs() {
         esac
     done
 
-    if [ ! -z "${UNRECOGNIZED:-}" ]; then
-        err "Unrecognized arg(s): ${UNRECOGNIZED[@]}"
+    if [ -n "${UNRECOGNIZED:-}" ]; then
+        err "Unrecognized arg(s): ${UNRECOGNIZED[*]}"
         fail
     fi
 }
@@ -346,36 +345,33 @@ function processEventTypes() {
 }
 
 function unix_millis_to_iso8601() {
-    echo $(jq -r '. / 1000 | todate' <<< $1)
+    jq -r '. / 1000 | todate' <<< "$1"
 }
 
 function make_commit_key() {
-    echo $(keys_matching "$flat" "data_commit_.*")
+    keys_matching "$flat" "data_commit_.*"
 }
 
 function make_artifact_key() {
     if ! [ -z "$has_artifact" ]; then
-        echo $(keys_matching "$flat" "data_artifact_.*")
+        keys_matching "$flat" "data_artifact_.*"
     else
-        echo $( jq -n \
-                    --arg commit_sha "$commit_sha" \
-                    --arg commit_repo "$commit_repo" \
-                    --arg commit_org "$commit_org" \
-                    --arg commit_source "$commit_source" \
-                    '{
-                        "data_artifact_id": $commit_sha,
-                        "data_artifact_repository": $commit_repo,
-                        "data_artifact_organization": $commit_org,
-                        "data_artifact_source": $commit_source,
-                    }'
-                )
+        jq -n \
+          --arg commit_sha "$commit_sha" \
+          --arg commit_repo "$commit_repo" \
+          --arg commit_org "$commit_org" \
+          --arg commit_source "$commit_source" \
+          '{
+              "data_artifact_id": $commit_sha,
+              "data_artifact_repository": $commit_repo,
+              "data_artifact_organization": $commit_org,
+              "data_artifact_source": $commit_source,
+          }'
     fi
 }
 
 function doCDMutations() {
     flat=$(flatten "$request_body")
-
-    deploy=$(keys_matching "$flat" "data_deploy_(id|environment|application|source)")
 
     compute_Application=$( jq -n \
                 --arg name "$deploy_app" \
@@ -399,22 +395,22 @@ function doCDMutations() {
 
     cicd_Deployment_base=$(keys_matching "$flat" "data_deploy_(id|source)")
     status_env=$( jq -n \
-                --arg status_category "$deploy_status" \
-                --arg status_detail "${deploy_status_details:-}" \
-                --arg env_category "$deploy_env" \
-                --arg env_detail "${deploy_env_details:-}" \
-                --argjson compute_Application "$compute_Application" \
-                '{
-                    "status": {"category" : $status_category, "detail" : $status_detail},
-                    "env": {"category" : $env_category, "detail" : $env_detail},
-                    "compute_Application": $compute_Application|tostring
-                }'
-            )
+                  --arg status_category "$deploy_status" \
+                  --arg status_detail "${deploy_status_details:-}" \
+                  --arg env_category "$deploy_env" \
+                  --arg env_detail "${deploy_env_details:-}" \
+                  --argjson compute_Application "$compute_Application" \
+                  '{
+                      "status": {"category" : $status_category, "detail" : $status_detail},
+                      "env": {"category" : $env_category, "detail" : $env_detail},
+                      "compute_Application": $compute_Application|tostring
+                  }'
+                )
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
     if ! [ -z "$deploy_start_time" ] &&
         ! [ -z "$deploy_end_time" ]; then
-        start_time=$(unix_millis_to_iso8601 $deploy_start_time)
-        end_time=$(unix_millis_to_iso8601 $deploy_end_time)
+        start_time=$(unix_millis_to_iso8601 "$deploy_start_time")
+        end_time=$(unix_millis_to_iso8601 "$deploy_end_time")
         start_end=$( jq -n \
                         --arg start_time "$start_time" \
                         --arg end_time "$end_time" \
@@ -422,14 +418,14 @@ function doCDMutations() {
                             "deploy_start_time": $start_time,
                             "deploy_end_time": $end_time,
                         }'
-                )
+                    )
     else
         start_end=$( jq -n \
                         '{
                             "deploy_start_time": null,
                             "deploy_end_time": null,
                         }'
-                )
+                    )
     fi
     cicd_Deployment_with_start_end=$(concat "$cicd_Deployment_base" "$start_end")
 
@@ -464,21 +460,16 @@ function doCDMutations() {
 
 function make_mutations_from_run {
     buildKey=$(jq \
-        '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+        '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
         )
-    if !(($skip_saving_run)); then
+    if ! (($skip_saving_run)); then
         if [ -z "$has_run_status" ]; then
             fail
         fi
-        if ! [ -z "$has_run_status_details" ]; then
-            status_details=$run_status_details
-        else
-            status_details=""
-        fi
         if ! [ -z "$has_run_start_time" ] &&
             ! [ -z "$has_run_end_time" ]; then
-            start_time=$(unix_millis_to_iso8601 $run_start_time)
-            end_time=$(unix_millis_to_iso8601 $run_end_time)
+            start_time=$(unix_millis_to_iso8601 "$run_start_time")
+            end_time=$(unix_millis_to_iso8601 "$run_end_time")
             cicd_Build_with_start_end=$( jq -n \
                             --arg run_status "$run_status" \
                             --arg run_status_details "$run_status_details" \
@@ -505,12 +496,12 @@ function make_mutations_from_run {
         fi
 
         cicd_Pipeline=$(jq \
-        '{data_run_pipeline,data_run_organization,data_run_source}' <<< $flat
+        '{data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
         )
         make_mutation cicd_pipeline "$cicd_Pipeline"
 
         cicd_Organization_from_run=$(jq \
-        '{data_run_organization,data_run_source}' <<< $flat
+        '{data_run_organization,data_run_source}' <<< "$flat"
         )
         make_mutation cicd_organization_from_run "$cicd_Organization_from_run"
     fi
@@ -535,12 +526,12 @@ function doCIMutations() {
     make_mutation cicd_artifact_commit_association "$cicd_ArtifactCommitAssociation"
 
     cicd_Repository=$(jq \
-            '{data_artifact_repository,data_artifact_organization,data_artifact_source}' <<< $artifact_key
+            '{data_artifact_repository,data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
             )
     make_mutation cicd_repository "$cicd_Repository"
 
     cicd_Organization=$(jq \
-            '{data_artifact_organization,data_artifact_source}' <<< $artifact_key
+            '{data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
             )
     make_mutation cicd_organization "$cicd_Organization"
 }
@@ -551,20 +542,21 @@ function make_mutation() {
                 '{"data_origin": $data_origin}'
             )
     data=$(concat "$2" "$entity_origin")
-    log Calling Hasura rest endpoint $1 with payload $data
+    log Calling Hasura rest endpoint "$1" with payload "$data"
 
-    if !(($dry_run)); then
+    if ! (($dry_run)); then
         log "Sending mutation to Hasura..."
 
-        http_response=$(curl --retry 5 --retry-delay 5 \
-            --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
+        http_response=$(curl -s -S --retry 5 --retry-delay 5 \
+            --write-out "HTTPSTATUS:%{http_code}" -X POST \
             "$url/api/rest/$1" \
             -H "content-type: application/json" \
             -d "$data")
 
-        http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-        http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
-        if [ ! $http_response_status -eq 200 ]; then
+        http_response_status=$(echo "$http_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+        http_response_body=$(echo "$http_response" | sed -e 's/HTTPSTATUS\:.*//g')
+
+        if [ ! "$http_response_status" -eq 200 ]; then
             err "[HTTP status: $http_response_status]"
             err "Response Body:"
             err "$http_response_body"
@@ -580,19 +572,16 @@ function make_mutation() {
 }
 
 function keys_matching() {
-    echo $(jq --arg regexp "$2" \
-            'with_entries(if (.key|test($regexp)) then ( {key: .key, value: .value } ) else empty end )' <<< $1
-            )
+    jq --arg regexp "$2" \
+      'with_entries(if (.key|test($regexp)) then ( {key: .key, value: .value } ) else empty end )' <<< "$1"
 }
 
 function concat() {
-    echo $(jq --argjson json_2 "$2" \
-            '.+=$json_2' <<< $1
-            )
+    jq --argjson json_2 "$2" '.+=$json_2' <<< "$1"
 }
 
 function flatten() {
-    echo $(jq '[paths(scalars) as $path | { ($path | map(tostring) | join("_")): getpath($path) } ] | add' <<< $1)
+    jq '[paths(scalars) as $path | { ($path | map(tostring) | join("_")): getpath($path) } ] | add' <<< "$1"
 }
 
 function resolveInput() {
@@ -600,7 +589,7 @@ function resolveInput() {
     if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
         api_key=${api_key:-$FAROS_API_KEY}
     else
-        if !(($community_edition)); then
+        if ! (($community_edition)); then
             err "A Faros API key must be provided"
             fail
         fi
@@ -610,7 +599,7 @@ function resolveInput() {
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
 
-    if !(($community_edition)); then
+    if ! (($community_edition)); then
         url=${url:-$FAROS_URL}
     else
         url=${url:-$HASURA_URL}
@@ -685,10 +674,10 @@ function parseUri() {
     valid_chars="a-zA-Z0-9_.<>-"
     uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
     if [[ "$1" =~ $uri_regex ]]; then
-        export "$2"=$(sed 's/:.*//' <<< $1)
-        export "$3"=$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< $1)
-        export "$4"=$(sed 's/.*:\/\/.*\/\(.*\)\/.*/\1/' <<< $1)
-        export "$5"=$(sed 's/.*:\/\/.*\/.*\///' <<< $1)
+        export "$2"="$(sed 's/:.*//' <<< "$1")"
+        export "$3"="$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< "$1")"
+        export "$4"="$(sed 's/.*:\/\/.*\/\(.*\)\/.*/\1/' <<< "$1")"
+        export "$5"="$(sed 's/.*:\/\/.*\/.*\///' <<< "$1")"
     else
         err "Resource URI could not be parsed: $1 The URI should be of the form: $6"
         fail
@@ -698,7 +687,7 @@ function parseUri() {
 function parseCommitUri() {
     parseUri "${commit_uri:-$FAROS_COMMIT}" "commit_source" "commit_org" "commit_repo" "commit_sha" $commit_uri_form
 
-    if !((no_lowercase_vcs)); then
+    if ! ((no_lowercase_vcs)); then
         commit_org=$(echo "$commit_org" | awk '{print tolower($0)}')
         commit_repo=$(echo "$commit_repo" | awk '{print tolower($0)}')
     fi
@@ -733,7 +722,6 @@ function addDeployToData() {
        ! [ -z "$deploy_env" ] &&
        ! [ -z "$deploy_app" ] &&
        ! [ -z "$deploy_source" ]; then
-       has_deploy=1
         request_body=$(jq \
             --arg deploy_id "$deploy_id" \
             --arg deploy_app "$deploy_app" \
@@ -745,7 +733,7 @@ function addDeployToData() {
                 "environment": $deploy_env,
                 "application": $deploy_app,
                 "source": $deploy_source,
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_status" ]; then
@@ -754,7 +742,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "status": $deploy_status
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_app_platform" ]; then
@@ -763,7 +751,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "applicationPlatform": $deploy_app_platform
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_status_details" ]; then
@@ -772,7 +760,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "statusDetails": $deploy_status_details
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_env_details" ]; then
@@ -781,7 +769,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "environmentDetails": $deploy_env_details
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_start_time" ]; then
@@ -790,7 +778,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "startTime": $deploy_start_time|tonumber
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$deploy_end_time" ]; then
@@ -799,7 +787,7 @@ function addDeployToData() {
             '.data.deploy +=
             {
                 "endTime": $deploy_end_time|tonumber
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
 }
@@ -809,7 +797,6 @@ function addCommitToData() {
        ! [ -z "$commit_repo" ] &&
        ! [ -z "$commit_org" ] &&
        ! [ -z "$commit_source" ]; then
-        has_commit=1
         request_body=$(jq \
             --arg commit_sha "$commit_sha" \
             --arg commit_repo "$commit_repo" \
@@ -821,7 +808,7 @@ function addCommitToData() {
                 "repository": $commit_repo,
                 "organization": $commit_org,
                 "source": $commit_source
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
 }
@@ -844,7 +831,7 @@ function addArtifactToData() {
                 "organization": $artifact_org,
                 "source": $artifact_source
 
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
 }
@@ -866,7 +853,17 @@ function addRunToData() {
                 "pipeline": $run_pipeline,
                 "organization": $run_org,
                 "source": $run_source
-            }' <<< $request_body
+            }' <<< "$request_body"
+        )
+    fi
+     if ! [ -z "$run_name" ]; then
+        has_run_status=1
+        request_body=$(jq \
+            --arg run_name "$run_name" \
+            '.data.run +=
+            {
+                "name": $run_name
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$run_status" ]; then
@@ -876,17 +873,16 @@ function addRunToData() {
             '.data.run +=
             {
                 "status": $run_status
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$run_status_details" ]; then
-        has_run_status_details=1
         request_body=$(jq \
             --arg run_status_details "$run_status_details" \
             '.data.run +=
             {
                 "statusDetails": $run_status_details,
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$run_start_time" ]; then
@@ -896,7 +892,7 @@ function addRunToData() {
             '.data.run +=
             {
                 "startTime": $run_start_time|tonumber
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
     if ! [ -z "$run_end_time" ]; then
@@ -906,7 +902,7 @@ function addRunToData() {
             '.data.run +=
             {
                 "endTime": $run_end_time|tonumber
-            }' <<< $request_body
+            }' <<< "$request_body"
         )
     fi
 }
@@ -914,15 +910,15 @@ function addRunToData() {
 function sendEventToFaros() {
     log "Sending event to Faros..."
 
-    http_response=$(curl --retry 5 --retry-delay 5 \
-        --silent --write-out "HTTPSTATUS:%{http_code}" -X POST \
+    http_response=$(curl -s -S --retry 5 --retry-delay 5 \
+        --write-out "HTTPSTATUS:%{http_code}" -X POST \
         "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body")
 
-    http_response_status=$(echo $http_response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-    http_response_body=$(echo $http_response | sed -e 's/HTTPSTATUS\:.*//g')
+    http_response_status=$(echo "$http_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    http_response_body=$(echo "$http_response" | sed -e 's/HTTPSTATUS\:.*//g')
 }
 
 function fmtLog(){
@@ -930,9 +926,9 @@ function fmtLog(){
         fmtLog=""
     else
         fmtTime="[$(jq -r -n 'now|strflocaltime("%Y-%m-%d %T")')]"
-        if [ $1 == "error" ]; then
+        if [ "$1" == "error" ]; then
             fmtLog="$fmtTime ${RED}ERROR${NC} "
-        elif [ $1 == "warn" ]; then
+        elif [ "$1" == "warn" ]; then
             fmtLog="$fmtTime ${YELLOW}WARN${NC} "
         else
             fmtLog="$fmtTime ${BLUE}INFO${NC} "
@@ -942,7 +938,7 @@ function fmtLog(){
 
 function printLog() {
     if jq -e . >/dev/null 2>&1 <<< "$1"; then
-        if !((no_format)); then
+        if ! ((no_format)); then
             printf "$fmtLog \n"
             echo "$*" | jq .
         else
@@ -956,14 +952,14 @@ function printLog() {
 }
 
 function log() {
-    if !((silent)); then
+    if ! ((silent)); then
         fmtLog "info"
         printLog "$*"
     fi
 }
 
 function warn() {
-    if !((silent)); then
+    if ! ((silent)); then
         fmtLog "warn"
         printLog "$*"
     fi

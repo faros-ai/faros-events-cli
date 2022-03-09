@@ -179,15 +179,15 @@ The following sends an event that communicates that a deployment pipeline that i
 
 ## :hammer: Development
 
-### :white_check_mark: Testing
+### :white_check_mark: Testing & Checking for Bugs
 
-We use [ShellSpec](https://github.com/shellspec/shellspec) to test our scripts.
+We use [ShellSpec](https://github.com/shellspec/shellspec) to test our scripts and [ShellCheck](https://www.shellcheck.net/) to check for potential bugs.
 
 #### Install using Homebrew
 
 ```sh
 brew tap shellspec/shellspec
-brew install shellspec
+brew install shellspec shellcheck
 ```
 
 #### Running the tests
@@ -196,4 +196,12 @@ Move to the `/test` directory and execute `shellspec`
 
 ```sh
 cd test && shellspec
+```
+
+#### Checking for bugs
+
+Go to root directory and execute:
+
+```sh
+shellcheck -s bash faros_event.sh
 ```
