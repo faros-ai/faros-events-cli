@@ -19,7 +19,7 @@ The following arguments are **no longer** defaulted to the current time. Please 
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.0/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.1/faros_event.sh) and execute it:
 
 ```sh
 ./faros_event.sh help
@@ -28,7 +28,7 @@ The following arguments are **no longer** defaulted to the current time. Please 
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-export FAROS_CLI_VERSION="v0.4.0"
+export FAROS_CLI_VERSION="v0.4.1"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -39,13 +39,13 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 1. Pull the image:
 
 ```sh
-docker pull farosai/faros-events-cli:v0.4.0
+docker pull farosai/faros-events-cli:v0.4.1
 ```
 
 2. Run it:
 
 ```sh
-docker run farosai/faros-events-cli:v0.4.0 help
+docker run farosai/faros-events-cli:v0.4.1 help
 ```
 
 ### :book: Event Types
