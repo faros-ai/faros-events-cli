@@ -20,11 +20,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
+    
     - name: Install ShellSpec
       run: |
         curl -fsSL https://git.io/shellspec | sh -s -- -y
         sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
         shellspec --version
+
     - name: Run tests
       working-directory: test
       run: shellspec -f d
+
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@1.1.0
