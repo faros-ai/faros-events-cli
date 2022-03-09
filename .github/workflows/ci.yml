@@ -31,7 +31,7 @@ jobs:
       working-directory: test
       run: shellspec -f d
 
-    - name: Run ShellCheck
+    - name: Check for style & bugs
       uses: ludeeus/action-shellcheck@1.1.0
       env:
         SHELLCHECK_OPTS: -s bash -e SC2059 -e SC2237 -e SC2004 -e SC2001
