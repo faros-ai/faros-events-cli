@@ -5,7 +5,6 @@ set -eo pipefail
 version="0.4.1"
 canonical_model_version="0.10.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
-a="unused"
 
 declare -a arr=("curl" "jq" "sed" "awk")
 for i in "${arr[@]}"; do
