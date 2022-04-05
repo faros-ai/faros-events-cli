@@ -4,15 +4,6 @@ CLI for reporting events to Faros platform.
 
 The script provides all the necessary instrumentation for CI/CD pipelines by sending events to Faros platform
 
-## :exclamation: Notes on Updating to v0.3.x
-
-The following arguments are **no longer** defaulted to the current time. Please provide them if you wish for them to be populated.
-
-- `deploy_start_time`
-- `deploy_end_time`
-- `run_start_time`
-- `run_end_time`
-
 ## :zap: Usage
 
 ### Execute with Bash
