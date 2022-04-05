@@ -43,7 +43,7 @@ docker run farosai/faros-events-cli:v0.4.1 help
 
 An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline that you are instrumenting.
 
-- Use `CI` events to instrument code build pipelines. For example, you can report the result of a successful code build:
+- Use `CI` events to instrument code build pipelines. For example, you can report the result of a successful code build & artifact release:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -55,20 +55,20 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
     --run_end_time "1626804358000"
 ```
 
-- Use `CD` events to instrument deployment pipelines. For example, you can report the result of a successful deployment:
+- Use `CD` events to instrument deployment pipelines. For example, you can report the result of a successful deployment of your application to an environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
     --deploy_status "Success" \
     --deploy_start_time "1626804356000" \
     --deploy_end_time "1626804357000"
 ```
 
-Every time an artifact is deployed to an environment, you can send an event.
+Below is a more detailed diagram illustrating the use of CI & CD events:
 
-![When to send an event](resources/events.png)
+![When to send an event](resources/Faros_CI_CD_Events.png)
 
 ### Arguments
 
@@ -76,20 +76,19 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
 
-| Argument                         | Description                                                                                                                              | Required | Default                     |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- |
-| &#x2011;&#x2011;api_key          | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes (not required for [Faros Community Edition](https://github.com/faros-ai/faros-community-edition), i.e when `community_edition` flag is present)      |                             |
-| &#x2011;&#x2011;url              | The Faros API url to send the event to.                                                                                                  |          | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
-| &#x2011;&#x2011;graph            | The graph that the event should be sent to.                                                                                              |          | "default"                   |
-| &#x2011;&#x2011;origin           | The origin of the event that is being sent to Faros.                                                                                     |          | "Faros_Script_Event"        |
-| &#x2011;&#x2011;dry_run          | Print the event instead of sending. (no value accepted, true if flag is present)                                                         |          | False                       |
-| &#x2011;&#x2011;silent           | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                      |          | False                       |
-| &#x2011;&#x2011;debug            | Helpful information will be printed. (no value accepted, true if flag is present)                                                        |          | False                       |
-| &#x2011;&#x2011;skip_saving_run  | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                     |          | False                       |
-| &#x2011;&#x2011;no_lowercase_vcs | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)                                       |          | False                       |
-| &#x2011;&#x2011;validate_only    | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)         |          | False                       |
-| &#x2011;&#x2011;community_edition| Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present)         |          | False                       |
-
+| Argument                          | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| &#x2011;&#x2011;api_key           | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                          | Yes (not required for [Faros Community Edition](https://github.com/faros-ai/faros-community-edition), i.e when `community_edition` flag is present) |                                                                                   |
+| &#x2011;&#x2011;url               | The Faros API url to send the event to.                                                                                                                           |                                                                                                                                                     | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
+| &#x2011;&#x2011;graph             | The graph that the event should be sent to.                                                                                                                       |                                                                                                                                                     | "default"                                                                         |
+| &#x2011;&#x2011;origin            | The origin of the event that is being sent to Faros.                                                                                                              |                                                                                                                                                     | "Faros_Script_Event"                                                              |
+| &#x2011;&#x2011;dry_run           | Print the event instead of sending. (no value accepted, true if flag is present)                                                                                  |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;silent            | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                                               |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;debug             | Helpful information will be printed. (no value accepted, true if flag is present)                                                                                 |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;skip_saving_run   | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                                              |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;no_lowercase_vcs  | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)                                                                |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;validate_only     | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)                                  |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;community_edition | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present) |                                                                                                                                                     | False                                                                             |
 
 #### CI Event - `CI`
 
@@ -120,7 +119,7 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 
 | Argument                              | Description                                                                                                                                                   | Required                                                  | Allowed Value                                                  |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Custom          |
+| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Custom         |
 | &#x2011;&#x2011;deploy_status         | The status of the deployment.                                                                                                                                 | Yes                                                       | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
 | &#x2011;&#x2011;artifact              | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
 | &#x2011;&#x2011;commit                | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
@@ -134,6 +133,7 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 | &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                   |                                                           |                                                                |
 | &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                         |                                                           |                                                                |
 | &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                           |                                                           |                                                                |
+
 ### Usage with Faros Community Edition
 
 When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
