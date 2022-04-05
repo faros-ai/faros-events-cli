@@ -43,7 +43,7 @@ docker run farosai/faros-events-cli:v0.4.1 help
 
 An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline that you are instrumenting.
 
-- Use `CI` events to instrument code build pipelines. For example, you can report the result of a successful code build & artifact release:
+- Use Continuous Integration (CI) events to instrument code build pipelines. For example, you can report the result of a successful code build & artifact release:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -55,7 +55,7 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
     --run_end_time "1626804358000"
 ```
 
-- Use `CD` events to instrument deployment pipelines. For example, you can report the result of a successful deployment of your application to an environment:
+- Use Continuous Deployment (CD) events to instrument deployment pipelines. For example, you can report the result of a successful deployment of your application to an environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
