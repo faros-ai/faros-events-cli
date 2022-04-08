@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-version="0.4.1"
+version="0.4.2"
 canonical_model_version="0.10.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
 

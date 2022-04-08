@@ -10,7 +10,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.1/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.2/faros_event.sh) and execute it:
 
 ```sh
 ./faros_event.sh help
@@ -19,7 +19,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-export FAROS_CLI_VERSION="v0.4.1"
+export FAROS_CLI_VERSION="v0.4.2"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -30,13 +30,13 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 1. Pull the image:
 
 ```sh
-docker pull farosai/faros-events-cli:v0.4.1
+docker pull farosai/faros-events-cli:v0.4.2
 ```
 
 2. Run it:
 
 ```sh
-docker run farosai/faros-events-cli:v0.4.1 help
+docker run farosai/faros-events-cli:v0.4.2 help
 ```
 
 ### :book: Event Types
@@ -106,8 +106,8 @@ A `CI` event communicates the outcome of a code build pipeline execution, and it
 | &#x2011;&#x2011;run_status         | The status of the job run that built the code.                                                                                                                | If &#x2011;&#x2011;run provided | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
 | &#x2011;&#x2011;run_name           | The name of the job run that built the code.                                                                                                                  |                                 |                                                             |
 | &#x2011;&#x2011;run_status_details | Any extra details about the status of the job run.                                                                                                            |                                 |                                                             |
-| &#x2011;&#x2011;run_start_time     | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                         |                                 |                                                             |
-| &#x2011;&#x2011;run_end_time       | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                           |                                 |                                                             |
+| &#x2011;&#x2011;run_start_time     | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                         |                                 |                                                             |
+| &#x2011;&#x2011;run_end_time       | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                           |                                 |                                                             |
 
 #### CD Event - `CD`
 
@@ -126,13 +126,13 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 | &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                               |                                                           |                                                                |
 | &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                           |                                                           |                                                                |
 | &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                         |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                      |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch. (e.g. `1626804346019`)                                                                        |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                      |                                                           |                                                                |
+| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                        |                                                           |                                                                |
 | &#x2011;&#x2011;run                   | The URI of the job run executing the deployment. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                 |                                                           |                                                                |
 | &#x2011;&#x2011;run_status            | The status of the job run executing the deployment.                                                                                                           | If &#x2011;&#x2011;run provided                           | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
 | &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                   |                                                           |                                                                |
-| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                         |                                                           |                                                                |
-| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch. (e.g. `1626804346019`)                                                                           |                                                           |                                                                |
+| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                         |                                                           |                                                                |
+| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                           |                                                           |                                                                |
 
 ### Usage with Faros Community Edition
 
@@ -155,6 +155,7 @@ The following sends an event that communicates that a deployment pipeline that i
 
 ```sh
 ./faros_event.sh CD -k "<api_key>" \
+    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b" \
     --run "Buildkite://faros-ai/payments-service-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
     --run_status "Success" \
     --run_start_time "1626804346000" \
@@ -162,8 +163,7 @@ The following sends an event that communicates that a deployment pipeline that i
     --deploy "ECS://payments-service/Prod/d-CGAKEHE8S" \
     --deploy_status "Success" \
     --deploy_start_time "1626804356000" \
-    --deploy_end_time "1626804357000" \
-    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b"
+    --deploy_end_time "1626804357000"
 ```
 
 ---
