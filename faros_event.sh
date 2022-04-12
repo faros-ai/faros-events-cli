@@ -823,7 +823,7 @@ function addCommitToData() {
             --arg pull_request_number "$pull_request_number" \
             '.data.commit +=
             {
-                "pullRequestNumber": $pull_request_number,
+                "pullRequestNumber": $pull_request_number|tonumber,
             }' <<< "$request_body"
         )
     fi
