@@ -90,6 +90,7 @@ function help() {
     echo "Argument                | Req | Allowed Values / URI form"
     echo "-----------------------------------------------------------------------------"
     echo "--commit                | Yes | $commit_uri_form"
+    echo "--pull_request_number   |     | e.g. 1 (should be a number)"
     echo "--artifact              | Yes | $artifact_uri_form"
     echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *1  | $run_statuses"
@@ -107,20 +108,22 @@ function help() {
     echo "--deploy_status         | Yes | $deploy_statuses"
     echo "--artifact              | *2  | $artifact_uri_form"
     echo "--commit                | *2  | $commit_uri_form"
+    echo "--pull_request_number   |     | e.g. 1 (should be a number) *3"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_start_time     |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--deploy_end_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run                   |     | $run_uri_form"
-    echo "--run_status            | *3  | $run_statuses"
+    echo "--run_status            | *4  | $run_statuses"
     echo "--run_status_details    |     |"
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "*1 env must be: $envs"
     echo "*2 Either --artifact or --commit required"
-    echo "*3 If --run included"
+    echo "*3 Used only if --commit is included"
+    echo "*4 If --run included"
     echo
     echo "Additional Settings:"
     echo "--dry_run           Do not send the event."
@@ -202,6 +205,9 @@ function parseFlags() {
                 shift 2 ;;
             --commit)
                 commit_uri="$2"
+                shift 2 ;;
+            --pull_request_number)
+                pull_request_number="$2"
                 shift 2 ;;
             --artifact)
                 artifact_uri="$2"
@@ -687,6 +693,7 @@ function parseUri() {
 function parseCommitUri() {
     parseUri "${commit_uri:-$FAROS_COMMIT}" "commit_source" "commit_org" "commit_repo" "commit_sha" $commit_uri_form
 
+   pull_request_number=${pull_request_number:-$FAROS_PULL_REQUEST_NUMBER}
     if ! ((no_lowercase_vcs)); then
         commit_org=$(echo "$commit_org" | awk '{print tolower($0)}')
         commit_repo=$(echo "$commit_repo" | awk '{print tolower($0)}')
@@ -811,6 +818,15 @@ function addCommitToData() {
             }' <<< "$request_body"
         )
     fi
+    if ! [ -z "$pull_request_number" ]; then
+        request_body=$(jq \
+            --arg pull_request_number "$pull_request_number" \
+            '.data.commit +=
+            {
+                "pullRequestNumber": $pull_request_number,
+            }' <<< "$request_body"
+        )
+    fi
 }
 
 function addArtifactToData() {
@@ -856,7 +872,7 @@ function addRunToData() {
             }' <<< "$request_body"
         )
     fi
-     if ! [ -z "$run_name" ]; then
+    if ! [ -z "$run_name" ]; then
         has_run_status=1
         request_body=$(jq \
             --arg run_name "$run_name" \

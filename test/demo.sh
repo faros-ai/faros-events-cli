@@ -23,10 +23,23 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # ../faros_event.sh CI \
 #     --commit "vcs_source://vcs_org/vcs_repo/commit_sha"
 
-# # CI Event  
+# # CI (with pull request)
+# ../faros_event.sh CI \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --pull_request_number "1"
+
+# # CI Event
 # ../faros_event.sh CI \
 #     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
 #     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --run "run_source://run_org/run_pipeline/run_id" \
+#     --run_status "Success"
+
+# # CI Event (with pull request)
+# ../faros_event.sh CI \
+#     --artifact "artifact_source://artifact_org/artifact_repo/artifact_id" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --pull_request_number "1" \
 #     --run "run_source://run_org/run_pipeline/run_id" \
 #     --run_status "Success"
 
@@ -64,13 +77,22 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 #     --deploy_status "Success" \
 #     --run_status "Success"
 
-# # CD Event (with --no_build_object)
+# # CD Event (using commit and pull request)
+# ../faros_event.sh CD \
+#     --deploy "deploy_source://app/QA/deploy_id" \
+#     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
+#     --pull_request_number "1" \
+#     --run "run_source://run_org/run_pipeline/run_id" \
+#     --deploy_status "Success" \
+#     --run_status "Success"
+
+# # CD Event (with --skip-saving-run)
 # ../faros_event.sh CD \
 #     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --run "run_source://run_org/run_pipeline/run_id" \
 #     --deploy "deploy_source://app/QA/deploy_id" \
 #     --deploy_status "Success" \
-#     --no_build_object
+#     --skip-saving-run
 
 # # CD Event (with --no_lowercase_vcs)
 # ../faros_event.sh CD \
