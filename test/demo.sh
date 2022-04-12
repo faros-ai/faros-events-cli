@@ -90,6 +90,7 @@ export FAROS_DRY_RUN=1 # Set to 0 or comment out to send the event to Faros
 # ../faros_event.sh CD \
 #     --commit "vcs_source://vcs_org/vcs_repo/commit_sha" \
 #     --run "run_source://run_org/run_pipeline/run_id" \
+#     --run_status "Success" \
 #     --deploy "deploy_source://app/QA/deploy_id" \
 #     --deploy_status "Success" \
 #     --skip_saving_run
