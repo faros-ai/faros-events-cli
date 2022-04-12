@@ -108,7 +108,7 @@ function help() {
     echo "--deploy_status         | Yes | $deploy_statuses"
     echo "--artifact              | *2  | $artifact_uri_form"
     echo "--commit                | *2  | $commit_uri_form"
-    echo "--pull_request_number   |     | *3 | e.g. 123 (should be a number)"
+    echo "--pull_request_number   |     | *3 e.g. 123 (should be a number)"
     echo "--deploy_status_details |     |"
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"

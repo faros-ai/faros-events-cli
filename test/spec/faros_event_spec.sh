@@ -100,7 +100,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithCommitExpectedOutput"
     End
 
-    CDWithPullRequestExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":3,"endTime":4},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","pullRequestNumber":101},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":1,"endTime":2}}}'
+    CDWithPullRequestExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":"3","endTime":"4"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","pullRequestNumber":101},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1","endTime":"2"}}}'
 
     It 'constructs correct event when commmit and pull request included using flags'
       cd_event_test() {
@@ -254,6 +254,21 @@ Describe 'faros_event.sh'
           --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
           --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
           --pull_request_number "101" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success"
+        )
+      }
+      When call ci_event_test
+      The output should include "$CIWithPullRequestExpectedOutput"
+    End
+
+    It 'constructs correct event when pull request included as number input'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --pull_request_number 101 \
           --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
           --run_status "Success"
         )
