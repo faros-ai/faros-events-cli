@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-version="0.4.1"
+version="0.4.2"
 canonical_model_version="0.10.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -777,7 +777,7 @@ function addDeployToData() {
             --arg deploy_start_time "$deploy_start_time" \
             '.data.deploy +=
             {
-                "startTime": $deploy_start_time|tonumber
+                "startTime": $deploy_start_time
             }' <<< "$request_body"
         )
     fi
@@ -786,7 +786,7 @@ function addDeployToData() {
             --arg deploy_end_time "$deploy_end_time" \
             '.data.deploy +=
             {
-                "endTime": $deploy_end_time|tonumber
+                "endTime": $deploy_end_time
             }' <<< "$request_body"
         )
     fi
@@ -891,7 +891,7 @@ function addRunToData() {
             --arg run_start_time "$run_start_time" \
             '.data.run +=
             {
-                "startTime": $run_start_time|tonumber
+                "startTime": $run_start_time
             }' <<< "$request_body"
         )
     fi
@@ -901,7 +901,7 @@ function addRunToData() {
             --arg run_end_time "$run_end_time" \
             '.data.run +=
             {
-                "endTime": $run_end_time|tonumber
+                "endTime": $run_end_time
             }' <<< "$request_body"
         )
     fi
