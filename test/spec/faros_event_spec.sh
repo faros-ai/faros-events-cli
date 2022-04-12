@@ -246,7 +246,8 @@ Describe 'faros_event.sh'
     End
 
     CIWithPullRequestExpectedOutput='{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event","data":{"artifact":{"id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","pullRequestNumber":101},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success"}}}'
-    It 'constructs correct event when pull request is included'
+
+    It 'constructs correct event when pull request included'
       ci_event_test() {
         echo $(
           ../faros_event.sh CI -k "<api_key>" \
@@ -261,7 +262,7 @@ Describe 'faros_event.sh'
       The output should include "$CIWithPullRequestExpectedOutput"
     End
 
-    It 'constructs correct event when pull request is included using environment variables'
+    It 'constructs correct event when pull request included using environment variables'
       ci_event_test() {
         echo $(
           FAROS_API_KEY="<api_key>" \
