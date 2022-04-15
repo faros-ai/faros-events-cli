@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-version="0.4.2"
+version="0.4.3"
 canonical_model_version="0.10.10"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -23,7 +23,7 @@ FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
 HASURA_URL_DEFAULT="http://localhost:8080"
 
-declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Custom")
+declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Canary" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
 declare -a BUILD_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "Unknown" "Custom")
 run_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
