@@ -385,7 +385,7 @@ Describe 'faros_event.sh'
       }
       Intercept pipefail_intercept
       __pipefail_intercept__() {
-        set_pipefail() { :; }
+        set_pipefail() { true; }
       }
 
       When run source ../faros_event.sh CI \
@@ -518,7 +518,7 @@ It 'All data present and skip_saving_run'
       }
       Intercept pipefail_intercept
       __pipefail_intercept__() {
-        set_pipefail() { :; }
+        set_pipefail() { true; }
       }
 
       When run source ../faros_event.sh CD \
