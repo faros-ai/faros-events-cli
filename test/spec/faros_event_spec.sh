@@ -383,10 +383,6 @@ Describe 'faros_event.sh'
       __begin__() {
         now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
       }
-      Intercept pipefail_intercept
-      __pipefail_intercept__() {
-        set_pipefail() { true; }
-      }
 
       When run source ../faros_event.sh CI \
                       --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
@@ -515,10 +511,6 @@ It 'All data present and skip_saving_run'
       Intercept begin
       __begin__() {
         now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
-      }
-      Intercept pipefail_intercept
-      __pipefail_intercept__() {
-        set_pipefail() { true; }
       }
 
       When run source ../faros_event.sh CD \
