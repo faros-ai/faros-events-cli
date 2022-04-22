@@ -378,6 +378,40 @@ Describe 'faros_event.sh'
       The output should include "$cicd_repository"
       The output should include "$cicd_artifact_commit_association"
     End
+    It 'Resolves literal Now and converts to iso8601 format'
+      Intercept begin
+      __begin__() {
+        now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
+      }
+
+      When run source ../faros_event.sh CI \
+                      --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+                      --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+                      --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+                      --run_status "Success" \
+                      --run_status_details "Some extra details" \
+                      --run_start_time "Now" \
+                      --run_end_time "2000" \
+                      --community_edition
+      The output should include '"run_start_time": "2022-04-22T18:31:46Z"'
+    End
+    It 'Leaves time unchanged if not Unix millis or Now'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "2022-04-22T18:36:28Z" \
+          --run_end_time "2000" \
+          --community_edition
+        )
+      }
+      When call ci_event_test
+      The output should include '"run_start_time": "2022-04-22T18:36:28Z"'
+    End
     It 'No run data'
       ci_event_test() {
         echo $(
@@ -472,6 +506,46 @@ It 'All data present and skip_saving_run'
       The output should include "$cicd_pipeline"
       The output should include "$cicd_organization_from_run"
       The output should include "$cicd_deployment_with_build"
+    End
+    It 'Resolves literal Now and converts to iso8601 format'
+      Intercept begin
+      __begin__() {
+        now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
+      }
+
+      When run source ../faros_event.sh CD \
+                      --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+                      --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+                      --run_status "Success" \
+                      --run_status_details "Some extra details" \
+                      --run_start_time "1000" \
+                      --run_end_time "2000" \
+                      --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+                      --deploy_status "Success" \
+                      --deploy_start_time "Now" \
+                      --deploy_end_time "4000" \
+                      --community_edition
+      The output should include '"deploy_start_time": "2022-04-22T18:31:46Z"'
+    End
+    It 'Leaves time unchanged if not Unix millis or Now'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "2022-04-22T18:31:46Z" \
+          --deploy_end_time "4000" \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include '"deploy_start_time": "2022-04-22T18:31:46Z"'
     End
     It 'No run data'
       cd_event_test() {
