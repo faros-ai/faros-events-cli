@@ -4,12 +4,12 @@
 # See https://github.com/shellspec/shellspec#intercepting for details.
 test || __() { :; }
 
-__ pipefail __
-function pipefail() {
+__ pipefail_intercept __
+function set_pipefail() {
     set -eo pipefail
 }
 
-pipefail
+set_pipefail
 
 version="0.4.2"
 canonical_model_version="0.10.10"
