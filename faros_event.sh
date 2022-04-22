@@ -4,7 +4,7 @@
 # See https://github.com/shellspec/shellspec#intercepting for details.
 test || __() { :; }
 
-test || set -eo pipefail
+set -eo pipefail 2> /dev/null
 
 version="0.4.2"
 canonical_model_version="0.10.10"
