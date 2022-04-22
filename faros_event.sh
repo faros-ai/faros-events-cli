@@ -5,7 +5,7 @@
 test || __() { :; }
 
 __ pipefail_intercept __
-function set_pipefail() {
+function set_pipefail {
     set -eo pipefail
 }
 
