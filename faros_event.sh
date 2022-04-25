@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This is used for testing purposes. It is a noop unless under testing with shellspec
+# See https://github.com/shellspec/shellspec#intercepting for details.
+test || __() { :; }
+
 set -eo pipefail
 
 version="0.4.3"
@@ -22,6 +26,7 @@ FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
 HASURA_URL_DEFAULT="http://localhost:8080"
+HASURA_ADMIN_SECRET_DEFAULT="admin"
 
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Canary" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
@@ -81,6 +86,7 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "-k / --api_key          | *1  |"
     echo "-u / --url              |     | $FAROS_URL_DEFAULT ($HASURA_URL_DEFAULT if --community_edition specified)"
+    echo "--hasura_admin_secret   |     | \"$HASURA_ADMIN_SECRET_DEFAULT\" (only used if --community_edition specified)"
     echo "-g / --graph            |     | \"$FAROS_GRAPH_DEFAULT\""
     echo "--origin                |     | \"$FAROS_ORIGIN_DEFAULT\""
     echo "*1 Unless --community_edition specified"
@@ -254,6 +260,9 @@ function parseFlags() {
             -u|--url)
                 url="$2"
                 shift 2 ;;
+            --hasura_admin_secret)
+                hasura_admin_secret="$2"
+                shift 2 ;;
             --no_lowercase_vcs)
                 no_lowercase_vcs=1
                 shift ;;
@@ -350,8 +359,22 @@ function processEventTypes() {
     fi
 }
 
-function unix_millis_to_iso8601() {
-    jq -r '. / 1000 | todate' <<< "$1"
+function now_as_iso8601() {
+    jq -nr 'now | todate'
+}
+
+# Attempt to convert to iso8601 format
+# Converts from Unix millis or the literal 'Now'
+# Anything else is returned unchanged
+function convert_to_iso8601() {
+    if [[ "$1" =~ ^[0-9]+$ ]]; then
+        jq -r '. / 1000 | todate' <<< "$1"
+    elif [[ "$1" =~ ^Now$ ]]; then
+        __ begin __
+        now_as_iso8601
+    else
+        echo "$1"
+    fi
 }
 
 function make_commit_key() {
@@ -415,8 +438,8 @@ function doCDMutations() {
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
     if ! [ -z "$deploy_start_time" ] &&
         ! [ -z "$deploy_end_time" ]; then
-        start_time=$(unix_millis_to_iso8601 "$deploy_start_time")
-        end_time=$(unix_millis_to_iso8601 "$deploy_end_time")
+        start_time=$(convert_to_iso8601 "$deploy_start_time")
+        end_time=$(convert_to_iso8601 "$deploy_end_time")
         start_end=$( jq -n \
                         --arg start_time "$start_time" \
                         --arg end_time "$end_time" \
@@ -474,8 +497,8 @@ function make_mutations_from_run {
         fi
         if ! [ -z "$has_run_start_time" ] &&
             ! [ -z "$has_run_end_time" ]; then
-            start_time=$(unix_millis_to_iso8601 "$run_start_time")
-            end_time=$(unix_millis_to_iso8601 "$run_end_time")
+            start_time=$(convert_to_iso8601 "$run_start_time")
+            end_time=$(convert_to_iso8601 "$run_end_time")
             cicd_Build_with_start_end=$( jq -n \
                             --arg run_status "$run_status" \
                             --arg run_status_details "$run_status_details" \
@@ -557,6 +580,7 @@ function make_mutation() {
             --write-out "HTTPSTATUS:%{http_code}" -X POST \
             "$url/api/rest/$1" \
             -H "content-type: application/json" \
+            -H "X-Hasura-Admin-Secret: $hasura_admin_secret" \
             -d "$data")
 
         http_response_status=$(echo "$http_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
@@ -609,6 +633,7 @@ function resolveInput() {
         url=${url:-$FAROS_URL}
     else
         url=${url:-$HASURA_URL}
+        hasura_admin_secret=${hasura_admin_secret:-$HASURA_ADMIN_SECRET}
     fi
     origin=${origin:-$FAROS_ORIGIN}
 
@@ -623,6 +648,7 @@ function resolveDefaults() {
     FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
     FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
     HASURA_URL=${HASURA_URL:-$HASURA_URL_DEFAULT}
+    HASURA_ADMIN_SECRET=${HASURA_ADMIN_SECRET:-$HASURA_ADMIN_SECRET_DEFAULT}
 }
 
 function resolveCDInput() {
@@ -780,8 +806,9 @@ function addDeployToData() {
         )
     fi
     if ! [ -z "$deploy_start_time" ]; then
+        start_time=$(convert_to_iso8601 "$deploy_start_time")
         request_body=$(jq \
-            --arg deploy_start_time "$deploy_start_time" \
+            --arg deploy_start_time "$start_time" \
             '.data.deploy +=
             {
                 "startTime": $deploy_start_time
@@ -789,8 +816,9 @@ function addDeployToData() {
         )
     fi
     if ! [ -z "$deploy_end_time" ]; then
+        end_time=$(convert_to_iso8601 "$deploy_end_time")
         request_body=$(jq \
-            --arg deploy_end_time "$deploy_end_time" \
+            --arg deploy_end_time "$end_time" \
             '.data.deploy +=
             {
                 "endTime": $deploy_end_time
@@ -903,8 +931,9 @@ function addRunToData() {
     fi
     if ! [ -z "$run_start_time" ]; then
         has_run_start_time=1
+        start_time=$(convert_to_iso8601 "$run_start_time")
         request_body=$(jq \
-            --arg run_start_time "$run_start_time" \
+            --arg run_start_time "$start_time" \
             '.data.run +=
             {
                 "startTime": $run_start_time
@@ -913,8 +942,9 @@ function addRunToData() {
     fi
     if ! [ -z "$run_end_time" ]; then
         has_run_end_time=1
+        end_time=$(convert_to_iso8601 "$run_end_time")
         request_body=$(jq \
-            --arg run_end_time "$run_end_time" \
+            --arg run_end_time "$end_time" \
             '.data.run +=
             {
                 "endTime": $run_end_time
