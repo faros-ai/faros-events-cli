@@ -10,7 +10,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.2/faros_event.sh) and execute it:
+1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.4.3/faros_event.sh) and execute it:
 
 ```sh
 ./faros_event.sh help
@@ -19,7 +19,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines by sen
 2. Or download it with `curl` and invoke it in one command:
 
 ```sh
-export FAROS_CLI_VERSION="v0.4.2"
+export FAROS_CLI_VERSION="v0.4.3"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
@@ -30,13 +30,13 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_V
 1. Pull the image:
 
 ```sh
-docker pull farosai/faros-events-cli:v0.4.2
+docker pull farosai/faros-events-cli:v0.4.3
 ```
 
 2. Run it:
 
 ```sh
-docker run farosai/faros-events-cli:v0.4.2 help
+docker run farosai/faros-events-cli:v0.4.3 help
 ```
 
 ### :book: Event Types
@@ -121,7 +121,7 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 
 | Argument                              | Description                                                                                                                                                   | Required                                                  | Allowed Value                                                  |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Custom         |
+| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Canary, Custom         |
 | &#x2011;&#x2011;deploy_status         | The status of the deployment.                                                                                                                                 | Yes                                                       | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
 | &#x2011;&#x2011;artifact              | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
 | &#x2011;&#x2011;commit                | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
