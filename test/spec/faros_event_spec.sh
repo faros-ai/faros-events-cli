@@ -163,6 +163,54 @@ Describe 'faros_event.sh'
       When call cd_event_test
       The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success"},"artifact":{"id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"}}}'
     End
+    It 'Resolves literal Now and converts to iso8601 format'
+      Intercept begin
+      __begin__() {
+        now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
+      }
+
+      When run source ../faros_event.sh CD -k "<api_key>" \
+                      --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+                      --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+                      --run_status "Success" \
+                      --run_status_details "<run_status_details>" \
+                      --run_start_time "Now" \
+                      --run_end_time "Now" \
+                      --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
+                      --deploy_app_platform "<deploy_app_platform>" \
+                      --deploy_env_details "<deploy_env_details>" \
+                      --deploy_status "Success" \
+                      --deploy_status_details "<deploy_status_details>" \
+                      --deploy_start_time "Now" \
+                      --deploy_end_time "Now"
+      The output should include '"startTime":"2022-04-22T18:31:46Z"'
+      The output should include '"endTime":"2022-04-22T18:31:46Z"'
+    End
+    It 'Leaves time unchanged if not Unix millis or Now'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --artifact "<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_status "Success" \
+          --run_status_details "<run_status_details>" \
+          --run_start_time "2022-04-22T18:36:01Z" \
+          --run_end_time "2022-04-22T18:36:02Z" \
+          --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
+          --deploy_app_platform "<deploy_app_platform>" \
+          --deploy_env_details "<deploy_env_details>" \
+          --deploy_status "Success" \
+          --deploy_status_details "<deploy_status_details>" \
+          --deploy_start_time "2022-04-22T18:36:03Z" \
+          --deploy_end_time "2022-04-22T18:36:04Z"
+        )
+      }
+      When call ci_event_test
+      The output should include '"startTime":"2022-04-22T18:36:01Z"'
+      The output should include '"endTime":"2022-04-22T18:36:02Z"'
+      The output should include '"startTime":"2022-04-22T18:36:03Z"'
+      The output should include '"endTime":"2022-04-22T18:36:04Z"'
+    End
   End
 
   Describe 'CI event'
