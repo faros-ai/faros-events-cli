@@ -806,8 +806,9 @@ function addDeployToData() {
         )
     fi
     if ! [ -z "$deploy_start_time" ]; then
+        start_time=$(convert_to_iso8601 "$deploy_start_time")
         request_body=$(jq \
-            --arg deploy_start_time "$deploy_start_time" \
+            --arg deploy_start_time "$start_time" \
             '.data.deploy +=
             {
                 "startTime": $deploy_start_time
@@ -815,8 +816,9 @@ function addDeployToData() {
         )
     fi
     if ! [ -z "$deploy_end_time" ]; then
+        end_time=$(convert_to_iso8601 "$deploy_end_time")
         request_body=$(jq \
-            --arg deploy_end_time "$deploy_end_time" \
+            --arg deploy_end_time "$end_time" \
             '.data.deploy +=
             {
                 "endTime": $deploy_end_time
@@ -929,8 +931,9 @@ function addRunToData() {
     fi
     if ! [ -z "$run_start_time" ]; then
         has_run_start_time=1
+        start_time=$(convert_to_iso8601 "$run_start_time")
         request_body=$(jq \
-            --arg run_start_time "$run_start_time" \
+            --arg run_start_time "$start_time" \
             '.data.run +=
             {
                 "startTime": $run_start_time
@@ -939,8 +942,9 @@ function addRunToData() {
     fi
     if ! [ -z "$run_end_time" ]; then
         has_run_end_time=1
+        end_time=$(convert_to_iso8601 "$run_end_time")
         request_body=$(jq \
-            --arg run_end_time "$run_end_time" \
+            --arg run_end_time "$end_time" \
             '.data.run +=
             {
                 "endTime": $run_end_time
