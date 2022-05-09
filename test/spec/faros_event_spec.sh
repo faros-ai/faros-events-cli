@@ -402,6 +402,7 @@ Describe 'faros_event.sh'
     cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
     cicd_artifact='Calling Hasura rest endpoint cicd_artifact with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_origin": "Faros_Script_Event" }'
     cicd_build='Calling Hasura rest endpoint cicd_build with payload { "run_status": { "category": "Success", "detail": "Some extra details" }, "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>", "data_origin": "Faros_Script_Event" }'
+    vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
 
     It 'All data present'
       ci_event_test() {
@@ -409,6 +410,7 @@ Describe 'faros_event.sh'
           ../faros_event.sh CI \
           --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
           --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --pull_request_number 1 \
           --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
           --run_status "Success" \
           --run_status_details "Some extra details" \
@@ -425,6 +427,7 @@ Describe 'faros_event.sh'
       The output should include "$cicd_organization"
       The output should include "$cicd_repository"
       The output should include "$cicd_artifact_commit_association"
+      The output should include "$vcs_pull_request_commit_association"
     End
     It 'Resolves literal Now and converts to iso8601 format'
       Intercept begin
@@ -529,6 +532,7 @@ It 'All data present and skip_saving_run'
     cicd_artifact_from_commit_info='Calling Hasura rest endpoint cicd_artifact_with_build with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>", "data_origin": "Faros_Script_Event" }'
     cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
     cicd_artifact_deployment_from_commit='Calling Hasura rest endpoint cicd_artifact_deployment with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
+    vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
 
     It 'All data present'
       cd_event_test() {
@@ -658,6 +662,27 @@ It 'All data present and skip_saving_run'
       The output should include "$cicd_deployment_with_build"
       The output should include "$cicd_artifact_commit_association"
       The output should include "$cicd_artifact_from_commit_info"
+    End
+    It 'Creates PR/commit association if PR number and commit data present'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD \
+          --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+          --pull_request_number 1 \
+          --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+          --run_status "Success" \
+          --run_status_details "Some extra details" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy "<deploy_source>://<application>/<environment>/<deploy_id>" \
+          --deploy_status "Success" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000" \
+          --community_edition
+        )
+      }
+      When call cd_event_test
+      The output should include "$vcs_pull_request_commit_association"
     End
   End
 End
