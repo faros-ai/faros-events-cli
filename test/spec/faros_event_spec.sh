@@ -342,6 +342,148 @@ Describe 'faros_event.sh'
     End
   End
 
+  Describe 'TaskExecution event'
+    TestExecutionWithRunExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":"<test_stats>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
+
+    It 'constructs correct event when run included using flags'
+      test_execution_event_test() {
+          echo $(
+            ../faros_event.sh TEST_EXECUTION -k "<api_key>" \
+            --test_id "<test_id>" \
+            --test_source "<test_source>" \
+            --test_type "<test_type>" \
+            --test_type_details "<test_type_details>" \
+            --test_status "<test_status>" \
+            --test_status_details "<test_status_details>" \
+            --test_suite "<test_suite>" \
+            --test_stats "<test_stats>" \
+            --test_tags "<test_tags>" \
+            --environments "<environments>" \
+            --device_name "<device_name>" \
+            --device_os "<device_os>" \
+            --device_browser "<device_browser>" \
+            --device_type "<device_type>" \
+            --test_start_time "1000" \
+            --test_end_time "2000" \
+            --defect_task "<defect_task>" \
+            --test_suite_task "<test_suite_task>" \
+            --test_execution_task "<test_execution_task>" \
+            --task_source "<task_source>" \
+            --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+            --run_status "Success" \
+            --run_status_details "<run_status_details>" \
+            --run_start_time "1000" \
+            --run_end_time "2000" \
+          )
+      }
+      When call test_execution_event_test
+      The output should include $TestExecutionWithRunExpectedOutput
+    End
+
+    It 'constructs correct event when run included using environment variables'
+      test_execution_event_test() {
+          echo $(
+            FAROS_API_KEY="<api_key>" \
+            FAROS_TEST_ID="<test_id>" \
+            FAROS_TEST_SOURCE="<test_source>" \
+            FAROS_TEST_TYPE="<test_type>" \
+            FAROS_TEST_TYPE_DETAILS="<test_type_details>" \
+            FAROS_TEST_STATUS="<test_status>" \
+            FAROS_TEST_STATUS_DETAILS="<test_status_details>" \
+            FAROS_TEST_SUITE="<test_suite>" \
+            FAROS_TEST_STATS="<test_stats>" \
+            FAROS_TEST_TAGS="<test_tags>" \
+            FAROS_ENVIRONMENTS="<environments>" \
+            FAROS_DEVICE_NAME="<device_name>" \
+            FAROS_DEVICE_OS="<device_os>" \
+            FAROS_DEVICE_BROWSER="<device_browser>" \
+            FAROS_DEVICE_TYPE="<device_type>" \
+            FAROS_TEST_START_TIME="1000" \
+            FAROS_TEST_END_TIME="2000" \
+            FAROS_DEFECT_TASK="<defect_task>" \
+            FAROS_TEST_SUITE_TASK="<test_suite_task>" \
+            FAROS_TEST_EXECUTION_TASK="<test_execution_task>" \
+            FAROS_TASK_SOURCE="<task_source>" \
+            FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+            FAROS_RUN_STATUS="Success" \
+            FAROS_RUN_STATUS_DETAILS="<run_status_details>" \
+            FAROS_RUN_START_TIME="1000" \
+            FAROS_RUN_END_TIME="2000" \
+            ../faros_event.sh TEST_EXECUTION
+          )
+      }
+      When call test_execution_event_test
+      The output should include $TestExecutionWithRunExpectedOutput
+    End
+
+    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":"<test_stats>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"}}}'
+
+    It 'constructs correct event when run not included using flags'
+      test_execution_event_test() {
+          echo $(
+            ../faros_event.sh TEST_EXECUTION -k "<api_key>" \
+            --test_id "<test_id>" \
+            --test_source "<test_source>" \
+            --test_type "<test_type>" \
+            --test_type_details "<test_type_details>" \
+            --test_status "<test_status>" \
+            --test_status_details "<test_status_details>" \
+            --test_suite "<test_suite>" \
+            --test_stats "<test_stats>" \
+            --test_tags "<test_tags>" \
+            --environments "<environments>" \
+            --device_name "<device_name>" \
+            --device_os "<device_os>" \
+            --device_browser "<device_browser>" \
+            --device_type "<device_type>" \
+            --test_start_time "1000" \
+            --test_end_time "2000" \
+            --defect_task "<defect_task>" \
+            --test_suite_task "<test_suite_task>" \
+            --test_execution_task "<test_execution_task>" \
+            --task_source "<task_source>" \
+            --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
+          )
+      }
+      When call test_execution_event_test
+      The output should include $TestExecutionExpectedOutput
+    End
+
+    It 'constructs correct event when run not included using environment variables'
+      test_execution_event_test() {
+          echo $(
+            FAROS_API_KEY="<api_key>" \
+            FAROS_TEST_ID="<test_id>" \
+            FAROS_TEST_SOURCE="<test_source>" \
+            FAROS_TEST_TYPE="<test_type>" \
+            FAROS_TEST_TYPE_DETAILS="<test_type_details>" \
+            FAROS_TEST_STATUS="<test_status>" \
+            FAROS_TEST_STATUS_DETAILS="<test_status_details>" \
+            FAROS_TEST_SUITE="<test_suite>" \
+            FAROS_TEST_STATS="<test_stats>" \
+            FAROS_TEST_TAGS="<test_tags>" \
+            FAROS_ENVIRONMENTS="<environments>" \
+            FAROS_DEVICE_NAME="<device_name>" \
+            FAROS_DEVICE_OS="<device_os>" \
+            FAROS_DEVICE_BROWSER="<device_browser>" \
+            FAROS_DEVICE_TYPE="<device_type>" \
+            FAROS_TEST_START_TIME="1000" \
+            FAROS_TEST_END_TIME="2000" \
+            FAROS_DEFECT_TASK="<defect_task>" \
+            FAROS_TEST_SUITE_TASK="<test_suite_task>" \
+            FAROS_TEST_EXECUTION_TASK="<test_execution_task>" \
+            FAROS_TASK_SOURCE="<task_source>" \
+            FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            ../faros_event.sh TEST_EXECUTION
+          )
+      }
+      When call test_execution_event_test
+      The output should include $TestExecutionExpectedOutput
+    End
+  End
+
   Describe '--no_lowercase_vcs'
     It 'constructs correct commit object when present'
       ci_event_test() {

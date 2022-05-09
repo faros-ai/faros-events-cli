@@ -34,6 +34,10 @@ declare -a BUILD_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "Unk
 run_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${BUILD_STATUSES[*]}")")
 declare -a DEPLOY_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "RolledBack" "Custom")
 deploy_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${DEPLOY_STATUSES[*]}")")
+declare -a TEST_TYPES=("Functional" "Integration" "Manual" "Performance" "Regression" "Security" "Unit" "Custom")
+test_types=$(printf '%s\n' "$(IFS=,; printf '%s' "${TEST_TYPES[*]}")")
+declare -a TEST_STATUSES=("Custom" "Failure" "Skipped" "Success" "Unknown")
+test_statuses=$(printf '%s\n' "$(IFS=,; printf '%s' "${TEST_STATUSES[*]}")")
 
 commit_uri_form="source://organization/repository/commit_sha"
 artifact_uri_form="source://organization/repository/artifact_id"
@@ -69,6 +73,7 @@ function help() {
     printf "${RED}Event Types:${NC}\\n"
     echo "CI"
     echo "CD"
+    echo "TEST_EXECUTION"
     echo
     printf "${BLUE}Example Event:${NC}\\n"
     echo "./faros_event.sh CD -k \"<faros_api_key>\" \\"
@@ -126,10 +131,44 @@ function help() {
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
-    echo "*1 env must be: $envs"
+    echo "*1 environment must be: $envs"
     echo "*2 Either --artifact or --commit required"
     echo "*3 Used only if --commit is included"
     echo "*4 If --run included"
+    echo
+    printf "${BLUE}Test Execution Event Arguments:${NC}\\n"
+    echo "-----------------------------------------------------------------------------"
+    echo "Argument                | Req | Allowed Values / URI form"
+    echo "-----------------------------------------------------------------------------"
+    echo "--commit                | Yes | $commit_uri_form"
+    echo "--test_id               | Yes |"
+    echo "--test_source           | Yes |"
+    echo "--test_type             | Yes | $test_types"
+    echo "--test_type_details     |     |"
+    echo "--test_status           | Yes | $test_statuses"
+    echo "--test_status_details   |     |"
+    echo "--test_suite            | Yes | e.g. My test suite name"
+    echo "--test_stats            |     | e.g. failure=N,success=N,skipped=N,unknown=N,custom=N,total=N"
+    echo "--test_tags             |     | e.g. tag1,tag2,tag3"
+    echo "--environments          |     | e.g. env1,env2,env3"
+    echo "--device_name           |     | e.g. MacBook"
+    echo "--device_os             |     | e.g. OSX"
+    echo "--device_browser        |     | e.g. Chrome"
+    echo "--device_type           |     |"
+    echo "--test_start_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--test_end_time         |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--defect_task           |     | e.g. TEST-123"
+    echo "--test_suite_task       |     | e.g. TEST-123"
+    echo "--test_execution_task   |     | e.g. TEST-123"
+    echo "--task_source           | *1  | e.g. Jira"
+    echo "--run                   |     | $run_uri_form"
+    echo "--run_status            | *2  | $run_statuses"
+    echo "--run_status_details    |     |"
+    echo "--run_name              |     |"
+    echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "*1 If --defect_task, --test_suite_task, or --test_execution_task included"
+    echo "*2 If --run included"
     echo
     echo "Additional Settings:"
     echo "--dry_run           Do not send the event."
@@ -236,6 +275,66 @@ function parseFlags() {
             --deploy_end_time)
                 deploy_end_time="$2"
                 shift 2 ;;
+            --test_id)
+                test_id="$2"
+                shift 2 ;;
+            --test_source)
+                test_source="$2"
+                shift 2 ;;
+            --test_type)
+                test_type="$2"
+                shift 2 ;;
+            --test_type_details)
+                test_type_details="$2"
+                shift 2 ;;
+            --test_status)
+                test_status="$2"
+                shift 2 ;;
+            --test_status_details)
+                test_status_details="$2"
+                shift 2 ;;
+            --test_suite)
+                test_suite="$2"
+                shift 2 ;;
+            --test_stats)
+                test_stats="$2"
+                shift 2 ;;
+            --test_tags)
+                test_tags="$2"
+                shift 2 ;;
+            --environments)
+                environments="$2"
+                shift 2 ;;
+            --device_name)
+                device_name="$2"
+                shift 2 ;;
+            --device_os)
+                device_os="$2"
+                shift 2 ;;
+            --device_browser)
+                device_browser="$2"
+                shift 2 ;;
+            --device_type)
+                device_type="$2"
+                shift 2 ;;
+            --test_start_time)
+                test_start_time="$2"
+                shift 2 ;;
+            --test_end_time)
+                test_end_time="$2"
+                shift 2 ;;
+            --defect_task)
+                defect_task="$2"
+                shift 2 ;;
+            --test_suite_task)
+                test_suite_task="$2"
+                shift 2 ;;
+            --test_execution_task)
+                test_execution_task="$2"
+                shift 2 ;;
+            --task_source)
+                task_source="$2"
+                shift 2 ;;
             --run_name)
                 run_name="$2"
                 shift 2 ;;
@@ -313,6 +412,7 @@ function processArgs() {
 
     ci_event=0
     cd_event=0
+    test_execution_event=0
 
     # loop through positional args
     while (($#)); do
@@ -322,6 +422,9 @@ function processArgs() {
                 shift ;;
             CD)
                 cd_event=1
+                shift ;;
+            TEST_EXECUTION)
+                test_execution_event=1
                 shift ;;
             help)
                 help
@@ -355,6 +458,12 @@ function processEventTypes() {
         addDeployToData
         addArtifactToData
         addCommitToData
+        addRunToData
+    elif ((test_execution_event)); then
+        event_type="TestExecution"
+        makeEvent
+        resolveTestExecutionInput
+        addTestToData
         addRunToData
     fi
 }
@@ -682,6 +791,31 @@ function resolveCIInput() {
     resolveRunInput
 }
 
+function resolveTestExecutionInput() {
+    test_id=${test_id:-$FAROS_TEST_ID}
+    test_source=${test_source:-$FAROS_TEST_SOURCE}
+    test_type=${test_type:-$FAROS_TEST_TYPE}
+    test_type_details=${test_type_details:-$FAROS_TEST_TYPE_DETAILS}
+    test_status=${test_status:-$FAROS_TEST_STATUS}
+    test_status_details=${test_status_details:-$FAROS_TEST_STATUS_DETAILS}
+    test_suite=${test_suite:-$FAROS_TEST_SUITE}
+    test_stats=${test_stats:-$FAROS_TEST_STATS}
+    test_tags=${test_tags:-$FAROS_TEST_TAGS}
+    environments=${environments:-$FAROS_ENVIRONMENTS}
+    device_name=${device_name:-$FAROS_DEVICE_NAME}
+    device_os=${device_os:-$FAROS_DEVICE_OS}
+    device_browser=${device_browser:-$FAROS_DEVICE_BROWSER}
+    device_type=${device_type:-$FAROS_DEVICE_TYPE}
+    test_start_time=${test_start_time:-$FAROS_TEST_START_TIME}
+    test_end_time=${test_end_time:-$FAROS_TEST_END_TIME}
+    defect_task=${defect_task:-$FAROS_DEFECT_TASK}
+    test_suite_task=${test_suite_task:-$FAROS_TEST_SUITE_TASK}
+    test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
+    task_source=${task_source:-$FAROS_TASK_SOURCE}
+
+    resolveRunInput
+}
+
 function resolveRunInput() {
     if ! [ -z ${run_uri+x} ] || ! [ -z ${FAROS_RUN+x} ]; then
         parseRunUri
@@ -901,7 +1035,7 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_name" ]; then
-        has_run_status=1
+        has_run_name=1
         request_body=$(jq \
             --arg run_name "$run_name" \
             '.data.run +=
@@ -948,6 +1082,190 @@ function addRunToData() {
             '.data.run +=
             {
                 "endTime": $run_end_time
+            }' <<< "$request_body"
+        )
+    fi
+}
+
+function addTestToData() {
+    if ! [ -z "$test_id" ]; then
+        request_body=$(jq \
+            --arg test_id "$test_id" \
+            '.data.test +=
+            {
+                "id": $test_id
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_source" ]; then
+        request_body=$(jq \
+            --arg test_source "$test_source" \
+            '.data.test +=
+            {
+                "source": $test_source
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_type" ]; then
+        request_body=$(jq \
+            --arg test_type "$test_type" \
+            '.data.test +=
+            {
+                "type": $test_type
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_type_details" ]; then
+        request_body=$(jq \
+            --arg test_type_details "$test_type_details" \
+            '.data.test +=
+            {
+                "typeDetails": $test_type_details
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_status" ]; then
+        request_body=$(jq \
+            --arg test_status "$test_status" \
+            '.data.test +=
+            {
+                "status": $test_status
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_status_details" ]; then
+        request_body=$(jq \
+            --arg test_status_details "$test_status_details" \
+            '.data.test +=
+            {
+                "statusDetails": $test_status_details
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_suite" ]; then
+        request_body=$(jq \
+            --arg test_suite "$test_suite" \
+            '.data.test +=
+            {
+                "suite": $test_suite
+            }' <<< "$request_body"
+        )
+    fi
+    # TODO: Deal with test stats
+    if ! [ -z "$test_stats" ]; then
+        request_body=$(jq \
+            --arg test_stats "$test_stats" \
+            '.data.test +=
+            {
+                "stats": $test_stats
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_tags" ]; then
+        request_body=$(jq \
+            --arg test_tags "$test_tags" \
+            '.data.test +=
+            {
+                "tags": $test_tags
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$environments" ]; then
+        request_body=$(jq \
+            --arg environments "$environments" \
+            '.data.test +=
+            {
+                "environments": $environments
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_name" ]; then
+        request_body=$(jq \
+            --arg device_name "$device_name" \
+            '.data.test.deviceInfo +=
+            {
+                "name": $device_name
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_os" ]; then
+        request_body=$(jq \
+            --arg device_os "$device_os" \
+            '.data.test.deviceInfo +=
+            {
+                "os": $device_os
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_browser" ]; then
+        request_body=$(jq \
+            --arg device_browser "$device_browser" \
+            '.data.test.deviceInfo +=
+            {
+                "browser": $device_browser
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_type" ]; then
+        request_body=$(jq \
+            --arg device_type "$device_type" \
+            '.data.test.deviceInfo +=
+            {
+                "type": $device_type
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_start_time" ]; then
+        request_body=$(jq \
+            --arg test_start_time "$test_start_time" \
+            '.data.test +=
+            {
+                "startTime": $test_start_time
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_end_time" ]; then
+        request_body=$(jq \
+            --arg test_end_time "$test_end_time" \
+            '.data.test +=
+            {
+                "endTime": $test_end_time
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$defect_task" ]; then
+        request_body=$(jq \
+            --arg defect_task "$defect_task" \
+            '.data.test +=
+            {
+                "defectTask": $defect_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_suite_task" ]; then
+        request_body=$(jq \
+            --arg test_suite_task "$test_suite_task" \
+            '.data.test +=
+            {
+                "suiteTask": $test_suite_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_execution_task" ]; then
+        request_body=$(jq \
+            --arg test_execution_task "$test_execution_task" \
+            '.data.test +=
+            {
+                "executionTask": $test_execution_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$task_source" ]; then
+        request_body=$(jq \
+            --arg task_source "$task_source" \
+            '.data.test +=
+            {
+                "taskSource": $task_source
             }' <<< "$request_body"
         )
     fi
