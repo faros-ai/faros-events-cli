@@ -1060,7 +1060,6 @@ function addRunToData() {
         )
     fi
     if ! [ -z "$run_name" ]; then
-        has_run_name=1
         request_body=$(jq \
             --arg run_name "$run_name" \
             '.data.run +=
