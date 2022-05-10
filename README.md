@@ -241,7 +241,7 @@ brew install shellspec shellcheck
 Move to the `/test` directory and execute `shellspec`
 
 ```sh
-cd test && FAROS_DRY_RUN=1 shellspec
+cd test && shellspec
 ```
 
 #### Checking for bugs

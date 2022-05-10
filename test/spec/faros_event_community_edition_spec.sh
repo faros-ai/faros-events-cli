@@ -1,5 +1,6 @@
 Describe 'faros_event.sh (Community edition)'
   export FAROS_NO_FORMAT=1
+  export FAROS_DRY_RUN=1
 
   Describe 'Community edition CI event'
       cicd_organization_from_run='Calling Hasura rest endpoint cicd_organization_from_run with payload { "data_run_organization": "<run_organization>", "data_run_source": "<run_source>", "data_origin": "Faros_Script_Event" }'

@@ -1178,7 +1178,7 @@ function addTestToData() {
     if ! [ -z "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
-            IFS='=' read key value <<< "$i"
+            IFS='=' read -r key value <<< "$i"
             request_body=$(jq \
                 --arg key "$key" \
                 --arg value "$value" \
