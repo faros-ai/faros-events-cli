@@ -73,7 +73,7 @@ function help() {
     printf "${RED}Event Types:${NC}\\n"
     echo "CI"
     echo "CD"
-    echo "TEST_EXECUTION"
+    echo "TestExecution"
     echo
     printf "${BLUE}Example Event:${NC}\\n"
     echo "./faros_event.sh CD -k \"<faros_api_key>\" \\"
