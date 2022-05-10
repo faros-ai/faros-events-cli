@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.4.3"
+version="0.4.4"
 canonical_model_version="0.10.13"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -488,7 +488,7 @@ function convert_to_iso8601() {
 }
 
 function make_commit_key() {
-    keys_matching "$flat" "data_commit_.*"
+    jq '{data_commit_sha,data_commit_repository,data_commit_organization,data_commit_source}' <<< "$flat"
 }
 
 function make_artifact_key() {
@@ -506,6 +506,21 @@ function make_artifact_key() {
               "data_artifact_organization": $commit_org,
               "data_artifact_source": $commit_source,
           }'
+    fi
+}
+
+function doPullRequestCommitMutation() {
+    if ! [ -z "$has_commit" ] &&
+       ! [ -z "$pull_request_number" ]; then
+            pull_request=$( jq -n \
+                            --arg pull_request_number "$pull_request_number" \
+                            '{
+                                "data_pull_request_uid": $pull_request_number,
+                                "data_pull_request_number": $pull_request_number|tonumber,
+                            }'
+                        )
+            pull_request_commit=$(concat "$pull_request" "$commit_key")
+            make_mutation vcs_pull_request_commit_association "$pull_request_commit"
     fi
 }
 
@@ -595,6 +610,8 @@ function doCDMutations() {
         cicd_ArtifactCommitAssociation=$(concat "$artifact_key" "$commit_key")
         make_mutation cicd_artifact_commit_association "$cicd_ArtifactCommitAssociation"
     fi
+
+    doPullRequestCommitMutation
 }
 
 function make_mutations_from_run {
@@ -673,6 +690,8 @@ function doCIMutations() {
             '{data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
             )
     make_mutation cicd_organization "$cicd_Organization"
+
+    doPullRequestCommitMutation
 }
 
 function make_mutation() {
@@ -971,6 +990,7 @@ function addCommitToData() {
        ! [ -z "$commit_repo" ] &&
        ! [ -z "$commit_org" ] &&
        ! [ -z "$commit_source" ]; then
+        has_commit=1
         request_body=$(jq \
             --arg commit_sha "$commit_sha" \
             --arg commit_repo "$commit_repo" \
