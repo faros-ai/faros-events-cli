@@ -464,6 +464,7 @@ function processEventTypes() {
         makeEvent
         resolveTestExecutionInput
         addTestToData
+        addCommitToData
         addRunToData
     fi
 }
@@ -813,6 +814,10 @@ function resolveTestExecutionInput() {
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
     task_source=${task_source:-$FAROS_TASK_SOURCE}
 
+    if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
+        parseCommitUri
+    fi
+
     resolveRunInput
 }
 
@@ -1151,15 +1156,16 @@ function addTestToData() {
             }' <<< "$request_body"
         )
     fi
-    # TODO: Deal with test stats
     if ! [ -z "$test_stats" ]; then
-        request_body=$(jq \
-            --arg test_stats "$test_stats" \
-            '.data.test +=
-            {
-                "stats": $test_stats
-            }' <<< "$request_body"
-        )
+        IFS=',' read -ra ADDR <<< "$test_stats"
+        for i in "${ADDR[@]}"; do
+            IFS='=' read key value <<< "$i"
+            request_body=$(jq \
+                --arg key "$key" \
+                --arg value "$value" \
+                '.data.test.stats[$key] += $value' <<< "$request_body"
+            )
+        done        
     fi
     if ! [ -z "$test_tags" ]; then
         request_body=$(jq \
