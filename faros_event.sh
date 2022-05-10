@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.4.5"
+version="0.5.0"
 canonical_model_version="0.11.0"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -228,6 +228,9 @@ main() {
             doCIMutations
         elif ((cd_event)); then
             doCDMutations
+        else
+            err "Event type not support for community edition."
+            fail
         fi
     fi
 
@@ -250,6 +253,9 @@ function parseFlags() {
                 shift 2 ;;
             --commit)
                 commit_uri="$2"
+                shift 2 ;;
+            --branch)
+                branch="$2"
                 shift 2 ;;
             --pull_request_number)
                 pull_request_number="$2"
@@ -423,7 +429,7 @@ function processArgs() {
             CD)
                 cd_event=1
                 shift ;;
-            TEST_EXECUTION)
+            TestExecution)
                 test_execution_event=1
                 shift ;;
             help)
@@ -832,6 +838,7 @@ function resolveTestExecutionInput() {
     test_suite_task=${test_suite_task:-$FAROS_TEST_SUITE_TASK}
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
     task_source=${task_source:-$FAROS_TASK_SOURCE}
+    branch=${branch:-$FAROS_BRANCH}
 
     if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
         parseCommitUri
@@ -1011,6 +1018,15 @@ function addCommitToData() {
             '.data.commit +=
             {
                 "pullRequestNumber": $pull_request_number|tonumber,
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$branch" ]; then
+        request_body=$(jq \
+            --arg branch "$branch" \
+            '.data.commit +=
+            {
+                "branch": $branch,
             }' <<< "$request_body"
         )
     fi

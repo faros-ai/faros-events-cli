@@ -344,12 +344,12 @@ Describe 'faros_event.sh'
   End
 
   Describe 'TaskExecution event'
-    TestExecutionWithRunExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":{"failure":"N","success":"N","skipped":"N","unknown":"N","custom":"N","total":"N"},"tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
+    TestExecutionWithRunExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":{"failure":"N","success":"N","skipped":"N","unknown":"N","custom":"N","total":"N"},"tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
 
     It 'constructs correct event when run included using flags'
       test_execution_event_test() {
           echo $(
-            ../faros_event.sh TEST_EXECUTION -k "<api_key>" \
+            ../faros_event.sh TestExecution -k "<api_key>" \
             --test_id "<test_id>" \
             --test_source "<test_source>" \
             --test_type "<test_type>" \
@@ -371,6 +371,7 @@ Describe 'faros_event.sh'
             --test_execution_task "<test_execution_task>" \
             --task_source "<task_source>" \
             --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            --branch "<branch>" \
             --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
             --run_status "Success" \
             --run_status_details "<run_status_details>" \
@@ -407,24 +408,25 @@ Describe 'faros_event.sh'
             FAROS_TEST_EXECUTION_TASK="<test_execution_task>" \
             FAROS_TASK_SOURCE="<task_source>" \
             FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            FAROS_BRANCH="<branch>" \
             FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
             FAROS_RUN_STATUS="Success" \
             FAROS_RUN_STATUS_DETAILS="<run_status_details>" \
             FAROS_RUN_START_TIME="1000" \
             FAROS_RUN_END_TIME="2000" \
-            ../faros_event.sh TEST_EXECUTION
+            ../faros_event.sh TestExecution
           )
       }
       When call test_execution_event_test
       The output should include $TestExecutionWithRunExpectedOutput
     End
 
-    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":{"failure":"N","success":"N","skipped":"N","unknown":"N","custom":"N","total":"N"},"tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"}}}'
+    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","stats":{"failure":"N","success":"N","skipped":"N","unknown":"N","custom":"N","total":"N"},"tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"startTime":"1000","endTime":"2000","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"}}}'
 
     It 'constructs correct event when run not included using flags'
       test_execution_event_test() {
           echo $(
-            ../faros_event.sh TEST_EXECUTION -k "<api_key>" \
+            ../faros_event.sh TestExecution -k "<api_key>" \
             --test_id "<test_id>" \
             --test_source "<test_source>" \
             --test_type "<test_type>" \
@@ -445,7 +447,8 @@ Describe 'faros_event.sh'
             --test_suite_task "<test_suite_task>" \
             --test_execution_task "<test_execution_task>" \
             --task_source "<task_source>" \
-            --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>"
+            --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+            --branch "<branch>"
           )
       }
       When call test_execution_event_test
@@ -477,7 +480,8 @@ Describe 'faros_event.sh'
             FAROS_TEST_EXECUTION_TASK="<test_execution_task>" \
             FAROS_TASK_SOURCE="<task_source>" \
             FAROS_COMMIT="<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
-            ../faros_event.sh TEST_EXECUTION
+            FAROS_BRANCH="<branch>" \
+            ../faros_event.sh TestExecution
           )
       }
       When call test_execution_event_test
