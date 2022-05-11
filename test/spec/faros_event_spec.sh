@@ -345,7 +345,7 @@ Describe 'faros_event.sh'
 
   Describe 'TaskExecution event'
 
-    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":"N","success":"N","skipped":"N","unknown":"N","custom":"N","total":"N"},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"}}}'
+    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":1,"success":2,"skipped":3,"unknown":4,"custom":5,"total":15},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"}}}'
 
     It 'constructs correct event when run not included using flags'
       test_execution_event_test() {
@@ -358,7 +358,7 @@ Describe 'faros_event.sh'
             --test_status "<test_status>" \
             --test_status_details "<test_status_details>" \
             --test_suite "<test_suite>" \
-            --test_stats "failure=N,success=N,skipped=N,unknown=N,custom=N,total=N" \
+            --test_stats "failure=1,success=2,skipped=3,unknown=4,custom=5,total=15" \
             --test_tags "<test_tags>" \
             --environments "<environments>" \
             --device_name "<device_name>" \
@@ -390,7 +390,7 @@ Describe 'faros_event.sh'
             FAROS_TEST_STATUS="<test_status>" \
             FAROS_TEST_STATUS_DETAILS="<test_status_details>" \
             FAROS_TEST_SUITE="<test_suite>" \
-            FAROS_TEST_STATS="failure=N,success=N,skipped=N,unknown=N,custom=N,total=N" \
+            FAROS_TEST_STATS="failure=1,success=2,skipped=3,unknown=4,custom=5,total=15" \
             FAROS_TEST_TAGS="<test_tags>" \
             FAROS_ENVIRONMENTS="<environments>" \
             FAROS_DEVICE_NAME="<device_name>" \

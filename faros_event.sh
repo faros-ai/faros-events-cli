@@ -1278,7 +1278,7 @@ function addTestToData() {
             request_body=$(jq \
                 --arg key "$key" \
                 --arg value "$value" \
-                '.data.test.stats[$key] += $value' <<< "$request_body"
+                '.data.test.stats[$key] += ($value|tonumber)' <<< "$request_body"
             )
         done        
     fi
