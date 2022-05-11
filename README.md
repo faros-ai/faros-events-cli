@@ -41,7 +41,7 @@ docker run farosai/faros-events-cli:v0.5.0 help
 
 ### :book: Event Types
 
-An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline that you are instrumenting.
+An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your CI/CD or Test pipeline that you are instrumenting.
 
 - Use Continuous Integration (CI) events to instrument code build pipelines. For example, you can report the result of a successful code build & artifact release:
 
@@ -66,10 +66,10 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
     --deploy_end_time "1626804357000"
 ```
 
-- Use Test Execution (TEST_EXECUTION) events to instrument test processes. For example, you can report the result of a successful test:
+- Use Test Execution (TestExecution) events to instrument test processes. For example, you can report the result of a successful test:
 
 ```sh
-./faros_event.sh CD -k "<faros_api_key>" \
+./faros_event.sh TestExecution -k "<faros_api_key>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --test_id "<test_id>" \
     --test_source "<test_source>" \
@@ -81,7 +81,7 @@ An event type (e.g. `CI`, `CD`) corresponds to the step of your CI/CD pipeline t
     --test_end_time "Now"
 ```
 
-Below is a more detailed diagram illustrating the use of CI & CD events:
+Below is a more detailed diagram illustrating the use of CI, CD & TestExecution events:
 
 ![When to send an event](resources/Faros_CI_CD_Events.png)
 
@@ -152,9 +152,9 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 | &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                  |                                                           |                                                                |
 | &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                    |                                                           |                                                                |
 
-#### Test Execution Event - `TEST_EXECUTION`
+#### Test Execution Event - `TestExecution`
 
-A `TEST_EXECUTION` event communicates the outcome, as well as the context, of a test.
+A `TestExecution` event communicates the outcome, as well as the context, of a test.
 
 #### Test Execution Arguments
 
