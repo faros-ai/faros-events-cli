@@ -471,7 +471,6 @@ function processEventTypes() {
         resolveTestExecutionInput
         addTestToData
         addCommitToData
-        addRunToData
     fi
 }
 
@@ -843,8 +842,6 @@ function resolveTestExecutionInput() {
     if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
         parseCommitUri
     fi
-
-    resolveRunInput
 }
 
 function resolveRunInput() {
