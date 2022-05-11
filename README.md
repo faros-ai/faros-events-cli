@@ -66,7 +66,7 @@ An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your
     --deploy_end_time "1626804357000"
 ```
 
-- Use Test Execution (TestExecution) events to instrument test processes. For example, you can report the result of a successful test:
+- Use Test Execution (TestExecution) events to instrument test processes. For example, you can report the result of a successful test suite invocation:
 
 ```sh
 ./faros_event.sh TestExecution -k "<faros_api_key>" \
