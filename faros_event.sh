@@ -1125,25 +1125,159 @@ function addRunToData() {
 }
 
 function addTestToData() {
-    request_body=$(echo $request_body | \
-        jq --arg val $test_id '.data.test+={"id":$val}' | \
-        jq --arg val $test_source '.data.test+={"source":$val}' | \
-        jq --arg val $test_type '.data.test+={"type":$val}' | \
-        jq --arg val $test_type_details '.data.test+={"typeDetails":$val}' | \
-        jq --arg val $test_status '.data.test+={"status":$val}' | \
-        jq --arg val $test_status_details '.data.test+={"statusDetails":$val}' | \
-        jq --arg val $test_suite '.data.test+={"suite":$val}' | \
-        jq --arg val $test_tags '.data.test+={"tags":$val}' | \
-        jq --arg val $environments '.data.test+={"environments":$val}' | \
-        jq --arg val $device_name '.data.test.deviceInfo+={"name":$val}' | \
-        jq --arg val $device_os '.data.test.deviceInfo+={"os":$val}' | \
-        jq --arg val $device_browser '.data.test.deviceInfo+={"browser":$val}' | \
-        jq --arg val $device_type '.data.test.deviceInfo+={"type":$val}' | \
-        jq --arg val $defect_task '.data.test+={"defectTask":$val}' | \
-        jq --arg val $test_suite_task '.data.test+={"suiteTask":$val}' | \
-        jq --arg val $test_execution_task '.data.test+={"executionTask":$val}' | \
-        jq --arg val $task_source '.data.test+={"taskSource":$val}'
-    )
+    if ! [ -z "$test_id" ]; then
+        request_body=$(jq \
+            --arg test_id "$test_id" \
+            '.data.test +=
+            {
+                "id": $test_id
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_source" ]; then
+        request_body=$(jq \
+            --arg test_source "$test_source" \
+            '.data.test +=
+            {
+                "source": $test_source
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_type" ]; then
+        request_body=$(jq \
+            --arg test_type "$test_type" \
+            '.data.test +=
+            {
+                "type": $test_type
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_type_details" ]; then
+        request_body=$(jq \
+            --arg test_type_details "$test_type_details" \
+            '.data.test +=
+            {
+                "typeDetails": $test_type_details
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_status" ]; then
+        request_body=$(jq \
+            --arg test_status "$test_status" \
+            '.data.test +=
+            {
+                "status": $test_status
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_status_details" ]; then
+        request_body=$(jq \
+            --arg test_status_details "$test_status_details" \
+            '.data.test +=
+            {
+                "statusDetails": $test_status_details
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_suite" ]; then
+        request_body=$(jq \
+            --arg test_suite "$test_suite" \
+            '.data.test +=
+            {
+                "suite": $test_suite
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_tags" ]; then
+        request_body=$(jq \
+            --arg test_tags "$test_tags" \
+            '.data.test +=
+            {
+                "tags": $test_tags
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$environments" ]; then
+        request_body=$(jq \
+            --arg environments "$environments" \
+            '.data.test +=
+            {
+                "environments": $environments
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_name" ]; then
+        request_body=$(jq \
+            --arg device_name "$device_name" \
+            '.data.test.deviceInfo +=
+            {
+                "name": $device_name
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_os" ]; then
+        request_body=$(jq \
+            --arg device_os "$device_os" \
+            '.data.test.deviceInfo +=
+            {
+                "os": $device_os
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_browser" ]; then
+        request_body=$(jq \
+            --arg device_browser "$device_browser" \
+            '.data.test.deviceInfo +=
+            {
+                "browser": $device_browser
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$device_type" ]; then
+        request_body=$(jq \
+            --arg device_type "$device_type" \
+            '.data.test.deviceInfo +=
+            {
+                "type": $device_type
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$defect_task" ]; then
+        request_body=$(jq \
+            --arg defect_task "$defect_task" \
+            '.data.test +=
+            {
+                "defectTask": $defect_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_suite_task" ]; then
+        request_body=$(jq \
+            --arg test_suite_task "$test_suite_task" \
+            '.data.test +=
+            {
+                "suiteTask": $test_suite_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_execution_task" ]; then
+        request_body=$(jq \
+            --arg test_execution_task "$test_execution_task" \
+            '.data.test +=
+            {
+                "executionTask": $test_execution_task
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$task_source" ]; then
+        request_body=$(jq \
+            --arg task_source "$task_source" \
+            '.data.test +=
+            {
+                "taskSource": $task_source
+            }' <<< "$request_body"
+        )
+    fi
     if ! [ -z "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
