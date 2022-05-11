@@ -39,6 +39,27 @@ Describe 'faros_event.sh (Community edition)'
         The output should include "$cicd_artifact_commit_association"
         The output should include "$vcs_pull_request_commit_association"
       End
+      vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "my_origin" }'
+
+      It 'Uses origin from flag'
+        ci_event_test() {
+          echo $(
+            ../faros_event.sh CI \
+            --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+            --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+            --pull_request_number 1 \
+            --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+            --run_status "Success" \
+            --run_status_details "Some extra details" \
+            --run_start_time "1000" \
+            --run_end_time "2000" \
+            --origin my_origin \
+            --community_edition
+          )
+        }
+        When call ci_event_test
+        The output should include "$vcs_pull_request_commit_association"
+      End
       It 'Resolves literal Now and converts to iso8601 format'
         Intercept begin
         __begin__() {

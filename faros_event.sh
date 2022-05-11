@@ -701,7 +701,7 @@ function doCIMutations() {
 
 function make_mutation() {
     entity_origin=$( jq -n \
-                --arg data_origin "$FAROS_ORIGIN" \
+                --arg data_origin "$origin" \
                 '{"data_origin": $data_origin}'
             )
     data=$(concat "$2" "$entity_origin")
