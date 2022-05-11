@@ -1126,23 +1126,23 @@ function addRunToData() {
 
 function addTestToData() {
     request_body=$(echo $request_body | \
-        jq --arg val ${test_id:-} '.data.test+={"id":$val}' | \
-        jq --arg val ${test_source:-} '.data.test+={"source":$val}' | \
-        jq --arg val ${test_type:-} '.data.test+={"type":$val}' | \
-        jq --arg val ${test_type_details:-} '.data.test+={"typeDetails":$val}' | \
-        jq --arg val ${test_status:-} '.data.test+={"status":$val}' | \
-        jq --arg val ${test_status_details:-} '.data.test+={"statusDetails":$val}' | \
-        jq --arg val ${test_suite:-} '.data.test+={"suite":$val}' | \
-        jq --arg val ${test_tags:-} '.data.test+={"tags":$val}' | \
-        jq --arg val ${environments:-} '.data.test+={"environments":$val}' | \
-        jq --arg val ${device_name:-} '.data.test.deviceInfo+={"name":$val}' | \
-        jq --arg val ${device_os:-} '.data.test.deviceInfo+={"os":$val}' | \
-        jq --arg val ${device_browser:-} '.data.test.deviceInfo+={"browser":$val}' | \
-        jq --arg val ${device_type:-} '.data.test.deviceInfo+={"type":$val}' | \
-        jq --arg val ${defect_task:-} '.data.test+={"defectTask":$val}' | \
-        jq --arg val ${test_suite_task:-} '.data.test+={"suiteTask":$val}' | \
-        jq --arg val ${test_execution_task:-} '.data.test+={"executionTask":$val}' | \
-        jq --arg val ${task_source:-} '.data.test+={"taskSource":$val}'
+        jq --arg val $test_id '.data.test+={"id":$val}' | \
+        jq --arg val $test_source '.data.test+={"source":$val}' | \
+        jq --arg val $test_type '.data.test+={"type":$val}' | \
+        jq --arg val $test_type_details '.data.test+={"typeDetails":$val}' | \
+        jq --arg val $test_status '.data.test+={"status":$val}' | \
+        jq --arg val $test_status_details '.data.test+={"statusDetails":$val}' | \
+        jq --arg val $test_suite '.data.test+={"suite":$val}' | \
+        jq --arg val $test_tags '.data.test+={"tags":$val}' | \
+        jq --arg val $environments '.data.test+={"environments":$val}' | \
+        jq --arg val $device_name '.data.test.deviceInfo+={"name":$val}' | \
+        jq --arg val $device_os '.data.test.deviceInfo+={"os":$val}' | \
+        jq --arg val $device_browser '.data.test.deviceInfo+={"browser":$val}' | \
+        jq --arg val $device_type '.data.test.deviceInfo+={"type":$val}' | \
+        jq --arg val $defect_task '.data.test+={"defectTask":$val}' | \
+        jq --arg val $test_suite_task '.data.test+={"suiteTask":$val}' | \
+        jq --arg val $test_execution_task '.data.test+={"executionTask":$val}' | \
+        jq --arg val $task_source '.data.test+={"taskSource":$val}'
     )
     if ! [ -z "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
