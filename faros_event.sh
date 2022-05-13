@@ -157,11 +157,13 @@ function help() {
     echo "--device_type           |     |"
     echo "--test_start_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--test_end_time         |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--test_task             |     | e.g. TEST-123=Success,TEST-456 *2"
     echo "--defect_task           |     | e.g. TEST-123"
     echo "--test_suite_task       |     | e.g. TEST-123"
     echo "--test_execution_task   |     | e.g. TEST-123"
     echo "--task_source           | *1  | e.g. Jira"
     echo "*1 If --defect_task, --test_suite_task, or --test_execution_task included"
+    echo "*2 Allowed statuses: $test_statuses"
     echo
     echo "Additional Settings:"
     echo "--dry_run           Do not send the event."
@@ -321,6 +323,9 @@ function parseFlags() {
                 shift 2 ;;
             --test_end_time)
                 test_end_time="$2"
+                shift 2 ;;
+            --test_task)
+                test_task="$2"
                 shift 2 ;;
             --defect_task)
                 defect_task="$2"
@@ -826,6 +831,7 @@ function resolveTestExecutionInput() {
     device_type=${device_type:-$FAROS_DEVICE_TYPE}
     test_start_time=${test_start_time:-$FAROS_TEST_START_TIME}
     test_end_time=${test_end_time:-$FAROS_TEST_END_TIME}
+    test_task=${test_task:-$FAROS_TEST_TASK}
     defect_task=${defect_task:-$FAROS_DEFECT_TASK}
     test_suite_task=${test_suite_task:-$FAROS_TEST_SUITE_TASK}
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
@@ -1232,6 +1238,15 @@ function addTestToData() {
             '.data.test.deviceInfo +=
             {
                 "type": $device_type
+            }' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$test_task" ]; then
+        request_body=$(jq \
+            --arg test_task "$test_task" \
+            '.data.test +=
+            {
+                "testTask": $test_task
             }' <<< "$request_body"
         )
     fi

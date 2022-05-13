@@ -345,7 +345,7 @@ Describe 'faros_event.sh'
 
   Describe 'TaskExecution event'
 
-    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":1,"success":2,"skipped":3,"unknown":4,"custom":5,"total":15},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"}}}'
+    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"testTask":"<test_task>","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":1,"success":2,"skipped":3,"unknown":4,"custom":5,"total":15},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>"}}}'
 
     It 'constructs correct event when run not included using flags'
       test_execution_event_test() {
@@ -367,6 +367,7 @@ Describe 'faros_event.sh'
             --device_type "<device_type>" \
             --test_start_time "1000" \
             --test_end_time "2000" \
+            --test_task "<test_task>" \
             --defect_task "<defect_task>" \
             --test_suite_task "<test_suite_task>" \
             --test_execution_task "<test_execution_task>" \
@@ -399,6 +400,7 @@ Describe 'faros_event.sh'
             FAROS_DEVICE_TYPE="<device_type>" \
             FAROS_TEST_START_TIME="1000" \
             FAROS_TEST_END_TIME="2000" \
+            FAROS_TEST_TASK="<test_task>" \
             FAROS_DEFECT_TASK="<defect_task>" \
             FAROS_TEST_SUITE_TASK="<test_suite_task>" \
             FAROS_TEST_EXECUTION_TASK="<test_execution_task>" \
