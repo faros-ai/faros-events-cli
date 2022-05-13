@@ -162,7 +162,7 @@ function help() {
     echo "--test_suite_task       |     | e.g. TEST-123"
     echo "--test_execution_task   |     | e.g. TEST-123"
     echo "--task_source           | *1  | e.g. Jira"
-    echo "*1 If --defect_task, --test_suite_task, or --test_execution_task included"
+    echo "*1 If --test_task, --defect_task, --test_suite_task, or --test_execution_task included"
     echo "*2 Allowed statuses: $test_statuses"
     echo
     echo "Additional Settings:"
