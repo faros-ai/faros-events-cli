@@ -172,6 +172,7 @@ function help() {
     echo "--no_format         Log formatting will be turned off."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
+    echo "--no_artifact       Do not include a cicd_Artifact in the event."
     echo "--validate_only     Only validate event body against event api."
     echo "--community_edition Format and send event to Faros Community Edition."
     echo
@@ -379,6 +380,9 @@ function parseFlags() {
             --skip_saving_run)
                 skip_saving_run="true"
                 shift ;;
+            --no_artifact)
+                no_artifact="true"
+                shift ;;
             --validate_only)
                 validate_only="true"
                 shift ;;
@@ -463,6 +467,7 @@ function processEventTypes() {
         addArtifactToData
         addCommitToData
         addRunToData
+        addCDParamsToData
     elif ((test_execution_event)); then
         event_type="TestExecution"
         makeEvent
@@ -1314,6 +1319,17 @@ function addTestToData() {
             '.data.test +=
             {
                 "endTime": $test_end_time
+            }' <<< "$request_body"
+        )
+    fi
+}
+
+function addCDParamsToData() {
+    if ! [ -z "$no_artifact" ]; then
+        request_body=$(jq \
+            '.data.params +=
+            {
+                "noArtifact": true
             }' <<< "$request_body"
         )
     fi

@@ -164,6 +164,21 @@ Describe 'faros_event.sh'
       When call cd_event_test
       The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success"},"artifact":{"id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"}}}'
     End
+
+    It 'constructs correct event when noArtifact provided'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --commit "<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>" \
+          --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
+          --deploy_status "Success" \
+          --no_artifact
+        )
+      }
+      When call cd_event_test
+      The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"params":{"noArtifact":true}}}'
+    End
+
     It 'Resolves literal Now and converts to iso8601 format'
       Intercept begin
       __begin__() {
