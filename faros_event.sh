@@ -102,7 +102,7 @@ function help() {
     echo "-----------------------------------------------------------------------------"
     echo "--commit                | Yes | $commit_uri_form"
     echo "--pull_request_number   |     | e.g. 123 (should be a number)"
-    echo "--artifact              | Yes | $artifact_uri_form"
+    echo "--artifact              |     | $artifact_uri_form"
     echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *1  | $run_statuses"
     echo "--run_status_details    |     |"
