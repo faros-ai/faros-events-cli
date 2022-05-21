@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.5.1"
+version="0.5.2"
 canonical_model_version="0.11.1"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -523,7 +523,7 @@ function doPullRequestCommitMutation() {
                             }'
                         )
             pull_request_commit=$(concat "$pull_request" "$commit_key")
-            make_mutation vcs_pull_request_commit_association "$pull_request_commit"
+            make_mutation vcs_pull_request_commit "$pull_request_commit"
     fi
 }
 
