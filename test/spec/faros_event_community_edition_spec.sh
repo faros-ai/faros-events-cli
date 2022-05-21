@@ -12,7 +12,7 @@ Describe 'faros_event.sh (Community edition)'
       cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
       cicd_artifact='Calling Hasura rest endpoint cicd_artifact with payload { "data_artifact_id": "<artifact_id>", "data_artifact_repository": "<artifact_repository>", "data_artifact_organization": "<artifact_organization>", "data_artifact_source": "<artifact_source>", "data_origin": "Faros_Script_Event" }'
       cicd_build='Calling Hasura rest endpoint cicd_build with payload { "run_status": { "category": "Success", "detail": "Some extra details" }, "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>", "data_origin": "Faros_Script_Event" }'
-      vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
+      vcs_pull_request_commit='Calling Hasura rest endpoint vcs_pull_request_commit with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
 
       It 'All data present'
         ci_event_test() {
@@ -37,9 +37,9 @@ Describe 'faros_event.sh (Community edition)'
         The output should include "$cicd_organization"
         The output should include "$cicd_repository"
         The output should include "$cicd_artifact_commit_association"
-        The output should include "$vcs_pull_request_commit_association"
+        The output should include "$vcs_pull_request_commit"
       End
-      vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "my_origin" }'
+      vcs_pull_request_commit='Calling Hasura rest endpoint vcs_pull_request_commit with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "my_origin" }'
 
       It 'Uses origin from flag'
         ci_event_test() {
@@ -58,7 +58,7 @@ Describe 'faros_event.sh (Community edition)'
           )
         }
         When call ci_event_test
-        The output should include "$vcs_pull_request_commit_association"
+        The output should include "$vcs_pull_request_commit"
       End
       It 'Resolves literal Now and converts to iso8601 format'
         Intercept begin
@@ -163,7 +163,7 @@ Describe 'faros_event.sh (Community edition)'
     cicd_artifact_from_commit_info='Calling Hasura rest endpoint cicd_artifact_with_build with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_run_id": "<run_id>", "data_run_pipeline": "<run_pipeline>", "data_run_organization": "<run_organization>", "data_run_source": "<run_source>", "data_origin": "Faros_Script_Event" }'
     cicd_artifact_commit_association='Calling Hasura rest endpoint cicd_artifact_commit_association with payload { "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
     cicd_artifact_deployment_from_commit='Calling Hasura rest endpoint cicd_artifact_deployment with payload { "data_deploy_id": "<deploy_id>", "data_deploy_source": "<deploy_source>", "data_artifact_id": "<commit_sha>", "data_artifact_repository": "<commit_repository>", "data_artifact_organization": "<commit_organization>", "data_artifact_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
-    vcs_pull_request_commit_association='Calling Hasura rest endpoint vcs_pull_request_commit_association with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
+    vcs_pull_request_commit='Calling Hasura rest endpoint vcs_pull_request_commit with payload { "data_pull_request_uid": "1", "data_pull_request_number": 1, "data_commit_sha": "<commit_sha>", "data_commit_repository": "<commit_repository>", "data_commit_organization": "<commit_organization>", "data_commit_source": "<commit_source>", "data_origin": "Faros_Script_Event" }'
 
     It 'All data present'
       cd_event_test() {
@@ -313,7 +313,7 @@ Describe 'faros_event.sh (Community edition)'
         )
       }
       When call cd_event_test
-      The output should include "$vcs_pull_request_commit_association"
+      The output should include "$vcs_pull_request_commit"
     End
   End
 End

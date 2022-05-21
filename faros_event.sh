@@ -523,7 +523,7 @@ function doPullRequestCommitMutation() {
                             }'
                         )
             pull_request_commit=$(concat "$pull_request" "$commit_key")
-            make_mutation vcs_pull_request_commit_association "$pull_request_commit"
+            make_mutation vcs_pull_request_commit "$pull_request_commit"
     fi
 }
 
