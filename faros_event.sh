@@ -219,6 +219,11 @@ main() {
             log "Dry run: Event NOT sent to Faros."
         fi
     else
+        if ((partial)); then
+            err "Partial events not supported for community edition."
+            fail
+        fi
+
         if ((ci_event)); then
             doCIMutations
         elif ((cd_event)); then
@@ -371,6 +376,9 @@ function parseFlags() {
                 shift ;;
             --dry_run)
                 dry_run=1
+                shift ;;
+            --partial)
+                partial="true"
                 shift ;;
             --no_build_object)
                 warn "no_build_object flag is deprecated, use skip_saving_run"
@@ -1324,7 +1332,7 @@ function sendEventToFaros() {
 
     http_response=$(curl -s -S --retry 5 --retry-delay 5 \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&partial=$partial" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body")
