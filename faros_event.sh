@@ -779,6 +779,7 @@ function resolveInput() {
 
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
+    partial=${partial:-"false"}
     skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
 }
