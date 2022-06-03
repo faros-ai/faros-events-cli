@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.5.2"
+version="0.5.3"
 canonical_model_version="0.11.1"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -170,6 +170,7 @@ function help() {
     echo "--silent            Unexceptional output will be silenced."
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
+    echo "--partial           Used when sending partial events."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
