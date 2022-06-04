@@ -170,7 +170,7 @@ function help() {
     echo "--silent            Unexceptional output will be silenced."
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
-    echo "--partial           Used when sending partial events."
+    echo "--full              Event should be validated as a full event."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
@@ -220,11 +220,6 @@ main() {
             log "Dry run: Event NOT sent to Faros."
         fi
     else
-        if ((partial)); then
-            err "Partial events not supported for community edition."
-            fail
-        fi
-
         if ((ci_event)); then
             doCIMutations
         elif ((cd_event)); then
@@ -378,8 +373,8 @@ function parseFlags() {
             --dry_run)
                 dry_run=1
                 shift ;;
-            --partial)
-                partial="true"
+            --full)
+                full="true"
                 shift ;;
             --no_build_object)
                 warn "no_build_object flag is deprecated, use skip_saving_run"
@@ -780,7 +775,7 @@ function resolveInput() {
 
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
-    partial=${partial:-"false"}
+    full=${full:-"false"}
     skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
 }
@@ -1334,7 +1329,7 @@ function sendEventToFaros() {
 
     http_response=$(curl -s -S --retry 5 --retry-delay 5 \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&partial=$partial" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body")
