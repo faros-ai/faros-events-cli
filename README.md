@@ -2,8 +2,6 @@
 
 CLI for reporting events to Faros platform.
 
-The script provides all the necessary instrumentation for CI/CD pipelines and test executions by sending events to Faros platform.
-
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Instrumenting CI/CD Pipelines](#instrumenting-cicd-pipelines)
@@ -14,6 +12,7 @@ The script provides all the necessary instrumentation for CI/CD pipelines and te
 - [Code Quality](#code-quality)
   - [Reporting test execution results](#reporting-test-execution-results)
 - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
+- [Arguments](#arguments)
 - [Tips](#tips)
 - [Development](#hammer-development)
 
@@ -71,7 +70,7 @@ This event reports a successful code build:
     --run_end_time "Now"
 ```
 
-### Reporting Deployments with Commits (basic)
+### Reporting Deployments with Commits (Basic)
 
 This event reports a successful deployment of your application to your Prod environment:
 
