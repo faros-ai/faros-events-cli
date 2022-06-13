@@ -15,6 +15,7 @@ CLI for reporting events to Faros platform.
 - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Arguments](#arguments)
 - [Tips](#tips)
+  - [Validate events before sending](#validate-events-before-sending)  
 - [Development](#hammer-development)
 
 ## Installation
@@ -279,7 +280,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ## Tips
 
-### Using `--validate-only`
+### Validate events before sending
 
 As you are iterating on instrumenting an event, you can use the `--validate-only` flag to test before you are ready to send actual data:
 
