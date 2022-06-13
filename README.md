@@ -3,6 +3,8 @@
 CLI for reporting events to Faros platform.
 
 - [Installation](#installation)
+  - [Using Docker](#using-docker)
+  - [Using Bash](#using-bash)
 - [Instrumenting CI/CD Pipelines](#instrumenting-cicd-pipelines)
   - [Reporting Builds with Commits (Basic)](#reporting-builds-with-commits-basic)
   - [Reporting Deployments with Commits (Basic)](#reporting-deployments-with-commits-basic)
