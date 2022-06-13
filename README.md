@@ -3,7 +3,6 @@
 CLI for reporting events to Faros platform.
 
 - [Installation](#installation)
-- [Quickstart](#quickstart)
 - [Instrumenting CI/CD Pipelines](#instrumenting-cicd-pipelines)
   - [Reporting Builds with Commits (Basic)](#reporting-builds-with-commits-basic)
   - [Reporting Deployments with Commits (Basic)](#reporting-deployments-with-commits-basic)
@@ -18,7 +17,7 @@ CLI for reporting events to Faros platform.
 
 ## Installation
 
-### Option 1: Pulling the Docker Image
+### Using Docker
 
 **Requirements**: Docker client and runtime.
 
@@ -26,27 +25,11 @@ CLI for reporting events to Faros platform.
 docker pull farosai/faros-events-cli:v0.5.3
 ```
 
-### Option 2: Downloading the Event Script
+### Using Bash
 
-[Please download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh)
+**Requirements**: `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
 
-## Quickstart
-
-### Option 1: Execute with Docker
-
-```sh
-docker run farosai/faros-events-cli:v0.5.3 help
-```
-
-### Option 2: Execute with Bash
-
-**Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
-
-```sh
-./faros_event.sh help
-```
-
-You can also download and invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
 export FAROS_CLI_VERSION="v0.5.3"
