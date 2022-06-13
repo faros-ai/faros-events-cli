@@ -2,48 +2,65 @@
 
 CLI for reporting events to Faros platform.
 
-The script provides all the necessary instrumentation for CI/CD pipelines by sending events to Faros platform
+The script provides all the necessary instrumentation for CI/CD pipelines and test executions by sending events to Faros platform.
 
-## :zap: Usage
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Instrumenting CI/CD Pipelines](#instrumenting-cicd-pipelines)
+  - [Reporting Builds with Commits (Basic)](#reporting-builds-with-commits-basic)
+  - [Reporting Deployments with Commits (Basic)](#reporting-deployments-with-commits-basic)
+  - [Reporting Builds & Deployments in Parts (Advanced)](#reporting-builds--deployments-in-parts-advanced)
+  - [Reporting Builds & Deployments with Commits & Artifacts (Advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
+- [Code Quality](#code-quality)
+  - [Reporting test execution results](#reporting-test-execution-results)
+- [Usage with Faros Community Edition](#usage-with-faros-community-edition)
+- [Tips](#tips)
+- [Development](#hammer-development)
 
-### Execute with Bash
+## Installation
+
+### Option 1: Pulling the Docker Image
+
+**Requirements**: Docker client and runtime.
+
+```sh
+docker pull farosai/faros-events-cli:v0.5.3
+```
+
+### Option 2: Downloading the Event Script
+
+[Please download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh)
+
+## Quickstart
+
+### Option 1: Execute with Docker
+
+```sh
+docker run farosai/faros-events-cli:v0.5.3 help
+```
+
+### Option 2: Execute with Bash
 
 **Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
-
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) and execute it:
 
 ```sh
 ./faros_event.sh help
 ```
 
-2. Or download it with `curl` and invoke it in one command:
+You can also download and invoke the script directly with curl:
 
 ```sh
 export FAROS_CLI_VERSION="v0.5.3"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
-### Execute with Docker
+## Instrumenting CI/CD Pipelines
 
-**Requirements**: Docker client and runtime.
+![When to send an event](resources/Faros_CI_CD_Events.png)
 
-1. Pull the image:
+### Reporting Builds with Commits (Basic)
 
-```sh
-docker pull farosai/faros-events-cli:v0.5.3
-```
-
-2. Run it:
-
-```sh
-docker run farosai/faros-events-cli:v0.5.3 help
-```
-
-### :book: Event Types
-
-An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your CI/CD or Test pipeline that you are instrumenting.
-
-- Use Continuous Integration (CI) events to instrument code build pipelines. For example, you can report the result of a successful code build:
+This event reports a successful code build:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -54,7 +71,9 @@ An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your
     --run_end_time "Now"
 ```
 
-- Use Continuous Deployment (CD) events to instrument deployment pipelines. For example, you can report the result of a successful deployment of your application to your Prod environment:
+### Reporting Deployments with Commits (basic)
+
+This event reports a successful deployment of your application to your Prod environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
@@ -65,29 +84,11 @@ An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your
     --deploy_end_time "Now"
 ```
 
-- Use Test Execution (TestExecution) events to instrument test processes. For example, you can report the result of a successful test suite invocation:
-
-```sh
-./faros_event.sh TestExecution -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --test_id "<test_id>" \
-    --test_source "<test_source>" \
-    --test_type "Functional" \
-    --test_status "Success" \
-    --test_suite "<test_suite>" \
-    --test_stats "success=5,failure=0,total=5" \
-    --test_start_time "1626804356000" \
-    --test_end_time "Now" \
-    --full
-```
-
-### :rocket: Sending Events
-
-> :exclamation: Faros Community Edition currently only supports full events
+### Reporting Builds & Deployments in Parts (Advanced)
 
 Faros events are very flexible. Information can be sent all at once in a single event, or as it becomes available using multiple events. Certain fields depend on other fields to be present for Faros to correctly link information behind the scenes. See the [argument tables](#arguments) for dependency information.
 
-#### Example 1
+#### Sending Build Information in Parts
 
 You can send an event when a code build has started. And a final event, when the code build has finished successfully!
 
@@ -110,7 +111,7 @@ You can send an event when a code build has started. And a final event, when the
     --run_end_time "Now"
 ```
 
-#### Example 2
+#### Sending Deployment Information in Parts
 
 You can send an event when an deployment has started. Then later, you can send an event when that deployment has finished successfully!
 
@@ -131,6 +132,72 @@ You can send an event when an deployment has started. Then later, you can send a
     --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
     --deploy_status "Success" \
     --deploy_end_time "Now"
+```
+
+### Reporting Builds & Deployments with Commits & Artifacts (Advanced)
+
+When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
+
+This event reports that a commit was successfully built into the specified artifact:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Success" \
+    --run_start_time "1626804346000" \
+    --run_end_time "Now"
+```
+
+This event reports the successful deployment of that artifact to the Prod environment:
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --deploy "<deploy_source>://<deploy_application>/Prod/<deploy_id>" \
+    --deploy_status "Success" \
+    --deploy_start_time "1626804356000" \
+    --deploy_end_time "Now"
+```
+
+## Code Quality
+
+### Reporting Test Execution Results
+
+> :exclamation: `--full` flag must be provided with TestExecution event
+
+This event reports a successful test suite invocation:
+
+```sh
+./faros_event.sh TestExecution -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --test_id "<test_id>" \
+    --test_source "<test_source>" \
+    --test_type "Functional" \
+    --test_status "Success" \
+    --test_suite "<test_suite>" \
+    --test_stats "success=5,failure=0,total=5" \
+    --test_start_time "1626804356000" \
+    --test_end_time "Now" \
+    --full
+```
+
+## Usage with Faros Community Edition
+
+> :exclamation: Faros Community Edition does not currently support sending events in parts
+
+When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
+
+```sh
+./faros_event.sh CI \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --run_status "Success" \
+    --run_start_time "1626804346000" \
+    --run_end_time "1626804358000" \
+    --community_edition
 ```
 
 ### Arguments
@@ -157,10 +224,6 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ---
 
-#### CI Event - `CI`
-
-A `CI` event communicates the outcome of a code build pipeline execution.
-
 #### CI Arguments
 
 | Argument                            | Description                                                                                                                                                                                                                                  | Dependency |
@@ -176,10 +239,6 @@ A `CI` event communicates the outcome of a code build pipeline execution.
 | &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123). Used only if --commit is included                                                                                                                                                         | --commit   |
 
 ---
-
-#### CD Event - `CD`
-
-A `CD` event communicates the outcome of an application deployment pipeline execution, and the environment (e.g. QA, Prod).
 
 #### CD Arguments
 
@@ -202,12 +261,6 @@ A `CD` event communicates the outcome of an application deployment pipeline exec
 | &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                            | --run      |
 
 ---
-
-#### Test Execution Event - `TestExecution`
-
-A `TestExecution` event communicates the outcome, as well as the context, of a test.
-
-> :exclamation: `--full` flag must be provided with TestExecution event
 
 #### Test Execution Arguments
 
@@ -238,39 +291,23 @@ A `TestExecution` event communicates the outcome, as well as the context, of a t
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                         |                                                                                                                                             |                                                                                  |
 | &#x2011;&#x2011;task_source         | The TMS (Task Management System). (e.g. Jira)                                                                                                                                                                                     | If &#x2011;&#x2011;test_task, &#x2011;&#x2011;defect_task, &#x2011;&#x2011;test_suite_task, or &#x2011;&#x2011;test_execution_task provided |                                                                                  |
 
-### Usage with Faros Community Edition
-
-When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
-
-```sh
-./faros_event.sh CI \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000" \
-    --community_edition
-```
-
-### :herb: Real life examples
-
-The following sends an event that communicates that a deployment pipeline that is run by `Buildkite` which is called `payments-service-deploy-prod` was successful. It communicated that the application `payments-service` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the job run and the deployment.
-
-```sh
-./faros_event.sh CD -k "<api_key>" \
-    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b" \
-    --run "Buildkite://faros-ai/payments-service-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000" \
-    --deploy "ECS://payments-service/Prod/d-CGAKEHE8S" \
-    --deploy_status "Success" \
-    --deploy_start_time "1626804356000" \
-    --deploy_end_time "1626804357000"
-```
-
 ---
+
+## Tips
+
+### Using `--validate-only`
+
+As you are iterating on instrumenting an event, you can use the `--validate-only` flag to test before you are ready to send actual data:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Success" \
+    --run_start_time "1626804346000" \
+    --run_end_time "Now" \
+    --validate_only
+```
 
 ## :hammer: Development
 
