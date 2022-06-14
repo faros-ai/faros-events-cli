@@ -12,10 +12,15 @@ CLI for reporting events to Faros platform.
   - [Reporting builds & deployments with commits & artifacts (advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
 - [Code quality](#code-quality)
   - [Reporting test execution results](#reporting-test-execution-results)
-- [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Arguments](#arguments)
+  - [Passing arguments: flags or environment variables](#passing-arguments-flags-or-environment-variables)
+  - [General](#general)
+  - [CI arguments](#ci-arguments)
+  - [CD arguments](#cd-arguments)
+  - [Test Execution arguments](#test-execution-arguments)
 - [Tips](#tips)
-  - [Validating your command](#validating-your-command)  
+  - [Validating your command](#validating-your-command)
+  - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Development](#hammer-development)
 
 ## Installation
@@ -35,8 +40,7 @@ docker pull farosai/faros-events-cli:v0.5.3
 Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-export FAROS_CLI_VERSION="v0.5.3"
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -52,21 +56,21 @@ This event reports a successful code build:
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "Now"
+    --run_start_time "2021-07-20T18:05:46.019Z" \
+    --run_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-### Reporting deployments with commits (Basic)
+### Reporting deployments with commits (basic)
 
-This event reports a successful deployment of your application to your Prod environment:
+This event reports a successful deployment of your application to your environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --deploy "<deploy_source>://<deploy_application>/Prod/<deploy_id>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
     --deploy_status "Success" \
-    --deploy_start_time "1626804356000" \
-    --deploy_end_time "Now"
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
 ### Reporting builds & deployments in parts (advanced)
@@ -131,8 +135,8 @@ This event reports that a commit was successfully built into the specified artif
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "Now"
+    --run_start_time "2021-07-20T18:05:46.019Z" \
+    --run_end_time "2021-07-20T18:08:42.024Z"
 ```
 
 This event reports the successful deployment of that artifact to the Prod environment:
@@ -140,10 +144,10 @@ This event reports the successful deployment of that artifact to the Prod enviro
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --deploy "<deploy_source>://<deploy_application>/Prod/<deploy_id>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
     --deploy_status "Success" \
-    --deploy_start_time "1626804356000" \
-    --deploy_end_time "Now"
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
 ## Code quality
@@ -161,28 +165,22 @@ This event reports a successful test suite invocation:
     --test_source "<test_source>" \
     --test_type "Functional" \
     --test_status "Success" \
-    --test_suite "<test_suite>" \
+    --test_suite "<test_suite_id>" \
     --test_stats "success=5,failure=0,total=5" \
-    --test_start_time "1626804356000" \
-    --test_end_time "Now" \
+    --test_start_time "2021-07-20T18:05:46.019Z" \
+    --test_end_time "2021-07-20T18:08:42.024Z" \
     --full
-```
-
-## Usage with Faros Community Edition
-
-> :exclamation: Faros Community Edition does not currently support sending events in parts
-
-When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `--community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
-
-```sh
-./faros_event.sh <...your command arguments...> --community_edition
 ```
 
 ### Arguments
 
+#### Passing arguments: flags or environment variables
+
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
+
+#### General
 
 | Argument                            | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -202,7 +200,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ---
 
-#### CI Arguments
+#### CI arguments
 
 | Argument                            | Description                                                                                                                                                                                                                                  | Dependency |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
@@ -218,7 +216,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ---
 
-#### CD Arguments
+#### CD arguments
 
 | Argument                              | Description                                                                                                                                                                                                                           | Dependency |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
@@ -240,9 +238,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ---
 
-#### Test Execution Arguments
-
-> You may need to scroll to the right to view the entire table.
+#### Test Execution arguments
 
 | Argument                            | Description                                                                                                                                                                                                                       | Required                                                                                                                                    | Allowed Value                                                                    |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -279,6 +275,16 @@ As you are iterating on instrumentation you can use the `--validate-only` flag t
 
 ```sh
 ./faros_event.sh <...your command arguments...> --validate_only
+```
+
+### Usage with Faros Community Edition
+
+> :exclamation: Faros Community Edition does not currently support sending events in parts
+
+When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `--community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
+
+```sh
+./faros_event.sh <...your command arguments...> --community_edition
 ```
 
 ## :hammer: Development
