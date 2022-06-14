@@ -5,12 +5,12 @@ CLI for reporting events to Faros platform.
 - [Installation](#installation)
   - [Using Docker](#using-docker)
   - [Using Bash](#using-bash)
-- [Instrumenting CI/CD Pipelines](#instrumenting-cicd-pipelines)
-  - [Reporting Builds with Commits (Basic)](#reporting-builds-with-commits-basic)
-  - [Reporting Deployments with Commits (Basic)](#reporting-deployments-with-commits-basic)
-  - [Reporting Builds & Deployments in Parts (Advanced)](#reporting-builds--deployments-in-parts-advanced)
-  - [Reporting Builds & Deployments with Commits & Artifacts (Advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
-- [Code Quality](#code-quality)
+- [Instrumenting CI/CD pipelines](#instrumenting-cicd-pipelines)
+  - [Reporting builds with commits (basic)](#reporting-builds-with-commits-basic)
+  - [Reporting deployments with commits (basic)](#reporting-deployments-with-commits-basic)
+  - [Reporting builds & deployments in parts (advanced)](#reporting-builds--deployments-in-parts-advanced)
+  - [Reporting builds & deployments with commits & artifacts (advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
+- [Code quality](#code-quality)
   - [Reporting test execution results](#reporting-test-execution-results)
 - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Arguments](#arguments)
@@ -39,11 +39,11 @@ export FAROS_CLI_VERSION="v0.5.3"
 curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
 ```
 
-## Instrumenting CI/CD Pipelines
+## Instrumenting CI/CD pipelines
 
 ![When to send an event](resources/Faros_CI_CD_Events.png)
 
-### Reporting Builds with Commits (Basic)
+### Reporting builds with commits (basic)
 
 This event reports a successful code build:
 
@@ -56,7 +56,7 @@ This event reports a successful code build:
     --run_end_time "Now"
 ```
 
-### Reporting Deployments with Commits (Basic)
+### Reporting deployments with commits (Basic)
 
 This event reports a successful deployment of your application to your Prod environment:
 
@@ -69,11 +69,11 @@ This event reports a successful deployment of your application to your Prod envi
     --deploy_end_time "Now"
 ```
 
-### Reporting Builds & Deployments in Parts (Advanced)
+### Reporting builds & deployments in parts (advanced)
 
 Faros events are very flexible. Information can be sent all at once in a single event, or as it becomes available using multiple events. Certain fields depend on other fields to be present for Faros to correctly link information behind the scenes. See the [argument tables](#arguments) for dependency information.
 
-#### Sending Build Information in Parts
+#### Sending build information in parts
 
 You can send an event when a code build has started. And a final event, when the code build has finished successfully!
 
@@ -96,7 +96,7 @@ You can send an event when a code build has started. And a final event, when the
     --run_end_time "Now"
 ```
 
-#### Sending Deployment Information in Parts
+#### Sending deployment information in parts
 
 You can send an event when an deployment has started. Then later, you can send an event when that deployment has finished successfully!
 
@@ -119,7 +119,7 @@ You can send an event when an deployment has started. Then later, you can send a
     --deploy_end_time "Now"
 ```
 
-### Reporting Builds & Deployments with Commits & Artifacts (Advanced)
+### Reporting builds & deployments with commits & artifacts (advanced)
 
 When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
 
@@ -146,9 +146,9 @@ This event reports the successful deployment of that artifact to the Prod enviro
     --deploy_end_time "Now"
 ```
 
-## Code Quality
+## Code quality
 
-### Reporting Test Execution Results
+### Reporting test execution results
 
 > :exclamation: `--full` flag must be provided with TestExecution event
 
@@ -280,18 +280,12 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ## Tips
 
-### Validate events before sending
+### Validating your command
 
-As you are iterating on instrumenting an event, you can use the `--validate-only` flag to test before you are ready to send actual data:
+As you are iterating on instrumentation you can use the `--validate-only` flag to test before you are ready to send actual data:
 
 ```sh
-./faros_event.sh CI -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "Now" \
-    --validate_only
+./faros_event.sh <...your command arguments...> --validate_only
 ```
 
 ## :hammer: Development
