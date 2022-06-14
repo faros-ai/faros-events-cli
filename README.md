@@ -15,7 +15,7 @@ CLI for reporting events to Faros platform.
 - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Arguments](#arguments)
 - [Tips](#tips)
-  - [Validate events before sending](#validate-events-before-sending)  
+  - [Validating your command](#validating-your-command)  
 - [Development](#hammer-development)
 
 ## Installation
