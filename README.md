@@ -30,7 +30,7 @@ CLI for reporting events to Faros platform.
 **Requirements**: Docker client and runtime.
 
 ```sh
-docker pull farosai/faros-events-cli:v0.5.3
+docker pull farosai/faros-events-cli:v0.5.3 && docker run farosai/faros-events-cli:v0.5.3 help
 ```
 
 ### Using Bash
