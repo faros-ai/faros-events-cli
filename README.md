@@ -172,17 +172,10 @@ This event reports a successful test suite invocation:
 
 > :exclamation: Faros Community Edition does not currently support sending events in parts
 
-When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
+When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `--community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
 
 ```sh
-./faros_event.sh CI \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000" \
-    --community_edition
+./faros_event.sh <...your command arguments...> --community_edition
 ```
 
 ### Arguments
