@@ -14,7 +14,7 @@ CLI for reporting events to Faros platform.
   - [Reporting test execution results](#reporting-test-execution-results)
 - [Arguments](#arguments)
   - [Passing arguments: flags or environment variables](#passing-arguments-flags-or-environment-variables)
-  - [General](#general)
+  - [General arguments](#general)
   - [CI arguments](#ci-arguments)
   - [CD arguments](#cd-arguments)
   - [Test Execution arguments](#test-execution-arguments)
@@ -180,7 +180,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
 
-#### General
+#### General arguments
 
 | Argument                            | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
