@@ -2,71 +2,161 @@
 
 CLI for reporting events to Faros platform.
 
-The script provides all the necessary instrumentation for CI/CD pipelines by sending events to Faros platform
+- [Installation](#installation)
+  - [Using Docker](#using-docker)
+  - [Using Bash](#using-bash)
+- [Instrumenting CI/CD pipelines](#instrumenting-cicd-pipelines)
+  - [Reporting builds with commits (basic)](#reporting-builds-with-commits-basic)
+  - [Reporting deployments with commits (basic)](#reporting-deployments-with-commits-basic)
+  - [Reporting builds & deployments in parts (advanced)](#reporting-builds--deployments-in-parts-advanced)
+  - [Reporting builds & deployments with commits & artifacts (advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
+- [Code quality](#code-quality)
+  - [Reporting test execution results](#reporting-test-execution-results)
+- [Arguments](#arguments)
+  - [Passing arguments: flags or environment variables](#passing-arguments-flags-or-environment-variables)
+  - [General](#general)
+  - [CI arguments](#ci-arguments)
+  - [CD arguments](#cd-arguments)
+  - [Test Execution arguments](#test-execution-arguments)
+- [Tips](#tips)
+  - [Validating your command](#validating-your-command)
+  - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
+- [Development](#hammer-development)
 
-## :zap: Usage
+## Installation
 
-### Execute with Bash
-
-**Requirements**: Please make sure the following are installed before running the script - `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
-
-1. [Download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.2/faros_event.sh) and execute it:
-
-```sh
-./faros_event.sh help
-```
-
-2. Or download it with `curl` and invoke it in one command:
-
-```sh
-export FAROS_CLI_VERSION="v0.5.2"
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/$FAROS_CLI_VERSION/faros_event.sh | bash -s help
-```
-
-### Execute with Docker
+### Using Docker
 
 **Requirements**: Docker client and runtime.
 
-1. Pull the image:
-
 ```sh
-docker pull farosai/faros-events-cli:v0.5.2
+docker pull farosai/faros-events-cli:v0.5.3
 ```
 
-2. Run it:
+### Using Bash
+
+**Requirements**: `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
+
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-docker run farosai/faros-events-cli:v0.5.2 help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh | bash -s help
 ```
 
-### :book: Event Types
+## Instrumenting CI/CD pipelines
 
-An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your CI/CD or Test pipeline that you are instrumenting.
+![When to send an event](resources/Faros_CI_CD_Events.png)
 
-- Use Continuous Integration (CI) events to instrument code build pipelines. For example, you can report the result of a successful code build & artifact release:
+### Reporting builds with commits (basic)
+
+This event reports a successful code build:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Success" \
+    --run_start_time "2021-07-20T18:05:46.019Z" \
+    --run_end_time "2021-07-20T18:08:42.024Z"
+```
+
+### Reporting deployments with commits (basic)
+
+This event reports a successful deployment of your application to your environment:
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
+    --deploy_status "Success" \
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
+```
+
+### Reporting builds & deployments in parts (advanced)
+
+Faros events are very flexible. Information can be sent all at once in a single event, or as it becomes available using multiple events. Certain fields depend on other fields to be present for Faros to correctly link information behind the scenes. See the [argument tables](#arguments) for dependency information.
+
+#### Sending build information in parts
+
+You can send an event when a code build has started. And a final event, when the code build has finished successfully!
+
+- Code build started
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Running" \
+    --run_start_time "Now"
+```
+
+- Code build finished successfully
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000"
+    --run_end_time "Now"
 ```
 
-- Use Continuous Deployment (CD) events to instrument deployment pipelines. For example, you can report the result of a successful deployment of your application to an environment:
+#### Sending deployment information in parts
+
+You can send an event when an deployment has started. Then later, you can send an event when that deployment has finished successfully!
+
+- Deployment started
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
+    --deploy_status "Running" \
+    --deploy_start_time "Now"
+```
+
+- Deployment finished successfully
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
+    --deploy_status "Success" \
+    --deploy_end_time "Now"
+```
+
+### Reporting builds & deployments with commits & artifacts (advanced)
+
+When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
+
+This event reports that a commit was successfully built into the specified artifact:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Success" \
+    --run_start_time "2021-07-20T18:05:46.019Z" \
+    --run_end_time "2021-07-20T18:08:42.024Z"
+```
+
+This event reports the successful deployment of that artifact to the Prod environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
     --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
     --deploy_status "Success" \
-    --deploy_start_time "1626804356000" \
-    --deploy_end_time "1626804357000"
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-- Use Test Execution (TestExecution) events to instrument test processes. For example, you can report the result of a successful test suite invocation:
+## Code quality
+
+### Reporting test execution results
+
+> :exclamation: `--full` flag must be provided with TestExecution event
+
+This event reports a successful test suite invocation:
 
 ```sh
 ./faros_event.sh TestExecution -k "<faros_api_key>" \
@@ -75,90 +165,80 @@ An event type (e.g. `CI`, `CD`, `TestExecution`) corresponds to the step of your
     --test_source "<test_source>" \
     --test_type "Functional" \
     --test_status "Success" \
-    --test_suite "<test_suite>" \
+    --test_suite "<test_suite_id>" \
     --test_stats "success=5,failure=0,total=5" \
-    --test_start_time "1626804356000" \
-    --test_end_time "Now"
+    --test_start_time "2021-07-20T18:05:46.019Z" \
+    --test_end_time "2021-07-20T18:08:42.024Z" \
+    --full
 ```
 
-Below is a more detailed diagram illustrating the use of CI, CD & TestExecution events:
-
-![When to send an event](resources/Faros_CI_CD_Events.png)
-
 ### Arguments
+
+#### Passing arguments: flags or environment variables
 
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
 
+#### General
+
 | Argument                            | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | &#x2011;&#x2011;api_key             | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                          | Yes (not required for [Faros Community Edition](https://github.com/faros-ai/faros-community-edition), i.e when `community_edition` flag is present) |                                                                                   |
+| &#x2011;&#x2011;community_edition   | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present) |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;dry_run             | Print the event instead of sending. (no value accepted, true if flag is present)                                                                                  |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;validate_only       | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)                                  |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;url                 | The Faros API url to send the event to.                                                                                                                           |                                                                                                                                                     | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
-| &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret.                                                                                                                                          |                                                                                                                                                     | "admin" (Only used in Faros Community Edition)                                    |
 | &#x2011;&#x2011;graph               | The graph that the event should be sent to.                                                                                                                       |                                                                                                                                                     | "default"                                                                         |
 | &#x2011;&#x2011;origin              | The origin of the event that is being sent to Faros.                                                                                                              |                                                                                                                                                     | "Faros_Script_Event"                                                              |
-| &#x2011;&#x2011;dry_run             | Print the event instead of sending. (no value accepted, true if flag is present)                                                                                  |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;silent              | Unexceptional output will be silenced. (no value accepted, true if flag is present)                                                                               |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;debug               | Helpful information will be printed. (no value accepted, true if flag is present)                                                                                 |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;full                | The event being sent should be validated as a full event. (no value accepted, true if flag is present)                                                            |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;skip_saving_run     | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                                                                              |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)                                                                |                                                                                                                                                     | False                                                                             |
-| &#x2011;&#x2011;validate_only       | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)                                  |                                                                                                                                                     | False                                                                             |
-| &#x2011;&#x2011;community_edition   | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present) |                                                                                                                                                     | False                                                                             |
+| &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret.                                                                                                                                          |                                                                                                                                                     | "admin" (Only used in Faros Community Edition)                                    |
 
-#### CI Event - `CI`
+---
 
-A `CI` event communicates the outcome of a code build pipeline execution, and its artifact.
+#### CI arguments
 
-#### CI Arguments
+| Argument                            | Description                                                                                                                                                                                                                                  | Dependency |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| &#x2011;&#x2011;run                 | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>`)                                                                                                                                                |            |
+| &#x2011;&#x2011;run_status          | The status of the job run that built the code. (Allowed Values: Success, Failed, Canceled, Queued, Running, Unknown, Custom)                                                                                                                 | --run      |
+| &#x2011;&#x2011;run_status_details  | Any extra details about the status of the job run.                                                                                                                                                                                           | --run      |
+| &#x2011;&#x2011;run_start_time      | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                 | --run      |
+| &#x2011;&#x2011;run_end_time        | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                   | --run      |
+| &#x2011;&#x2011;run_name            | The name of the job run that built the code.                                                                                                                                                                                                 | --run      |
+| &#x2011;&#x2011;commit              | The URI of the commit. We recommend you only provide artifact information if you do not have access to the commit information within your deployment's context. (`<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>`) | --run      |
+| &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                                                                                                                            | --commit   |
+| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123). Used only if --commit is included                                                                                                                                                         | --commit   |
 
-> You may need to scroll to the right to view the entire table.
+---
 
-| Argument                            | Description                                                                                                                                                   | Required                        | Allowed Value                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------- |
-| &#x2011;&#x2011;commit              | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Yes                             |                                                             |
-| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123). Used only if --commit is included                                                                          |                                 |                                                             |
-| &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) |                                 |                                                             |
-| &#x2011;&#x2011;run                 | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                      |                                 |                                                             |
-| &#x2011;&#x2011;run_status          | The status of the job run that built the code.                                                                                                                | If &#x2011;&#x2011;run provided | Success, Failed, Canceled, Queued, Running, Unknown, Custom |
-| &#x2011;&#x2011;run_name            | The name of the job run that built the code.                                                                                                                  |                                 |                                                             |
-| &#x2011;&#x2011;run_status_details  | Any extra details about the status of the job run.                                                                                                            |                                 |                                                             |
-| &#x2011;&#x2011;run_start_time      | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                  |                                 |                                                             |
-| &#x2011;&#x2011;run_end_time        | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                    |                                 |                                                             |
+#### CD arguments
 
-#### CD Event - `CD`
+| Argument                              | Description                                                                                                                                                                                                                           | Dependency |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<deploy_source>://<application>/<environment>/<deploy_id>`) (`<environment>` allowed values: `Prod`, `Staging`, `QA`, `Dev`, `Sandbox`, `Canary`, `Custom`)                                              |            |
+| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                       | --deploy   |
+| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                         | --deploy   |
+| &#x2011;&#x2011;deploy_status         | The status of the deployment. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `RolledBack`, `Custom`)                                                                                                          | --deploy   |
+| &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                                                                                                 | --deploy   |
+| &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                                                                                                       | --deploy   |
+| &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                                                                                                   | --deploy   |
+| &#x2011;&#x2011;commit                | The URI of the commit. If you specify `--artifact` in your CI events, you should use `--artifact` in your CD events. Otherwise, use `--commit`. (`<source>://<organization>/<repository>/<commit_sha>`)                               | --deploy   |
+| &#x2011;&#x2011;artifact              | The URI of the artifact. If you specify `--artifact` in your CI events, you should use `--artifact` in your CD events. Otherwise, use `--commit`. (`<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>`) | --deploy   |
+| &#x2011;&#x2011;pull_request_number   | The pull request number of the commit. (e.g. 123). Used only if --commit is included                                                                                                                                                  | --commit   |
+| &#x2011;&#x2011;run                   | The URI of the job run executing the deployment. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                                                                                         |            |
+| &#x2011;&#x2011;run_status            | The status of the job run executing the deployment. (Allowed values: Success, Failed, Canceled, Queued, Running, Unknown, Custom)                                                                                                     | --run      |
+| &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                                                                                           | --run      |
+| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                          | --run      |
+| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                            | --run      |
 
-A `CD` event communicates the outcome of an application deployment pipeline execution, and the environment (e.g. QA, Prod).
+---
 
-#### CD Arguments
-
-> You may need to scroll to the right to view the entire table.
-
-| Argument                              | Description                                                                                                                                                   | Required                                                  | Allowed Value                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| &#x2011;&#x2011;deploy                | The URI of the deployment. (`<source>://<application>/<environment>/<deploy_id>` e.g. `ECS://my-app/Prod/1234`)                                               | Yes                                                       | `environment`: Prod, Staging, QA, Dev, Sandbox, Canary, Custom |
-| &#x2011;&#x2011;deploy_status         | The status of the deployment.                                                                                                                                 | Yes                                                       | Success, Failed, Canceled, Queued, Running, RolledBack, Custom |
-| &#x2011;&#x2011;artifact              | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>` e.g. `DockerHub://farosai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`) | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
-| &#x2011;&#x2011;commit                | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)      | Either &#x2011;&#x2011;commit or &#x2011;&#x2011;artifact |                                                                |
-| &#x2011;&#x2011;pull_request_number   | The pull request number of the commit. (e.g. 123). Used only if --commit is included                                                                          |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                               |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                           |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                         |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)               |                                                           |                                                                |
-| &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                 |                                                           |                                                                |
-| &#x2011;&#x2011;run                   | The URI of the job run executing the deployment. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                 |                                                           |                                                                |
-| &#x2011;&#x2011;run_status            | The status of the job run executing the deployment.                                                                                                           | If &#x2011;&#x2011;run provided                           | Success, Failed, Canceled, Queued, Running, Unknown, Custom    |
-| &#x2011;&#x2011;run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                   |                                                           |                                                                |
-| &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                  |                                                           |                                                                |
-| &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601 string, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                    |                                                           |                                                                |
-
-#### Test Execution Event - `TestExecution`
-
-A `TestExecution` event communicates the outcome, as well as the context, of a test.
-
-#### Test Execution Arguments
-
-> You may need to scroll to the right to view the entire table.
+#### Test Execution arguments
 
 | Argument                            | Description                                                                                                                                                                                                                       | Required                                                                                                                                    | Allowed Value                                                                    |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -185,39 +265,27 @@ A `TestExecution` event communicates the outcome, as well as the context, of a t
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                         |                                                                                                                                             |                                                                                  |
 | &#x2011;&#x2011;task_source         | The TMS (Task Management System). (e.g. Jira)                                                                                                                                                                                     | If &#x2011;&#x2011;test_task, &#x2011;&#x2011;defect_task, &#x2011;&#x2011;test_suite_task, or &#x2011;&#x2011;test_execution_task provided |                                                                                  |
 
+---
+
+## Tips
+
+### Validating your command
+
+As you are iterating on instrumentation you can use the `--validate-only` flag to test before you are ready to send actual data:
+
+```sh
+./faros_event.sh <...your command arguments...> --validate_only
+```
+
 ### Usage with Faros Community Edition
 
-When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
+> :exclamation: Faros Community Edition does not currently support sending events in parts
+
+When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `--community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
 
 ```sh
-./faros_event.sh CI \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000" \
-    --community_edition
+./faros_event.sh <...your command arguments...> --community_edition
 ```
-
-### :herb: Real life examples
-
-The following sends an event that communicates that a deployment pipeline that is run by `Buildkite` which is called `payments-service-deploy-prod` was successful. It communicated that the application `payments-service` was successfully deployed with `ECS` to the `Prod` environment. It communicates that the artifact that was deployed is stored in `DockerHub` in the `my-app-repo` repository. And Finally it communicates the timestamps for the start and end of both the job run and the deployment.
-
-```sh
-./faros_event.sh CD -k "<api_key>" \
-    --artifact "DockerHub://farosai/my-app-repo/285071b4d36c49fa699ae87345c3f4e61abba01b" \
-    --run "Buildkite://faros-ai/payments-service-deploy-prod/4206ac01-9d2f-437d-992d-8f6857b68378" \
-    --run_status "Success" \
-    --run_start_time "1626804346000" \
-    --run_end_time "1626804358000" \
-    --deploy "ECS://payments-service/Prod/d-CGAKEHE8S" \
-    --deploy_status "Success" \
-    --deploy_start_time "1626804356000" \
-    --deploy_end_time "1626804357000"
-```
-
----
 
 ## :hammer: Development
 

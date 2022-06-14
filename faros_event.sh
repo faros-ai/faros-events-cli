@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.5.2"
+version="0.5.3"
 canonical_model_version="0.11.1"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -170,6 +170,7 @@ function help() {
     echo "--silent            Unexceptional output will be silenced."
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
+    echo "--full              Event should be validated as a full event."
     echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
@@ -371,6 +372,9 @@ function parseFlags() {
                 shift ;;
             --dry_run)
                 dry_run=1
+                shift ;;
+            --full)
+                full="true"
                 shift ;;
             --no_build_object)
                 warn "no_build_object flag is deprecated, use skip_saving_run"
@@ -771,6 +775,7 @@ function resolveInput() {
 
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
+    full=${full:-"false"}
     skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
 }
@@ -1324,7 +1329,7 @@ function sendEventToFaros() {
 
     http_response=$(curl -s -S --retry 5 --retry-delay 5 \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body")
