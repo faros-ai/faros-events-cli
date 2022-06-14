@@ -14,7 +14,7 @@ CLI for reporting events to Faros platform.
   - [Reporting test execution results](#reporting-test-execution-results)
 - [Arguments](#arguments)
   - [Passing arguments: flags or environment variables](#passing-arguments-flags-or-environment-variables)
-  - [General arguments](#general)
+  - [General arguments](#general-arguments)
   - [CI arguments](#ci-arguments)
   - [CD arguments](#cd-arguments)
   - [Test Execution arguments](#test-execution-arguments)
