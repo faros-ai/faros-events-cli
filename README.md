@@ -27,7 +27,7 @@ CLI for reporting events to Faros platform.
 
 ### Using Docker
 
-**Requirements**: Docker client and runtime.
+**Requirements**: `docker`
 
 ```sh
 docker pull farosai/faros-events-cli:v0.5.3 && docker run farosai/faros-events-cli:v0.5.3 help
@@ -35,7 +35,7 @@ docker pull farosai/faros-events-cli:v0.5.3 && docker run farosai/faros-events-c
 
 ### Using Bash
 
-**Requirements**: `curl`, `jq`, `sed` and an implementation of `awk` (we recommend `gawk`).
+**Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
 Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) or invoke the script directly with curl:
 
