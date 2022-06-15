@@ -168,7 +168,7 @@ This event reports a successful test suite invocation:
     --test_type "Functional" \
     --test_status "Success" \
     --test_suite "<test_suite_id>" \
-    --test_stats "failure=0,success=18,skipped=3,unknown=0,custom=2,total=24" \
+    --test_stats "failure=0,success=18,skipped=3,unknown=0,custom=2,total=23" \
     --test_start_time "2021-07-20T18:05:46.019Z" \
     --test_end_time "2021-07-20T18:08:42.024Z" \
     --full
@@ -214,7 +214,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;run_name            | The name of the job run that built the code.                                                                                               | --run      |
 | &#x2011;&#x2011;commit              | The URI of the commit. (`<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>`)                                        | --run      |
 | &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                          | --commit   |
-| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123). Used only if `--commit` is included                                                     | --commit   |
+| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123).                                                                                         | --commit   |
 
 ---
 
