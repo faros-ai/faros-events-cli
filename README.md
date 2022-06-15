@@ -150,7 +150,7 @@ This event reports the successful deployment of an application to an environment
     --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-Same as in earlier section, you can report this information in parts, e.g. deploy started, deploy completed.
+Same as in earlier section, you can report this information in parts, e.g. build started, build completed, deploy started, deploy completed.
 
 ## Code quality
 
