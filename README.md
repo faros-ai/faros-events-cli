@@ -168,7 +168,7 @@ This event reports a successful test suite invocation:
     --test_type "Functional" \
     --test_status "Success" \
     --test_suite "<test_suite_id>" \
-    --test_stats "success=5,failure=0,total=5" \
+    --test_stats "failure=0,success=18,skipped=3,unknown=0,custom=2,total=24" \
     --test_start_time "2021-07-20T18:05:46.019Z" \
     --test_end_time "2021-07-20T18:08:42.024Z" \
     --full
