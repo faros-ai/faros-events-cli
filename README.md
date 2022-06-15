@@ -49,7 +49,7 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros
 
 ### Reporting builds with commits (basic)
 
-This event reports a successful code build:
+This CI event reports a successful code build:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -62,7 +62,7 @@ This event reports a successful code build:
 
 ### Reporting deployments with commits (basic)
 
-This event reports a successful deployment of your application to your environment:
+This CD event reports a successful deployment of your application to your environment:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
@@ -214,7 +214,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;run_name            | The name of the job run that built the code.                                                                                               | --run      |
 | &#x2011;&#x2011;commit              | The URI of the commit. (`<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>`)                                        | --run      |
 | &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                          | --commit   |
-| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. 123).                                                                                         | --commit   |
+| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. `123`).                                                                                         | --commit   |
 
 ---
 
