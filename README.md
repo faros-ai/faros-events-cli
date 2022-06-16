@@ -185,14 +185,14 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### General arguments
 
-| Argument                           | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| &#x2011;k, &#x2011;&#x2011;api_key | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                          | Yes (not required for [Faros Community Edition](https://github.com/faros-ai/faros-community-edition), i.e when `community_edition` flag is present) |                                                                                   |
-| &#x2011;u, &#x2011;&#x2011;url     | The Faros API url to send the event to.                                                                                                                           |                                                                                                                                                     | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
-| &#x2011;g, &#x2011;&#x2011;graph   | The graph that the event should be sent to.                                                                                                                       |                                                                                                                                                     | "default"                                                                         |
-| &#x2011;&#x2011;dry_run            | Print the event instead of sending. (no value accepted, true if flag is present)                                                                                  |                                                                                                                                                     | False                                                                             |
-| &#x2011;&#x2011;validate_only      | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)                                  |                                                                                                                                                     | False                                                                             |
-| &#x2011;&#x2011;community_edition  | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present) |                                                                                                                                                     | False                                                                             |
+| Argument                           | Description                                                                                                                              | Required                                                      | Default                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| &#x2011;k, &#x2011;&#x2011;api_key | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes (not required when `--community_edition` flag is present) |                                                                                   |
+| &#x2011;u, &#x2011;&#x2011;url     | The Faros API url to send the event to.                                                                                                  |                                                               | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
+| &#x2011;g, &#x2011;&#x2011;graph   | The graph that the event should be sent to.                                                                                              |                                                               | "default"                                                                         |
+| &#x2011;&#x2011;dry_run            | Print the event instead of sending.                                                                                                      |                                                               | False                                                                             |
+| &#x2011;&#x2011;validate_only      | Event will not be consumed but instead will only be validated against event schema.                                                      |                                                               | False                                                                             |
+| &#x2011;&#x2011;community_edition  | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition).                     |                                                               | False                                                                             |
 
 ### CI arguments
 
@@ -257,15 +257,15 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### Advanced arguments
 
-| Argument                            | Description                                                                                            | Default                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| &#x2011;&#x2011;origin              | The origin of the event that is being sent to Faros.                                                   | "Faros_Script_Event"                           |
-| &#x2011;&#x2011;full                | The event being sent should be validated as a full event. (no value accepted, true if flag is present) | False                                          |
-| &#x2011;&#x2011;silent              | Unexceptional output will be silenced. (no value accepted, true if flag is present)                    | False                                          |
-| &#x2011;&#x2011;debug               | Helpful information will be printed. (no value accepted, true if flag is present)                      | False                                          |
-| &#x2011;&#x2011;skip_saving_run     | Do not include cicd_Build in the event. (no value accepted, true if flag is present)                   | False                                          |
-| &#x2011;&#x2011;no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo. (no value accepted, true if flag is present)     | False                                          |
-| &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret.                                                                               | "admin" (Only used in Faros Community Edition) |
+| Argument                            | Description                                                         | Default              |
+| ----------------------------------- | ------------------------------------------------------------------- | -------------------- |
+| &#x2011;&#x2011;origin              | The origin of the event that is being sent to Faros.                | "Faros_Script_Event" |
+| &#x2011;&#x2011;full                | The event being sent should be validated as a full event.           |                      |
+| &#x2011;&#x2011;silent              | Unexceptional output will be silenced.                              |                      |
+| &#x2011;&#x2011;debug               | Helpful information will be printed.                                |                      |
+| &#x2011;&#x2011;skip_saving_run     | Do not include cicd_Build in the event.                             |                      |
+| &#x2011;&#x2011;no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo.               |                      |
+| &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret. Only used with `‑‑community_edition` flag. | "admin"              |
 
 ---
 
