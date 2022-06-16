@@ -175,15 +175,15 @@ This event reports a successful test suite invocation:
     --full
 ```
 
-### Arguments
+## Arguments
 
-#### Passing arguments: flags or environment variables
+### Passing arguments: flags or environment variables
 
 There are two ways that arguments can be passed into the script. The first, is via flags. The second is via environment variables. You may use a combination of these two options. If both are set, flags will take precedence over environment variables.
 
 :pencil: **Note**: By convention, you can switch between using a flag or an environment variable by simply capitalizing the argument name and prefixing it with `FAROS_`. For example, `--commit` becomes `FAROS_COMMIT`, `--artifact` becomes `FAROS_ARTIFACT`.
 
-#### General arguments
+### General arguments
 
 | Argument                            | Description                                                                                                                                                       | Required                                                                                                                                            | Default                                                                           |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -194,7 +194,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;validate_only       | Event will not be consumed but instead will only be validated against event schema. (no value accepted, true if flag is present)                                  |                                                                                                                                                     | False                                                                             |
 | &#x2011;&#x2011;community_edition   | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition). (no value accepted, true if flag is present) |                                                                                                                                                     | False                                                                             |
 
-#### CI arguments
+### CI arguments
 
 | Argument                            | Description                                                                                                                                | Dependency |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
@@ -208,7 +208,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                          | --commit   |
 | &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. `123`).                                                                                       | --commit   |
 
-#### CD arguments
+### CD arguments
 
 | Argument                              | Description                                                                                                                                                                                                                           | Dependency |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
@@ -228,7 +228,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                 | --run      |
 | &#x2011;&#x2011;run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                   | --run      |
 
-#### Test Execution arguments
+### Test Execution arguments
 
 | Argument                            | Description                                                                                                                                                                                                                        | Required                                                                                                                                    | Allowed Value                                                                    |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -255,7 +255,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                          |                                                                                                                                             |                                                                                  |
 | &#x2011;&#x2011;task_source         | The TMS (Task Management System). (e.g. `Jira`)                                                                                                                                                                                    | If &#x2011;&#x2011;test_task, &#x2011;&#x2011;defect_task, &#x2011;&#x2011;test_suite_task, or &#x2011;&#x2011;test_execution_task provided |                                                                                  |
 
-#### Advanced arguments
+### Advanced arguments
 
 | Argument                            | Description                                                                                            | Default                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
