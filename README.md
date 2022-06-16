@@ -255,7 +255,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                          |                                                                                                                                             |                                                                                  |
 | &#x2011;&#x2011;task_source         | The TMS (Task Management System). (e.g. `Jira`)                                                                                                                                                                                    | If &#x2011;&#x2011;test_task, &#x2011;&#x2011;defect_task, &#x2011;&#x2011;test_suite_task, or &#x2011;&#x2011;test_execution_task provided |                                                                                  |
 
-#### Advanced Arguments
+#### Advanced arguments
 
 | Argument                            | Description                                                                                            | Default                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
