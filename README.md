@@ -18,7 +18,7 @@ CLI for reporting events to Faros platform.
   - [CI arguments](#ci-arguments)
   - [CD arguments](#cd-arguments)
   - [Test Execution arguments](#test-execution-arguments)
-  - [Advanced arguments](#advanced-arguments)
+  - [Additional arguments](#additional-arguments)
 - [Tips](#tips)
   - [Validating your command](#validating-your-command)
   - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
@@ -255,7 +255,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;test_suite_task     | The unique identifier of the test suite task within the TMS (Task Management System).                                                                                                                                                                                                                                            |                                                                                                                                             |
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                                                                                                                        |                                                                                                                                             |
 
-### Advanced arguments
+### Additional arguments
 
 | Argument                            | Description                                                         | Default              |
 | ----------------------------------- | ------------------------------------------------------------------- | -------------------- |
