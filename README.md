@@ -18,6 +18,7 @@ CLI for reporting events to Faros platform.
   - [CI arguments](#ci-arguments)
   - [CD arguments](#cd-arguments)
   - [Test Execution arguments](#test-execution-arguments)
+  - [Advanced arguments](#advanced-arguments)
 - [Tips](#tips)
   - [Validating your command](#validating-your-command)
   - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
