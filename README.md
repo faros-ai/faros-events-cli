@@ -83,7 +83,7 @@ Faros events are very flexible. Information can be sent all at once in a single 
 
 You can send a CI event when a code build has started. And a final event, when the code build has finished successfully.
 
-- Code build started
+Code build started:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -93,7 +93,7 @@ You can send a CI event when a code build has started. And a final event, when t
     --run_start_time "Now"
 ```
 
-- Code build finished successfully
+Code build finished successfully:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -106,7 +106,7 @@ You can send a CI event when a code build has started. And a final event, when t
 
 You can send a CD event when an deployment has started. Then later, you can send an event when that deployment has finished successfully.
 
-- Deployment started
+Deployment started:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
@@ -116,7 +116,7 @@ You can send a CD event when an deployment has started. Then later, you can send
     --deploy_start_time "Now"
 ```
 
-- Deployment finished successfully
+Deployment finished successfully:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
