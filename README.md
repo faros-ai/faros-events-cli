@@ -156,6 +156,8 @@ Same as in the [earlier section](#reporting-builds--deployments-in-parts-advance
 
 ### Reporting build steps
 
+> ❗️ Faros Community Edition does not currently support build steps
+
 In addition to tracking build outcomes, you can also instrument specific steps in your build processes.
 
 After reporting the start of a build:
@@ -200,6 +202,7 @@ Don't forget to report the end of the build itself!
 ### Reporting test execution results
 
 > :exclamation: `--full` flag must be provided with TestExecution event
+> ❗️ Faros Community Edition does not currently Test Execution events
 
 This event reports a successful test suite invocation:
 
