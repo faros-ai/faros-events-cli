@@ -10,6 +10,7 @@ CLI for reporting events to Faros platform.
   - [Reporting deployments with commits (basic)](#reporting-deployments-with-commits-basic)
   - [Reporting builds & deployments in parts (advanced)](#reporting-builds--deployments-in-parts-advanced)
   - [Reporting builds & deployments with commits & artifacts (advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
+  - [Reporting build steps](#reporting-build-steps)
 - [Code quality](#code-quality)
   - [Reporting test execution results](#reporting-test-execution-results)
 - [Arguments](#arguments)
@@ -31,17 +32,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.5.3 && docker run farosai/faros-events-cli:v0.5.3 help
+docker pull farosai/faros-events-cli:v0.5.4 && docker run farosai/faros-events-cli:v0.5.4 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.4/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.3/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.4/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -80,7 +81,7 @@ Faros events are very flexible. Information can be sent all at once in a single 
 
 #### Sending build information in parts
 
-You can send an event when a code build has started. And a final event, when the code build has finished successfully.
+You can send a CI event when a code build has started. And a final event, when the code build has finished successfully.
 
 - Code build started
 
@@ -103,7 +104,7 @@ You can send an event when a code build has started. And a final event, when the
 
 #### Sending deployment information in parts
 
-You can send an event when an deployment has started. Then later, you can send an event when that deployment has finished successfully.
+You can send a CD event when an deployment has started. Then later, you can send an event when that deployment has finished successfully.
 
 - Deployment started
 
@@ -128,7 +129,7 @@ You can send an event when an deployment has started. Then later, you can send a
 
 When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
 
-This event reports that a commit was successfully built into the specified artifact:
+This CD event reports that a commit was successfully built into the specified artifact:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
@@ -140,7 +141,7 @@ This event reports that a commit was successfully built into the specified artif
     --run_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-This event reports the successful deployment of an application to an environment using that artifact:
+This CD event reports the successful deployment of an application to an environment using that artifact:
 
 ```sh
 ./faros_event.sh CD -k "<faros_api_key>" \
@@ -152,6 +153,47 @@ This event reports the successful deployment of an application to an environment
 ```
 
 Same as in the [earlier section](#reporting-builds--deployments-in-parts-advanced), you can report this information in parts, e.g. build started, build completed, deploy started, deploy completed.
+
+### Reporting build steps
+
+In addition to tracking build outcomes, you can also instrument specific steps in your build processes.
+
+After reporting the start of a build:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_start_time "Now"
+```
+
+You can report the start of a specific build step:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_step_id "<run_step_id>" \
+    --run_step_start_time "Now"
+```
+
+Then report its outcome and end time:
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_step_id "<run_step_id>" \
+    --run_step_status "Success" \
+    --run_step_end_time "Now"
+```
+
+Don't forget to report the end of the build itself!
+
+```sh
+./faros_event.sh CI -k "<faros_api_key>" \
+    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
+    --run_status "Success" \
+    --run_end_time "Now"
+```
 
 ## Code quality
 
@@ -196,17 +238,27 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### CI arguments
 
-| Argument                            | Description                                                                                                                                | Dependency |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| &#x2011;&#x2011;run                 | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>`)                                              |            |
-| &#x2011;&#x2011;run_status          | The status of the job run that built the code. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `Unknown`, `Custom`) | --run      |
-| &#x2011;&#x2011;run_status_details  | Any extra details about the status of the job run.                                                                                         | --run      |
-| &#x2011;&#x2011;run_start_time      | The start time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)      | --run      |
-| &#x2011;&#x2011;run_end_time        | The end time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)        | --run      |
-| &#x2011;&#x2011;run_name            | The name of the job run that built the code.                                                                                               | --run      |
-| &#x2011;&#x2011;commit              | The URI of the commit. (`<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>`)                                        | --run      |
-| &#x2011;&#x2011;artifact            | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                          | --commit   |
-| &#x2011;&#x2011;pull_request_number | The pull request number of the commit. (e.g. `123`).                                                                                       | --commit   |
+| Argument                                | Description                                                                                                                                | Dependency |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| &#x2011;&#x2011;run                     | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>`)                                              |            |
+| &#x2011;&#x2011;run_status              | The status of the job run that built the code. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `Unknown`, `Custom`) | --run      |
+| &#x2011;&#x2011;run_status_details      | Any extra details about the status of the job run.                                                                                         | --run      |
+| &#x2011;&#x2011;run_start_time          | The start time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)      | --run      |
+| &#x2011;&#x2011;run_end_time            | The end time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)        | --run      |
+| &#x2011;&#x2011;run_name                | The name of the job run that built the code.                                                                                               | --run      |
+| &#x2011;&#x2011;commit                  | The URI of the commit. (`<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>`)                                        | --run      |
+| &#x2011;&#x2011;artifact                | The URI of the artifact. (`<source>://<organization>/<repository>/<artifact_id>`)                                                          | --commit   |
+| &#x2011;&#x2011;pull_request_number     | The pull request number of the commit. (e.g. `123`).                                                                                       | --commit   |
+| &#x2011;&#x2011;run_step_id             | The id of the job run step. (e.g. `123`).                                                                                                  | --run      |
+| &#x2011;&#x2011;run_step_name           | The name of the job run step (e.g. `Lint`).                                                                                                | --run      |
+| &#x2011;&#x2011;run_step_status         | The status of the job run step. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `Unknown`, `Custom`)                | --run      |
+| &#x2011;&#x2011;run_step_status_details | Any extra details about the status of the job run step.                                                                                    | --run      |
+| &#x2011;&#x2011;run_step_type           | The type of the job run step. (Allowed values: `Script`, `Manual`, `Custom`)                                                               | --run      |
+| &#x2011;&#x2011;run_step_type_details   | Any extra details about the type of the job run step.                                                                                      | --run      |
+| &#x2011;&#x2011;run_step_start_time     | The start time of the job run step in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`) | --run      |
+| &#x2011;&#x2011;run_step_end_time       | The end time of the job run step in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)   | --run      |
+| &#x2011;&#x2011;run_step_command        | The command executed by the job run step.                                                                                                  | --run      |
+| &#x2011;&#x2011;run_step_url            | The url to the job run step.                                                                                                               | --run      |
 
 ### CD arguments
 
