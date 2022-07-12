@@ -164,6 +164,7 @@ Describe 'faros_event.sh'
       When call cd_event_test
       The output should include '{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success"},"artifact":{"id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"}}}'
     End
+
     It 'Resolves literal Now and converts to iso8601 format'
       Intercept begin
       __begin__() {
@@ -187,6 +188,7 @@ Describe 'faros_event.sh'
       The output should include '"startTime":"2022-04-22T18:31:46Z"'
       The output should include '"endTime":"2022-04-22T18:31:46Z"'
     End
+
     It 'Leaves time unchanged if not Unix millis or Now'
       ci_event_test() {
         echo $(
@@ -340,6 +342,50 @@ Describe 'faros_event.sh'
       }
       When call ci_event_test
       The output should include "$CIWithPullRequestExpectedOutput"
+    End
+    
+    CIWithBuildStepExpectedOutput='{"type":"CI","version":"0.0.1","origin":"Faros_Script_Event","data":{"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","step":{"id":"<run_step_id>","name":"<run_step_name>","type":"<run_step_type>","typeDetails":"<run_step_type_details>","status":"<run_step_status>","statusDetails":"<run_step_status_details>","command":"<run_step_command>","url":"<run_step_url>","startTime":"<run_step_start_time>","endTime":"<run_step_end_time>"}}}}'
+
+    It 'constructs correct event when build step included using flags'
+      ci_event_test() {
+        echo $(
+          ../faros_event.sh CI -k "<api_key>" \
+          --run "<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          --run_step_id "<run_step_id>" \
+          --run_step_name "<run_step_name>" \
+          --run_step_type "<run_step_type>" \
+          --run_step_type_details "<run_step_type_details>" \
+          --run_step_status "<run_step_status>" \
+          --run_step_status_details "<run_step_status_details>" \
+          --run_step_command "<run_step_command>" \
+          --run_step_url "<run_step_url>" \
+          --run_step_start_time "<run_step_start_time>" \
+          --run_step_end_time "<run_step_end_time>"
+        )
+      }
+      When call ci_event_test
+      The output should include "$CIWithBuildStepExpectedOutput"
+    End
+
+    It 'constructs correct event when build step included using environment variables'
+      ci_event_test() {
+        echo $(
+          FAROS_RUN="<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>" \
+          FAROS_RUN_STEP_ID="<run_step_id>" \
+          FAROS_RUN_STEP_NAME="<run_step_name>" \
+          FAROS_RUN_STEP_TYPE="<run_step_type>" \
+          FAROS_RUN_STEP_TYPE_DETAILS="<run_step_type_details>" \
+          FAROS_RUN_STEP_STATUS="<run_step_status>" \
+          FAROS_RUN_STEP_STATUS_DETAILS="<run_step_status_details>" \
+          FAROS_RUN_STEP_COMMAND="<run_step_command>" \
+          FAROS_RUN_STEP_URL="<run_step_url>" \
+          FAROS_RUN_STEP_START_TIME="<run_step_start_time>" \
+          FAROS_RUN_STEP_END_TIME="<run_step_end_time>" \
+          ../faros_event.sh CI -k "<api_key>"
+        )
+      }
+      When call ci_event_test
+      The output should include "$CIWithBuildStepExpectedOutput"
     End
   End
 

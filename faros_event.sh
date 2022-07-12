@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.5.3"
+version="0.5.4"
 canonical_model_version="0.11.1"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -355,6 +355,36 @@ function parseFlags() {
             --run_end_time)
                 run_end_time="$2"
                 shift 2 ;;
+            --run_step_id)
+                run_step_id="$2"
+                shift 2 ;;
+            --run_step_name)
+                run_step_name="$2"
+                shift 2 ;;
+            --run_step_type)
+                run_step_type="$2"
+                shift 2 ;;
+            --run_step_type_details)
+                run_step_type_details="$2"
+                shift 2 ;;
+            --run_step_command)
+                run_step_command="$2"
+                shift 2 ;;
+            --run_step_start_time)
+                run_step_start_time="$2"
+                shift 2 ;;
+            --run_step_end_time)
+                run_step_end_time="$2"
+                shift 2 ;;
+            --run_step_status)
+                run_step_status="$2"
+                shift 2 ;;
+            --run_step_status_details)
+                run_step_status_details="$2"
+                shift 2 ;;
+            --run_step_url)
+                run_step_url="$2"
+                shift 2 ;;
             -g|--graph)
                 graph="$2"
                 shift 2 ;;
@@ -459,6 +489,7 @@ function processEventTypes() {
         addArtifactToData
         addCommitToData
         addRunToData
+        addRunStepToData
     elif ((cd_event)); then
         event_type="CD"
         makeEvent
@@ -858,11 +889,23 @@ function resolveRunInput() {
     run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}
     run_start_time=${run_start_time:-$FAROS_RUN_START_TIME}
     run_end_time=${run_end_time:-$FAROS_RUN_END_TIME}
+
+    # Run step
+    run_step_id=${run_step_id:-$FAROS_RUN_STEP_ID}
+    run_step_name=${run_step_name:-$FAROS_RUN_STEP_NAME}
+    run_step_type=${run_step_type:-$FAROS_RUN_STEP_TYPE}
+    run_step_type_details=${run_step_type_details:-$FAROS_RUN_STEP_TYPE_DETAILS}
+    run_step_status=${run_step_status:-$FAROS_RUN_STEP_STATUS}
+    run_step_status_details=${run_step_status_details:-$FAROS_RUN_STEP_STATUS_DETAILS}
+    run_step_command=${run_step_command:-$FAROS_RUN_STEP_COMMAND}
+    run_step_url=${run_step_url:-$FAROS_RUN_STEP_URL}
+    run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
+    run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 }
 
 # Parses a uri of the form:
 # value_A://value_B/value_C/value_D
-# arg1; The uri to parse
+# arg1: The uri to parse
 # arg2: The env var name in which to store value_A
 # arg3: The env var name in which to store value_B
 # arg4: The env var name in which to store value_C
@@ -1124,6 +1167,71 @@ function addRunToData() {
             {
                 "endTime": $run_end_time
             }' <<< "$request_body"
+        )
+    fi
+}
+
+function addRunStepToData() {
+    if ! [ -z "$run_step_id" ]; then
+        request_body=$(jq \
+            --arg run_step_id "$run_step_id" \
+            '.data.run.step += {"id": $run_step_id}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_name" ]; then
+        request_body=$(jq \
+            --arg run_step_name "$run_step_name" \
+            '.data.run.step += {"name": $run_step_name}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_type" ]; then
+        request_body=$(jq \
+            --arg run_step_type "$run_step_type" \
+            '.data.run.step += {"type": $run_step_type}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_type_details" ]; then
+        request_body=$(jq \
+            --arg run_step_type_details "$run_step_type_details" \
+            '.data.run.step += {"typeDetails": $run_step_type_details}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_status" ]; then
+        request_body=$(jq \
+            --arg run_step_status "$run_step_status" \
+            '.data.run.step += {"status": $run_step_status}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_status_details" ]; then
+        request_body=$(jq \
+            --arg run_step_status_details "$run_step_status_details" \
+            '.data.run.step += {"statusDetails": $run_step_status_details}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_command" ]; then
+        request_body=$(jq \
+            --arg run_step_command "$run_step_command" \
+            '.data.run.step += {"command": $run_step_command}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_url" ]; then
+        request_body=$(jq \
+            --arg run_step_url "$run_step_url" \
+            '.data.run.step += {"url": $run_step_url}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_start_time" ]; then
+        run_step_start_time=$(convert_to_iso8601 "$run_step_start_time")
+        request_body=$(jq \
+            --arg run_step_start_time "$run_step_start_time" \
+            '.data.run.step += {"startTime": $run_step_start_time}' <<< "$request_body"
+        )
+    fi
+    if ! [ -z "$run_step_end_time" ]; then
+        run_step_end_time=$(convert_to_iso8601 "$run_step_end_time")
+        request_body=$(jq \
+            --arg run_step_end_time "$run_step_end_time" \
+            '.data.run.step += {"endTime": $run_step_end_time}' <<< "$request_body"
         )
     fi
 }
