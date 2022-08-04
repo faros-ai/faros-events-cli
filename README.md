@@ -19,6 +19,7 @@ CLI for reporting events to Faros platform.
   - [CI arguments](#ci-arguments)
   - [CD arguments](#cd-arguments)
   - [Test Execution arguments](#test-execution-arguments)
+  - [URI alternatives](#uri-alternatives)
   - [Additional arguments](#additional-arguments)
 - [Tips](#tips)
   - [Validating your command](#validating-your-command)
@@ -306,6 +307,46 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;defect_task         | The unique identifier of the defect task within the TMS (Task Management System).                                                                                                                                                                                                                                                |                                                                                                                                             |
 | &#x2011;&#x2011;test_suite_task     | The unique identifier of the test suite task within the TMS (Task Management System).                                                                                                                                                                                                                                            |                                                                                                                                             |
 | &#x2011;&#x2011;test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                                                                                                                        |                                                                                                                                             |
+
+### URI alternatives
+
+Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or `--deploy` gets in the way. Here is how you can supply the required information as individual fields. Each alternative requires all listed fields.
+
+`--run` alternative
+
+| Argument                     | Description                  |
+| ---------------------------- | ---------------------------- |
+| &#x2011;&#x2011;run_id       | The id of the run            |
+| &#x2011;&#x2011;run_pipeline | The pipeline of the run      |
+| &#x2011;&#x2011;run_org      | The organization of the run  |
+| &#x2011;&#x2011;run_source   | The source system of the run |
+
+`--deploy` alternative
+
+| Argument                      | Description                                                                                                       |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| &#x2011;&#x2011;deploy_id     | The id of the deployment                                                                                          |
+| &#x2011;&#x2011;deploy_env    | The environment of the deployment (allowed values: `Prod`, `Staging`, `QA`, `Dev`, `Sandbox`, `Canary`, `Custom`) |
+| &#x2011;&#x2011;deploy_app    | The application being deployed                                                                                    |
+| &#x2011;&#x2011;deploy_source | The source system of the deployment                                                                               |
+
+`--commit` alternative
+
+| Argument                      | Description                          |
+| ----------------------------- | ------------------------------------ |
+| &#x2011;&#x2011;commit_sha    | The SHA of the commit                |
+| &#x2011;&#x2011;commit_repo   | The repository of the commit         |
+| &#x2011;&#x2011;commit_org    | The organization of the commit       |
+| &#x2011;&#x2011;commit_source | The source system storing the commit |
+
+`--artifact` alternative
+
+| Argument                        | Description                            |
+| ------------------------------- | -------------------------------------- |
+| &#x2011;&#x2011;artifact_id     | The id of the artifact                 |
+| &#x2011;&#x2011;artifact_repo   | The repository of the artifact         |
+| &#x2011;&#x2011;artifact_org    | The organization of the artifact       |
+| &#x2011;&#x2011;artifact_source | The source system storing the artifact |
 
 ### Additional arguments
 

@@ -244,11 +244,47 @@ function parseFlags() {
             --run) # Externally build is referred to as run
                 run_uri="$2"
                 shift 2 ;;
+            --run_id)
+                run_id="$2"
+                shift 2 ;;
+            --run_pipeline)
+                run_pipeline="$2"
+                shift 2 ;;
+            --run_org)
+                run_org="$2"
+                shift 2 ;;
+            --run_source)
+                run_source="$2"
+                shift 2 ;;
             --deploy)
                 deploy_uri="$2"
                 shift 2 ;;
+            --deploy_id)
+                deploy_id="$2"
+                shift 2 ;;
+            --deploy_env)
+                deploy_env="$2"
+                shift 2 ;;
+            --deploy_app)
+                deploy_app="$2"
+                shift 2 ;;
+            --deploy_source)
+                deploy_source="$2"
+                shift 2 ;;
             --commit)
                 commit_uri="$2"
+                shift 2 ;;
+            --commit_sha)
+                commit_sha="$2"
+                shift 2 ;;
+            --commit_repo)
+                commit_repo="$2"
+                shift 2 ;;
+            --commit_org)
+                commit_org="$2"
+                shift 2 ;;
+            --commit_source)
+                commit_source="$2"
                 shift 2 ;;
             --branch)
                 branch="$2"
@@ -258,6 +294,18 @@ function parseFlags() {
                 shift 2 ;;
             --artifact)
                 artifact_uri="$2"
+                shift 2 ;;
+            --artifact_id)
+                artifact_id="$2"
+                shift 2 ;;
+            --artifact_repo)
+                artifact_repo="$2"
+                shift 2 ;;
+            --artifact_org)
+                artifact_org="$2"
+                shift 2 ;;
+            --artifact_source)
+                artifact_source="$2"
                 shift 2 ;;
             --deploy_app_platform)
                 deploy_app_platform="$2"
@@ -823,12 +871,10 @@ function resolveCDInput() {
     if ! [ -z ${deploy_uri+x} ] || ! [ -z ${FAROS_DEPLOY+x} ]; then
         parseDeployUri
     fi
-    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
-        parseArtifactUri
-    fi
-    if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
-        parseCommitUri
-    fi
+    deploy_id=${deploy_id:-$FAROS_DEPLOY_ID}
+    deploy_app=${deploy_app:-$FAROS_DEPLOY_APP}
+    deploy_env=${deploy_env:-$FAROS_DEPLOY_ENV}
+    deploy_source=${deploy_source:-$FAROS_DEPLOY_SOURCE}
     deploy_status=${deploy_status:-$FAROS_DEPLOY_STATUS}
     deploy_app_platform=${deploy_app_platform:-$FAROS_DEPLOY_APP_PLATFORM}
     deploy_env_details=${deploy_env_details:-$FAROS_DEPLOY_ENV_DETAILS}
@@ -836,17 +882,14 @@ function resolveCDInput() {
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
+    resolveArtifactInput
+    resolveCommitInput
     resolveRunInput
 }
 
 function resolveCIInput() {
-    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
-        parseArtifactUri
-    fi
-    if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
-        parseCommitUri
-    fi
-
+    resolveArtifactInput
+    resolveCommitInput
     resolveRunInput
 }
 
@@ -874,16 +917,37 @@ function resolveTestExecutionInput() {
     task_source=${task_source:-$FAROS_TASK_SOURCE}
     branch=${branch:-$FAROS_BRANCH}
 
+    resolveCommitInput    
+}
+
+function resolveArtifactInput() {
+    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
+        parseArtifactUri
+    fi
+    artifact_id=${artifact_id:-$FAROS_ARTIFACT_ID}
+    artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
+    artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
+    artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
+}
+
+function resolveCommitInput() {
     if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
         parseCommitUri
     fi
+    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+    commit_repo=${commit_repo:-$FAROS_COMMIT_REPO}
+    commit_org=${commit_org:-$FAROS_COMMIT_ORG}
+    commit_source=${commit_source:-$FAROS_COMMIT_SOURCE}
 }
 
 function resolveRunInput() {
     if ! [ -z ${run_uri+x} ] || ! [ -z ${FAROS_RUN+x} ]; then
         parseRunUri
     fi
-
+    run_id=${run_id:-$FAROS_RUN_ID}
+    run_pipeline=${run_pipeline:-$FAROS_RUN_PIPELINE}
+    run_org=${run_org:-$FAROS_RUN_ORG}
+    run_source=${run_source:-$FAROS_RUN_SOURCE}
     run_status=${run_status:-$FAROS_RUN_STATUS}
     # run_name=${run_name:-$FAROS_RUN_NAME}
     run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}

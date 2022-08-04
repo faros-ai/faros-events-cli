@@ -5,7 +5,7 @@ Describe 'faros_event.sh'
   Describe 'CD event'
     CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z"},"artifact":{"id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
 
-    It 'constructs correct event when artifact included using flags'
+    It 'constructs correct event when artifact included using flags with uris'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
@@ -28,7 +28,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithArtifactExpectedOutput"
     End
 
-    It 'constructs correct event when artifact included using environment variables'
+    It 'constructs correct event when artifact included using environment variables with uris'
       cd_event_test() {
         echo $(
           FAROS_API_KEY="<api_key>" \
@@ -52,9 +52,74 @@ Describe 'faros_event.sh'
       The output should include "$CDWithArtifactExpectedOutput"
     End
 
+    It 'constructs correct event when artifact included using flags with id fields'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --artifact_id "<artifact>" \
+          --artifact_repo "<artifact_repo>" \
+          --artifact_org "<artifact_org>" \
+          --artifact_source "<artifact_source>" \
+          --run_id "<build_uid>" \
+          --run_pipeline "<cicd_pipeline>" \
+          --run_org "<cicd_organization>" \
+          --run_source "<cicd_source>" \
+          --run_status "Success" \
+          --run_status_details "<run_status_details>" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy_id "<deploy_uid>" \
+          --deploy_env "QA" \
+          --deploy_app "<app_name>" \
+          --deploy_source "<deploy_source>" \
+          --deploy_app_platform "<deploy_app_platform>" \
+          --deploy_env_details "<deploy_env_details>" \
+          --deploy_status "Success" \
+          --deploy_status_details "<deploy_status_details>" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000"
+        )
+      }
+      When call cd_event_test
+      The output should include "$CDWithArtifactExpectedOutput"
+    End
+
+    It 'constructs correct event when artifact included using environment variables with id fields'
+      cd_event_test() {
+        echo $(
+          FAROS_API_KEY="<api_key>" \
+          FAROS_ARTIFACT_ID="<artifact>" \
+          FAROS_ARTIFACT_REPO="<artifact_repo>" \
+          FAROS_ARTIFACT_ORG="<artifact_org>" \
+          FAROS_ARTIFACT_SOURCE="<artifact_source>" \
+          FAROS_RUN_ID="<build_uid>" \
+          FAROS_RUN_PIPELINE="<cicd_pipeline>" \
+          FAROS_RUN_ORG="<cicd_organization>" \
+          FAROS_RUN_SOURCE="<cicd_source>" \
+          FAROS_RUN_STATUS="Success" \
+          FAROS_RUN_STATUS_DETAILS="<run_status_details>" \
+          FAROS_RUN_START_TIME="1000" \
+          FAROS_RUN_END_TIME="2000" \
+          FAROS_DEPLOY_ID="<deploy_uid>" \
+          FAROS_DEPLOY_ENV="QA" \
+          FAROS_DEPLOY_APP="<app_name>" \
+          FAROS_DEPLOY_SOURCE="<deploy_source>" \
+          FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
+          FAROS_DEPLOY_ENV_DETAILS="<deploy_env_details>" \
+          FAROS_DEPLOY_STATUS="Success" \
+          FAROS_DEPLOY_STATUS_DETAILS="<deploy_status_details>" \
+          FAROS_DEPLOY_START_TIME="3000" \
+          FAROS_DEPLOY_END_TIME="4000" \
+          ../faros_event.sh CD
+        )
+      }
+      When call cd_event_test
+      The output should include "$CDWithArtifactExpectedOutput"
+    End
+
     CDWithCommitExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z"},"commit":{"sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>"},"run":{"id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
 
-    It 'constructs correct event when commmit included using flags'
+    It 'constructs correct event when commmit included using flags with uris'
       cd_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
@@ -77,7 +142,7 @@ Describe 'faros_event.sh'
       The output should include "$CDWithCommitExpectedOutput"
     End
 
-    It 'constructs correct event when commit included using environment variables'
+    It 'constructs correct event when commit included using environment variables with uris'
       cd_event_test() {
         echo $(
           FAROS_API_KEY="<api_key>" \
@@ -88,6 +153,71 @@ Describe 'faros_event.sh'
           FAROS_RUN_START_TIME="1000" \
           FAROS_RUN_END_TIME="2000" \
           FAROS_DEPLOY="<deploy_source>://<app_name>/QA/<deploy_uid>" \
+          FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
+          FAROS_DEPLOY_ENV_DETAILS="<deploy_env_details>" \
+          FAROS_DEPLOY_STATUS="Success" \
+          FAROS_DEPLOY_STATUS_DETAILS="<deploy_status_details>" \
+          FAROS_DEPLOY_START_TIME="3000" \
+          FAROS_DEPLOY_END_TIME="4000" \
+          ../faros_event.sh CD
+        )
+      }
+      When call cd_event_test
+      The output should include "$CDWithCommitExpectedOutput"
+    End
+
+    It 'constructs correct event when commmit included using flags with id fields'
+      cd_event_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --deploy_id "<deploy_uid>" \
+          --deploy_env "QA" \
+          --deploy_app "<app_name>" \
+          --deploy_source "<deploy_source>" \
+          --commit_sha "<commit_sha>" \
+          --commit_repo "<vcs_repo>" \
+          --commit_org "<vcs_organization>" \
+          --commit_source "<vcs_source>" \
+          --run_id "<build_uid>" \
+          --run_pipeline "<cicd_pipeline>" \
+          --run_org "<cicd_organization>" \
+          --run_source "<cicd_source>" \
+          --run_status "Success" \
+          --run_status_details "<run_status_details>" \
+          --run_start_time "1000" \
+          --run_end_time "2000" \
+          --deploy_app_platform "<deploy_app_platform>" \
+          --deploy_env_details "<deploy_env_details>" \
+          --deploy_status "Success" \
+          --deploy_status_details "<deploy_status_details>" \
+          --deploy_start_time "3000" \
+          --deploy_end_time "4000"
+        )
+      }
+      When call cd_event_test
+      The output should include "$CDWithCommitExpectedOutput"
+    End
+
+    It 'constructs correct event when commit included using environment variables with id fields'
+      cd_event_test() {
+        echo $(
+          FAROS_API_KEY="<api_key>" \
+          FAROS_COMMIT_SHA="<commit_sha>" \
+          FAROS_COMMIT_REPO="<vcs_repo>" \
+          FAROS_COMMIT_ORG="<vcs_organization>" \
+          FAROS_COMMIT_SOURCE="<vcs_source>" \
+          FAROS_RUN_ID="<build_uid>" \
+          FAROS_RUN_PIPELINE="<cicd_pipeline>" \
+          FAROS_RUN_ORG="<cicd_organization>" \
+          FAROS_RUN_SOURCE="<cicd_source>" \
+          FAROS_RUN_STATUS="Success" \
+          FAROS_RUN_STATUS_DETAILS="<run_status_details>" \
+          FAROS_RUN_START_TIME="1000" \
+          FAROS_RUN_END_TIME="2000" \
+          FAROS_DEPLOY_ID="<deploy_uid>" \
+          FAROS_DEPLOY_ENV="QA" \
+          FAROS_DEPLOY_APP="<app_name>" \
+          FAROS_DEPLOY_SOURCE="<deploy_source>" \
           FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
           FAROS_DEPLOY_ENV_DETAILS="<deploy_env_details>" \
           FAROS_DEPLOY_STATUS="Success" \
