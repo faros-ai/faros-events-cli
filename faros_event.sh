@@ -723,7 +723,7 @@ function make_mutation() {
     data=$(concat "$2" "$entity_origin")
     log Calling Hasura rest endpoint "$1" with payload "$data"
 
-    if ! (($dry_run)); then
+    if ! ((dry_run)); then
         log "Sending mutation to Hasura..."
 
         http_response=$(curl -s -S --retry 5 --retry-delay 5 \
@@ -769,7 +769,7 @@ function resolveInput() {
     if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
         api_key=${api_key:-$FAROS_API_KEY}
     else
-        if ! (($community_edition)); then
+        if ! ((community_edition)); then
             err "A Faros API key must be provided"
             fail
         fi
@@ -779,7 +779,7 @@ function resolveInput() {
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
 
-    if ! (($community_edition)); then
+    if ! ((community_edition)); then
         url=${url:-$FAROS_URL}
     else
         url=${url:-$HASURA_URL}
@@ -1081,24 +1081,24 @@ function addRunStepToData() {
 }
 
 function addTestToData() {
-    tryAddToEvent '["data","test","id"]' $test_id
-    tryAddToEvent '["data","test","source"]' $test_source
-    tryAddToEvent '["data","test","type"]' $test_type
-    tryAddToEvent '["data","test","typeDetails"]' $test_type_details
-    tryAddToEvent '["data","test","status"]' $test_status
-    tryAddToEvent '["data","test","statusDetails"]' $test_status_details
-    tryAddToEvent '["data","test","suite"]' $test_suite
-    tryAddToEvent '["data","test","tags"]' $test_tags
-    tryAddToEvent '["data","test","environments"]' $environments
-    tryAddToEvent '["data","test","deviceInfo","name"]' $device_name
-    tryAddToEvent '["data","test","deviceInfo","os"]' $device_os
-    tryAddToEvent '["data","test","deviceInfo","browser"]' $device_browser
-    tryAddToEvent '["data","test","deviceInfo","type"]' $device_type
-    tryAddToEvent '["data","test","testTask"]' $test_task
-    tryAddToEvent '["data","test","defectTask"]' $defect_task
-    tryAddToEvent '["data","test","suiteTask"]' $test_suite_task
-    tryAddToEvent '["data","test","executionTask"]' $test_execution_task
-    tryAddToEvent '["data","test","taskSource"]' $task_source
+    tryAddToEvent '["data","test","id"]' "$test_id"
+    tryAddToEvent '["data","test","source"]' "$test_source"
+    tryAddToEvent '["data","test","type"]' "$test_type"
+    tryAddToEvent '["data","test","typeDetails"]' "$test_type_details"
+    tryAddToEvent '["data","test","status"]' "$test_status"
+    tryAddToEvent '["data","test","statusDetails"]' "$test_status_details"
+    tryAddToEvent '["data","test","suite"]' "$test_suite"
+    tryAddToEvent '["data","test","tags"]' "$test_tags"
+    tryAddToEvent '["data","test","environments"]' "$environments"
+    tryAddToEvent '["data","test","deviceInfo","name"]' "$device_name"
+    tryAddToEvent '["data","test","deviceInfo","os"]' "$device_os"
+    tryAddToEvent '["data","test","deviceInfo","browser"]' "$device_browser"
+    tryAddToEvent '["data","test","deviceInfo","type"]' "$device_type"
+    tryAddToEvent '["data","test","testTask"]' "$test_task"
+    tryAddToEvent '["data","test","defectTask"]' "$defect_task"
+    tryAddToEvent '["data","test","suiteTask"]' "$test_suite_task"
+    tryAddToEvent '["data","test","executionTask"]' "$test_execution_task"
+    tryAddToEvent '["data","test","taskSource"]' "$task_source"
     if ! [ -z "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
