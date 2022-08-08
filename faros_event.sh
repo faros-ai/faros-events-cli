@@ -983,9 +983,6 @@ function parseRunUri() {
 
 function parseDeployUri() {
     parseUri "deploy_source" "deploy_app" "deploy_env" "deploy_id" $deploy_uri_form "$deploy_uri"
-    if ! [ -z "$deploy_source" ] && ! [ -z "$deploy_app" ] && ! [ -z "$deploy_env" ] && ! [ -z "$deploy_id" ]; then
-        has_deploy=1
-    fi
 }
 
 function parseArtifactUri() {
