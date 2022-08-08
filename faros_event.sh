@@ -171,66 +171,11 @@ function help() {
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
     echo "--full              Event should be validated as a full event."
-    echo "--no_lowercase_vcs  Do not lowercase VCS org and repo."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
     echo "--community_edition Format and send event to Faros Community Edition."
     echo
     echo "For more usage information please visit: $github_url"
-    exit 0
-}
-
-main() {
-    parseFlags "$@"
-    set -- "${POSITIONAL[@]:-}" # Restore positional args
-    processArgs "$@"            # Determine which event types are present
-    resolveInput                # Resolve general fields
-    processEventTypes           # Resolve input and populate event
-
-    if ((debug)); then
-        echo "Faros url: $url"
-        echo "Faros graph: $graph"
-        echo "Dry run: $dry_run"
-        echo "Silent: $silent"
-        echo "No Lowercase VCS: $no_lowercase_vcs"
-        echo "Skip Saving Run: $skip_saving_run"
-        echo "Debug: $debug"
-        echo "Community edition: $community_edition"
-    fi
-
-    if ! (($community_edition)); then
-        log "Request Body:"
-        log "$request_body"
-
-        if ! (($dry_run)); then
-            sendEventToFaros
-
-            # Log error response as an error and fail
-            if [ ! "$http_response_status" -eq 202 ]; then
-                err "[HTTP status: $http_response_status]"
-                err "Response Body:"
-                err "$http_response_body"
-                fail
-            else
-                log "[HTTP status ACCEPTED: $http_response_status]"
-                log "Response Body:"
-                log "$http_response_body"
-            fi
-        else
-            log "Dry run: Event NOT sent to Faros."
-        fi
-    else
-        if ((ci_event)); then
-            doCIMutations
-        elif ((cd_event)); then
-            doCDMutations
-        else
-            err "Event type not support for community edition."
-            fail
-        fi
-    fi
-
-    log "Done."
     exit 0
 }
 
@@ -445,9 +390,6 @@ function parseFlags() {
             --hasura_admin_secret)
                 hasura_admin_secret="$2"
                 shift 2 ;;
-            --no_lowercase_vcs)
-                no_lowercase_vcs=1
-                shift ;;
             --dry_run)
                 dry_run=1
                 shift ;;
@@ -579,7 +521,7 @@ function make_commit_key() {
 
 function make_artifact_key() {
     if ! [ -z "$has_artifact" ]; then
-        keys_matching "$flat" "data_artifact_.*"
+        keys_matching "$flat" "data_artifact_(id|repository|organization|source)"
     else
         jq -n \
           --arg commit_sha "$commit_sha" \
@@ -649,11 +591,9 @@ function doCDMutations() {
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
     if ! [ -z "$deploy_start_time" ] &&
         ! [ -z "$deploy_end_time" ]; then
-        start_time=$(convert_to_iso8601 "$deploy_start_time")
-        end_time=$(convert_to_iso8601 "$deploy_end_time")
         start_end=$( jq -n \
-                        --arg start_time "$start_time" \
-                        --arg end_time "$end_time" \
+                        --arg start_time "$deploy_start_time" \
+                        --arg end_time "$deploy_end_time" \
                         '{
                             "deploy_start_time": $start_time,
                             "deploy_end_time": $end_time,
@@ -710,13 +650,11 @@ function make_mutations_from_run {
         fi
         if ! [ -z "$has_run_start_time" ] &&
             ! [ -z "$has_run_end_time" ]; then
-            start_time=$(convert_to_iso8601 "$run_start_time")
-            end_time=$(convert_to_iso8601 "$run_end_time")
             cicd_Build_with_start_end=$( jq -n \
                             --arg run_status "$run_status" \
                             --arg run_status_details "$run_status_details" \
-                            --arg run_start_time "$start_time" \
-                            --arg run_end_time "$end_time" \
+                            --arg run_start_time "$run_start_time" \
+                            --arg run_end_time "$run_end_time" \
                             '{
                                 "run_status": {"category": $run_status, "detail": $run_status_details},
                                 "run_start_time": $run_start_time,
@@ -868,7 +806,26 @@ function resolveDefaults() {
 }
 
 function resolveCDInput() {
-    if ! [ -z ${deploy_uri+x} ] || ! [ -z ${FAROS_DEPLOY+x} ]; then
+    resolveDeployInput
+    resolveArtifactInput
+    resolveCommitInput
+    resolveRunInput
+}
+
+function resolveCIInput() {
+    resolveArtifactInput
+    resolveCommitInput
+    resolveRunInput
+}
+
+function resolveTestExecutionInput() {
+    resolveTestInput
+    resolveCommitInput
+}
+
+function resolveDeployInput() {
+    deploy_uri=${deploy_uri:-$FAROS_DEPLOY}
+    if ((community_edition)); then
         parseDeployUri
     fi
     deploy_id=${deploy_id:-$FAROS_DEPLOY_ID}
@@ -882,18 +839,87 @@ function resolveCDInput() {
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
-    resolveArtifactInput
-    resolveCommitInput
-    resolveRunInput
+    if ! [ -z "$deploy_start_time" ]; then
+        deploy_start_time=$(convert_to_iso8601 "$deploy_start_time")
+    fi
+    if ! [ -z "$deploy_end_time" ]; then
+        deploy_end_time=$(convert_to_iso8601 "$deploy_end_time")
+    fi
 }
 
-function resolveCIInput() {
-    resolveArtifactInput
-    resolveCommitInput
-    resolveRunInput
+function resolveArtifactInput() {
+    artifact_uri=${artifact_uri:-$FAROS_ARTIFACT}
+    if ((community_edition)); then
+        parseArtifactUri
+    fi
+    artifact_id=${artifact_id:-$FAROS_ARTIFACT_ID}
+    artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
+    artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
+    artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
 }
 
-function resolveTestExecutionInput() {
+function resolveCommitInput() {
+    commit_uri=${commit_uri:-$FAROS_COMMIT}
+    if ((community_edition)); then
+        parseCommitUri
+    fi
+    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
+    commit_repo=${commit_repo:-$FAROS_COMMIT_REPO}
+    commit_org=${commit_org:-$FAROS_COMMIT_ORG}
+    commit_source=${commit_source:-$FAROS_COMMIT_SOURCE}
+    branch=${branch:-$FAROS_BRANCH}
+    pull_request_number=${pull_request_number:-$FAROS_PULL_REQUEST_NUMBER}
+}
+
+function resolveRunInput() {
+    run_uri=${run_uri:-$FAROS_RUN}
+    if ((community_edition)); then
+        parseRunUri
+    fi
+    run_id=${run_id:-$FAROS_RUN_ID}
+    run_pipeline=${run_pipeline:-$FAROS_RUN_PIPELINE}
+    run_org=${run_org:-$FAROS_RUN_ORG}
+    run_source=${run_source:-$FAROS_RUN_SOURCE}
+    run_status=${run_status:-$FAROS_RUN_STATUS}
+    run_name=${run_name:-$FAROS_RUN_NAME}
+    run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}
+    run_start_time=${run_start_time:-$FAROS_RUN_START_TIME}
+    run_end_time=${run_end_time:-$FAROS_RUN_END_TIME}
+
+    if ! [ -z "$run_status" ]; then
+        has_run_status=1
+    fi
+
+    # Run step
+    run_step_id=${run_step_id:-$FAROS_RUN_STEP_ID}
+    run_step_name=${run_step_name:-$FAROS_RUN_STEP_NAME}
+    run_step_type=${run_step_type:-$FAROS_RUN_STEP_TYPE}
+    run_step_type_details=${run_step_type_details:-$FAROS_RUN_STEP_TYPE_DETAILS}
+    run_step_status=${run_step_status:-$FAROS_RUN_STEP_STATUS}
+    run_step_status_details=${run_step_status_details:-$FAROS_RUN_STEP_STATUS_DETAILS}
+    run_step_command=${run_step_command:-$FAROS_RUN_STEP_COMMAND}
+    run_step_url=${run_step_url:-$FAROS_RUN_STEP_URL}
+    run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
+    run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
+
+    # Convert timestamps
+    if ! [ -z "$run_start_time" ]; then
+        has_run_start_time=1
+        run_start_time=$(convert_to_iso8601 "$run_start_time")
+    fi
+    if ! [ -z "$run_end_time" ]; then
+        has_run_end_time=1
+        run_end_time=$(convert_to_iso8601 "$run_end_time")
+    fi
+    if ! [ -z "$run_step_start_time" ]; then
+        run_step_start_time=$(convert_to_iso8601 "$run_step_start_time")
+    fi
+    if ! [ -z "$run_step_end_time" ]; then
+        run_step_end_time=$(convert_to_iso8601 "$run_step_end_time")
+    fi
+}
+
+function resolveTestInput() {
     test_id=${test_id:-$FAROS_TEST_ID}
     test_source=${test_source:-$FAROS_TEST_SOURCE}
     test_type=${test_type:-$FAROS_TEST_TYPE}
@@ -915,104 +941,69 @@ function resolveTestExecutionInput() {
     test_suite_task=${test_suite_task:-$FAROS_TEST_SUITE_TASK}
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
     task_source=${task_source:-$FAROS_TASK_SOURCE}
-    branch=${branch:-$FAROS_BRANCH}
 
-    resolveCommitInput    
-}
-
-function resolveArtifactInput() {
-    if ! [ -z ${artifact_uri+x} ] || ! [ -z ${FAROS_ARTIFACT+x} ]; then
-        parseArtifactUri
+    if ! [ -z "$test_start_time" ]; then
+        test_start_time=$(convert_to_iso8601 "$test_start_time")
     fi
-    artifact_id=${artifact_id:-$FAROS_ARTIFACT_ID}
-    artifact_repo=${artifact_repo:-$FAROS_ARTIFACT_REPO}
-    artifact_org=${artifact_org:-$FAROS_ARTIFACT_ORG}
-    artifact_source=${artifact_source:-$FAROS_ARTIFACT_SOURCE}
-}
-
-function resolveCommitInput() {
-    if ! [ -z ${commit_uri+x} ] || ! [ -z ${FAROS_COMMIT+x} ]; then
-        parseCommitUri
+    if ! [ -z "$test_end_time" ]; then
+        test_end_time=$(convert_to_iso8601 "$test_end_time")
     fi
-    commit_sha=${commit_sha:-$FAROS_COMMIT_SHA}
-    commit_repo=${commit_repo:-$FAROS_COMMIT_REPO}
-    commit_org=${commit_org:-$FAROS_COMMIT_ORG}
-    commit_source=${commit_source:-$FAROS_COMMIT_SOURCE}
-}
-
-function resolveRunInput() {
-    if ! [ -z ${run_uri+x} ] || ! [ -z ${FAROS_RUN+x} ]; then
-        parseRunUri
-    fi
-    run_id=${run_id:-$FAROS_RUN_ID}
-    run_pipeline=${run_pipeline:-$FAROS_RUN_PIPELINE}
-    run_org=${run_org:-$FAROS_RUN_ORG}
-    run_source=${run_source:-$FAROS_RUN_SOURCE}
-    run_status=${run_status:-$FAROS_RUN_STATUS}
-    # run_name=${run_name:-$FAROS_RUN_NAME}
-    run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}
-    run_start_time=${run_start_time:-$FAROS_RUN_START_TIME}
-    run_end_time=${run_end_time:-$FAROS_RUN_END_TIME}
-
-    # Run step
-    run_step_id=${run_step_id:-$FAROS_RUN_STEP_ID}
-    run_step_name=${run_step_name:-$FAROS_RUN_STEP_NAME}
-    run_step_type=${run_step_type:-$FAROS_RUN_STEP_TYPE}
-    run_step_type_details=${run_step_type_details:-$FAROS_RUN_STEP_TYPE_DETAILS}
-    run_step_status=${run_step_status:-$FAROS_RUN_STEP_STATUS}
-    run_step_status_details=${run_step_status_details:-$FAROS_RUN_STEP_STATUS_DETAILS}
-    run_step_command=${run_step_command:-$FAROS_RUN_STEP_COMMAND}
-    run_step_url=${run_step_url:-$FAROS_RUN_STEP_URL}
-    run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
-    run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 }
 
 # Parses a uri of the form:
 # value_A://value_B/value_C/value_D
-# arg1: The uri to parse
-# arg2: The env var name in which to store value_A
-# arg3: The env var name in which to store value_B
-# arg4: The env var name in which to store value_C
-# arg5: The env var name in which to store value_D
-# arg6: The form of the URI to communicate when parsing fails
+# arg1: The env var name in which to store value_A
+# arg2: The env var name in which to store value_B
+# arg3: The env var name in which to store value_C
+# arg4: The env var name in which to store value_D
+# arg5: The form of the URI to communicate when parsing fails
+# arg6: The uri to parse
 function parseUri() {
     valid_chars="a-zA-Z0-9_.<>-"
     uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
-    if [[ "$1" =~ $uri_regex ]]; then
-        export "$2"="$(sed 's/:.*//' <<< "$1")"
-        export "$3"="$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< "$1")"
-        export "$4"="$(sed 's/.*:\/\/.*\/\(.*\)\/.*/\1/' <<< "$1")"
-        export "$5"="$(sed 's/.*:\/\/.*\/.*\///' <<< "$1")"
-    else
-        err "Resource URI could not be parsed: $1 The URI should be of the form: $6"
-        fail
+    if ! [ -z "$6" ]; then
+        if [[ "$6" =~ $uri_regex ]]; then
+            export "$1"="$(sed 's/:.*//' <<< "$6")"
+            export "$2"="$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< "$6")"
+            export "$3"="$(sed 's/.*:\/\/.*\/\(.*\)\/.*/\1/' <<< "$6")"
+            export "$4"="$(sed 's/.*:\/\/.*\/.*\///' <<< "$6")"
+        else
+            err "Resource URI could not be parsed: [$6] The URI should be of the form: $5"
+            fail
+        fi
     fi
 }
 
 function parseCommitUri() {
-    parseUri "${commit_uri:-$FAROS_COMMIT}" "commit_source" "commit_org" "commit_repo" "commit_sha" $commit_uri_form
-
-   pull_request_number=${pull_request_number:-$FAROS_PULL_REQUEST_NUMBER}
-    if ! ((no_lowercase_vcs)); then
-        commit_org=$(echo "$commit_org" | awk '{print tolower($0)}')
-        commit_repo=$(echo "$commit_repo" | awk '{print tolower($0)}')
+    parseUri "commit_source" "commit_org" "commit_repo" "commit_sha" "$commit_uri_form" "$commit_uri"
+    if ! [ -z "$commit_source" ] && ! [ -z "$commit_org" ] && ! [ -z "$commit_repo" ] && ! [ -z "$commit_sha" ]; then
+        has_commit=1
     fi
 }
 
 function parseRunUri() {
-    parseUri "${run_uri:-$FAROS_RUN}" "run_source" "run_org" "run_pipeline" "run_id" $run_uri_form
+    parseUri "run_source" "run_org" "run_pipeline" "run_id" "$run_uri_form" "$run_uri"
+    if ! [ -z "$run_source" ] && ! [ -z "$run_org" ] && ! [ -z "$run_pipeline" ] && ! [ -z "$run_id" ]; then
+        has_run=1
+    fi
 }
 
 function parseDeployUri() {
-    parseUri "${deploy_uri:-$FAROS_DEPLOY}" "deploy_source" "deploy_app" "deploy_env" "deploy_id" $deploy_uri_form
+    parseUri "deploy_source" "deploy_app" "deploy_env" "deploy_id" $deploy_uri_form "$deploy_uri"
+    if ! [ -z "$deploy_source" ] && ! [ -z "$deploy_app" ] && ! [ -z "$deploy_env" ] && ! [ -z "$deploy_id" ]; then
+        has_deploy=1
+    fi
 }
 
 function parseArtifactUri() {
-    parseUri "${artifact_uri:-$FAROS_ARTIFACT}" "artifact_source" "artifact_org" "artifact_repo" "artifact_id" $artifact_uri_form
+    parseUri "artifact_source" "artifact_org" "artifact_repo" "artifact_id" "$artifact_uri_form" "$artifact_uri"
+    if ! [ -z "$artifact_source" ] && ! [ -z "$artifact_org" ] && ! [ -z "$artifact_repo" ] && ! [ -z "$artifact_id" ]; then
+        has_artifact=1
+    fi
 }
 
 function makeEvent() {
-    request_body=$( jq -n \
+    request_body=$(jq -n \
         --arg origin "$origin" \
         --arg event_type "$event_type" \
         '{
@@ -1023,103 +1014,37 @@ function makeEvent() {
     )
 }
 
-function addDeployToData() {
-    if ! [ -z "$deploy_id" ] &&
-       ! [ -z "$deploy_env" ] &&
-       ! [ -z "$deploy_app" ] &&
-       ! [ -z "$deploy_source" ]; then
+function tryAddToEvent() {
+    if ! [ -z "$2" ]; then
         request_body=$(jq \
-            --arg deploy_id "$deploy_id" \
-            --arg deploy_app "$deploy_app" \
-            --arg deploy_env "$deploy_env" \
-            --arg deploy_source "$deploy_source" \
-            '.data.deploy +=
-            {
-                "id": $deploy_id,
-                "environment": $deploy_env,
-                "application": $deploy_app,
-                "source": $deploy_source,
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_status" ]; then
-        request_body=$(jq \
-            --arg deploy_status "$deploy_status" \
-            '.data.deploy +=
-            {
-                "status": $deploy_status
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_app_platform" ]; then
-        request_body=$(jq \
-            --arg deploy_app_platform "$deploy_app_platform" \
-            '.data.deploy +=
-            {
-                "applicationPlatform": $deploy_app_platform
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_status_details" ]; then
-        request_body=$(jq \
-            --arg deploy_status_details "$deploy_status_details" \
-            '.data.deploy +=
-            {
-                "statusDetails": $deploy_status_details
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_env_details" ]; then
-        request_body=$(jq \
-            --arg deploy_env_details "$deploy_env_details" \
-            '.data.deploy +=
-            {
-                "environmentDetails": $deploy_env_details
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_start_time" ]; then
-        start_time=$(convert_to_iso8601 "$deploy_start_time")
-        request_body=$(jq \
-            --arg deploy_start_time "$start_time" \
-            '.data.deploy +=
-            {
-                "startTime": $deploy_start_time
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$deploy_end_time" ]; then
-        end_time=$(convert_to_iso8601 "$deploy_end_time")
-        request_body=$(jq \
-            --arg deploy_end_time "$end_time" \
-            '.data.deploy +=
-            {
-                "endTime": $deploy_end_time
-            }' <<< "$request_body"
+            --argjson path "$1" \
+            --arg val "$2" \
+            'getpath($path) += $val' <<< "$request_body"
         )
     fi
 }
 
+function addDeployToData() {
+    tryAddToEvent '["data","deploy","uri"]' "$deploy_uri"
+    tryAddToEvent '["data","deploy","id"]' "$deploy_id"
+    tryAddToEvent '["data","deploy","environment"]' "$deploy_env"
+    tryAddToEvent '["data","deploy","application"]' "$deploy_app"
+    tryAddToEvent '["data","deploy","source"]' "$deploy_source"
+    tryAddToEvent '["data","deploy","status"]' "$deploy_status"
+    tryAddToEvent '["data","deploy","applicationPlatform"]' "$deploy_app_platform"
+    tryAddToEvent '["data","deploy","statusDetails"]' "$deploy_status_details"
+    tryAddToEvent '["data","deploy","environmentDetails"]' "$deploy_env_details"
+    tryAddToEvent '["data","deploy","startTime"]' "$deploy_start_time"
+    tryAddToEvent '["data","deploy","endTime"]' "$deploy_end_time"
+}
+
 function addCommitToData() {
-    if ! [ -z "$commit_sha" ] &&
-       ! [ -z "$commit_repo" ] &&
-       ! [ -z "$commit_org" ] &&
-       ! [ -z "$commit_source" ]; then
-        has_commit=1
-        request_body=$(jq \
-            --arg commit_sha "$commit_sha" \
-            --arg commit_repo "$commit_repo" \
-            --arg commit_org "$commit_org" \
-            --arg commit_source "$commit_source" \
-            '.data.commit +=
-            {
-                "sha": $commit_sha,
-                "repository": $commit_repo,
-                "organization": $commit_org,
-                "source": $commit_source
-            }' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","commit","uri"]' "$commit_uri"
+    tryAddToEvent '["data","commit","sha"]' "$commit_sha"
+    tryAddToEvent '["data","commit","repository"]' "$commit_repo"
+    tryAddToEvent '["data","commit","organization"]' "$commit_org"
+    tryAddToEvent '["data","commit","source"]' "$commit_source"
+    tryAddToEvent '["data","commit","branch"]' "$branch"
     if ! [ -z "$pull_request_number" ]; then
         request_body=$(jq \
             --arg pull_request_number "$pull_request_number" \
@@ -1129,340 +1054,61 @@ function addCommitToData() {
             }' <<< "$request_body"
         )
     fi
-    if ! [ -z "$branch" ]; then
-        request_body=$(jq \
-            --arg branch "$branch" \
-            '.data.commit +=
-            {
-                "branch": $branch,
-            }' <<< "$request_body"
-        )
-    fi
 }
 
 function addArtifactToData() {
-    if ! [ -z "$artifact_id" ] &&
-       ! [ -z "$artifact_repo" ] &&
-       ! [ -z "$artifact_org" ] &&
-       ! [ -z "$artifact_source" ]; then
-        has_artifact=1
-        request_body=$(jq \
-            --arg artifact_id "$artifact_id" \
-            --arg artifact_repo "$artifact_repo" \
-            --arg artifact_org "$artifact_org" \
-            --arg artifact_source "$artifact_source" \
-            '.data.artifact +=
-            {
-                "id": $artifact_id,
-                "repository": $artifact_repo,
-                "organization": $artifact_org,
-                "source": $artifact_source
-
-            }' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","artifact","uri"]' "$artifact_uri"
+    tryAddToEvent '["data","artifact","id"]' "$artifact_id"
+    tryAddToEvent '["data","artifact","repository"]' "$artifact_repo"
+    tryAddToEvent '["data","artifact","organization"]' "$artifact_org"
+    tryAddToEvent '["data","artifact","source"]' "$artifact_source"
 }
 
 function addRunToData() {
-    if ! [ -z "$run_id" ] &&
-       ! [ -z "$run_org" ] &&
-       ! [ -z "$run_pipeline" ] &&
-       ! [ -z "$run_source" ]; then
-        has_run=1
-        request_body=$(jq \
-            --arg run_id "$run_id" \
-            --arg run_pipeline "$run_pipeline" \
-            --arg run_org "$run_org" \
-            --arg run_source "$run_source" \
-            '.data.run +=
-            {
-                "id": $run_id,
-                "pipeline": $run_pipeline,
-                "organization": $run_org,
-                "source": $run_source
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_name" ]; then
-        request_body=$(jq \
-            --arg run_name "$run_name" \
-            '.data.run +=
-            {
-                "name": $run_name
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_status" ]; then
-        has_run_status=1
-        request_body=$(jq \
-            --arg run_status "$run_status" \
-            '.data.run +=
-            {
-                "status": $run_status
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_status_details" ]; then
-        request_body=$(jq \
-            --arg run_status_details "$run_status_details" \
-            '.data.run +=
-            {
-                "statusDetails": $run_status_details,
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_start_time" ]; then
-        has_run_start_time=1
-        start_time=$(convert_to_iso8601 "$run_start_time")
-        request_body=$(jq \
-            --arg run_start_time "$start_time" \
-            '.data.run +=
-            {
-                "startTime": $run_start_time
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_end_time" ]; then
-        has_run_end_time=1
-        end_time=$(convert_to_iso8601 "$run_end_time")
-        request_body=$(jq \
-            --arg run_end_time "$end_time" \
-            '.data.run +=
-            {
-                "endTime": $run_end_time
-            }' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","run","uri"]' "$run_uri"
+    tryAddToEvent '["data","run","id"]' "$run_id"
+    tryAddToEvent '["data","run","pipeline"]' "$run_pipeline"
+    tryAddToEvent '["data","run","organization"]' "$run_org"
+    tryAddToEvent '["data","run","source"]' "$run_source"
+    tryAddToEvent '["data","run","name"]' "$run_name"
+    tryAddToEvent '["data","run","status"]' "$run_status"
+    tryAddToEvent '["data","run","statusDetails"]' "$run_status_details"
+    tryAddToEvent '["data","run","startTime"]' "$run_start_time"
+    tryAddToEvent '["data","run","endTime"]' "$run_end_time"
 }
 
 function addRunStepToData() {
-    if ! [ -z "$run_step_id" ]; then
-        request_body=$(jq \
-            --arg run_step_id "$run_step_id" \
-            '.data.run.step += {"id": $run_step_id}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_name" ]; then
-        request_body=$(jq \
-            --arg run_step_name "$run_step_name" \
-            '.data.run.step += {"name": $run_step_name}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_type" ]; then
-        request_body=$(jq \
-            --arg run_step_type "$run_step_type" \
-            '.data.run.step += {"type": $run_step_type}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_type_details" ]; then
-        request_body=$(jq \
-            --arg run_step_type_details "$run_step_type_details" \
-            '.data.run.step += {"typeDetails": $run_step_type_details}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_status" ]; then
-        request_body=$(jq \
-            --arg run_step_status "$run_step_status" \
-            '.data.run.step += {"status": $run_step_status}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_status_details" ]; then
-        request_body=$(jq \
-            --arg run_step_status_details "$run_step_status_details" \
-            '.data.run.step += {"statusDetails": $run_step_status_details}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_command" ]; then
-        request_body=$(jq \
-            --arg run_step_command "$run_step_command" \
-            '.data.run.step += {"command": $run_step_command}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_url" ]; then
-        request_body=$(jq \
-            --arg run_step_url "$run_step_url" \
-            '.data.run.step += {"url": $run_step_url}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_start_time" ]; then
-        run_step_start_time=$(convert_to_iso8601 "$run_step_start_time")
-        request_body=$(jq \
-            --arg run_step_start_time "$run_step_start_time" \
-            '.data.run.step += {"startTime": $run_step_start_time}' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$run_step_end_time" ]; then
-        run_step_end_time=$(convert_to_iso8601 "$run_step_end_time")
-        request_body=$(jq \
-            --arg run_step_end_time "$run_step_end_time" \
-            '.data.run.step += {"endTime": $run_step_end_time}' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","run","step","id"]' "$run_step_id"
+    tryAddToEvent '["data","run","step","name"]' "$run_step_name"
+    tryAddToEvent '["data","run","step","type"]' "$run_step_type"
+    tryAddToEvent '["data","run","step","typeDetails"]' "$run_step_type_details"
+    tryAddToEvent '["data","run","step","status"]' "$run_step_status"
+    tryAddToEvent '["data","run","step","statusDetails"]' "$run_step_status_details"
+    tryAddToEvent '["data","run","step","command"]' "$run_step_command"
+    tryAddToEvent '["data","run","step","url"]' "$run_step_url"
+    tryAddToEvent '["data","run","step","startTime"]' "$run_step_start_time"
+    tryAddToEvent '["data","run","step","endTime"]' "$run_step_end_time"
 }
 
 function addTestToData() {
-    if ! [ -z "$test_id" ]; then
-        request_body=$(jq \
-            --arg test_id "$test_id" \
-            '.data.test +=
-            {
-                "id": $test_id
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_source" ]; then
-        request_body=$(jq \
-            --arg test_source "$test_source" \
-            '.data.test +=
-            {
-                "source": $test_source
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_type" ]; then
-        request_body=$(jq \
-            --arg test_type "$test_type" \
-            '.data.test +=
-            {
-                "type": $test_type
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_type_details" ]; then
-        request_body=$(jq \
-            --arg test_type_details "$test_type_details" \
-            '.data.test +=
-            {
-                "typeDetails": $test_type_details
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_status" ]; then
-        request_body=$(jq \
-            --arg test_status "$test_status" \
-            '.data.test +=
-            {
-                "status": $test_status
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_status_details" ]; then
-        request_body=$(jq \
-            --arg test_status_details "$test_status_details" \
-            '.data.test +=
-            {
-                "statusDetails": $test_status_details
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_suite" ]; then
-        request_body=$(jq \
-            --arg test_suite "$test_suite" \
-            '.data.test +=
-            {
-                "suite": $test_suite
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_tags" ]; then
-        request_body=$(jq \
-            --arg test_tags "$test_tags" \
-            '.data.test +=
-            {
-                "tags": $test_tags
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$environments" ]; then
-        request_body=$(jq \
-            --arg environments "$environments" \
-            '.data.test +=
-            {
-                "environments": $environments
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$device_name" ]; then
-        request_body=$(jq \
-            --arg device_name "$device_name" \
-            '.data.test.deviceInfo +=
-            {
-                "name": $device_name
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$device_os" ]; then
-        request_body=$(jq \
-            --arg device_os "$device_os" \
-            '.data.test.deviceInfo +=
-            {
-                "os": $device_os
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$device_browser" ]; then
-        request_body=$(jq \
-            --arg device_browser "$device_browser" \
-            '.data.test.deviceInfo +=
-            {
-                "browser": $device_browser
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$device_type" ]; then
-        request_body=$(jq \
-            --arg device_type "$device_type" \
-            '.data.test.deviceInfo +=
-            {
-                "type": $device_type
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_task" ]; then
-        request_body=$(jq \
-            --arg test_task "$test_task" \
-            '.data.test +=
-            {
-                "testTask": $test_task
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$defect_task" ]; then
-        request_body=$(jq \
-            --arg defect_task "$defect_task" \
-            '.data.test +=
-            {
-                "defectTask": $defect_task
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_suite_task" ]; then
-        request_body=$(jq \
-            --arg test_suite_task "$test_suite_task" \
-            '.data.test +=
-            {
-                "suiteTask": $test_suite_task
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_execution_task" ]; then
-        request_body=$(jq \
-            --arg test_execution_task "$test_execution_task" \
-            '.data.test +=
-            {
-                "executionTask": $test_execution_task
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$task_source" ]; then
-        request_body=$(jq \
-            --arg task_source "$task_source" \
-            '.data.test +=
-            {
-                "taskSource": $task_source
-            }' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","test","id"]' $test_id
+    tryAddToEvent '["data","test","source"]' $test_source
+    tryAddToEvent '["data","test","type"]' $test_type
+    tryAddToEvent '["data","test","typeDetails"]' $test_type_details
+    tryAddToEvent '["data","test","status"]' $test_status
+    tryAddToEvent '["data","test","statusDetails"]' $test_status_details
+    tryAddToEvent '["data","test","suite"]' $test_suite
+    tryAddToEvent '["data","test","tags"]' $test_tags
+    tryAddToEvent '["data","test","environments"]' $environments
+    tryAddToEvent '["data","test","deviceInfo","name"]' $device_name
+    tryAddToEvent '["data","test","deviceInfo","os"]' $device_os
+    tryAddToEvent '["data","test","deviceInfo","browser"]' $device_browser
+    tryAddToEvent '["data","test","deviceInfo","type"]' $device_type
+    tryAddToEvent '["data","test","testTask"]' $test_task
+    tryAddToEvent '["data","test","defectTask"]' $defect_task
+    tryAddToEvent '["data","test","suiteTask"]' $test_suite_task
+    tryAddToEvent '["data","test","executionTask"]' $test_execution_task
+    tryAddToEvent '["data","test","taskSource"]' $task_source
     if ! [ -z "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
@@ -1474,26 +1120,8 @@ function addTestToData() {
             )
         done        
     fi
-    if ! [ -z "$test_start_time" ]; then
-        start_time=$(convert_to_iso8601 "$test_start_time")
-        request_body=$(jq \
-            --arg test_start_time "$start_time" \
-            '.data.test +=
-            {
-                "startTime": $test_start_time
-            }' <<< "$request_body"
-        )
-    fi
-    if ! [ -z "$test_end_time" ]; then
-        end_time=$(convert_to_iso8601 "$test_end_time")
-        request_body=$(jq \
-            --arg test_end_time "$end_time" \
-            '.data.test +=
-            {
-                "endTime": $test_end_time
-            }' <<< "$request_body"
-        )
-    fi
+    tryAddToEvent '["data","test","startTime"]' $test_start_time
+    tryAddToEvent '["data","test","endTime"]' $test_end_time
 }
 
 function sendEventToFaros() {
@@ -1562,6 +1190,57 @@ function err() {
 function fail() {
     err "Failed."
     exit 1
+}
+
+main() {
+    parseFlags "$@"
+    set -- "${POSITIONAL[@]:-}" # Restore positional args
+    processArgs "$@"            # Determine which event types are present
+    resolveInput                # Resolve general fields
+    processEventTypes           # Resolve input and populate event
+
+    if ((debug)); then
+        echo "Faros url: $url"
+        echo "Faros graph: $graph"
+        echo "Dry run: $dry_run"
+        echo "Silent: $silent"
+        echo "Skip Saving Run: $skip_saving_run"
+        echo "Debug: $debug"
+        echo "Community edition: $community_edition"
+    fi
+
+    if ! (($community_edition)); then
+        log "Request Body:"
+        log "$request_body"
+
+        if ! (($dry_run)); then
+            sendEventToFaros
+
+            # Log error response as an error and fail
+            if [ ! "$http_response_status" -eq 202 ]; then
+                err "[HTTP status: $http_response_status]"
+                err "Response Body:"
+                err "$http_response_body"
+                fail
+            else
+                log "[HTTP status ACCEPTED: $http_response_status]"
+            fi
+        else
+            log "Dry run: Event NOT sent to Faros."
+        fi
+    else
+        if ((ci_event)); then
+            doCIMutations
+        elif ((cd_event)); then
+            doCDMutations
+        else
+            err "Event type not support for community edition."
+            fail
+        fi
+    fi
+
+    log "Done."
+    exit 0
 }
 
 main "$@"; exit
