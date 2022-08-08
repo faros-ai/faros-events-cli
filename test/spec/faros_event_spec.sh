@@ -3,7 +3,7 @@ Describe 'faros_event.sh'
   export FAROS_DRY_RUN=1
 
   Describe 'CD event'
-    CDWithArtifactExpectedOutput='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z"},"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>","id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
+    CDAllFields='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","id":"<deploy_uid>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z"},"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>","id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
 
     It 'populates all fields using flags'
       cd_event_test() {
@@ -44,7 +44,7 @@ Describe 'faros_event.sh'
         )
       }
       When call cd_event_test
-      The output should include "$CDWithArtifactExpectedOutput"
+      The output should include "$CDAllFields"
     End
 
     It 'populates all fields using environment variables'
@@ -87,7 +87,7 @@ Describe 'faros_event.sh'
         )
       }
       When call cd_event_test
-      The output should include "$CDWithArtifactExpectedOutput"
+      The output should include "$CDAllFields"
     End
 
     It 'Resolves literal Now and converts to iso8601 format'
@@ -244,7 +244,7 @@ Describe 'faros_event.sh'
 
   Describe 'TaskExecution event'
 
-    TestExecutionExpectedOutput='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"testTask":"<test_task>","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":1,"success":2,"skipped":3,"unknown":4,"custom":5,"total":15},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101}}}'
+    TestExecutionAllFields='{"type":"TestExecution","version":"0.0.1","origin":"Faros_Script_Event","data":{"test":{"id":"<test_id>","source":"<test_source>","type":"<test_type>","typeDetails":"<test_type_details>","status":"<test_status>","statusDetails":"<test_status_details>","suite":"<test_suite>","tags":"<test_tags>","environments":"<environments>","deviceInfo":{"name":"<device_name>","os":"<device_os>","browser":"<device_browser>","type":"<device_type>"},"testTask":"<test_task>","defectTask":"<defect_task>","suiteTask":"<test_suite_task>","executionTask":"<test_execution_task>","taskSource":"<task_source>","stats":{"failure":1,"success":2,"skipped":3,"unknown":4,"custom":5,"total":15},"startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101}}}'
 
     It 'populates all fields using flags'
       test_execution_event_test() {
@@ -286,7 +286,7 @@ Describe 'faros_event.sh'
           )
       }
       When call test_execution_event_test
-      The output should include $TestExecutionExpectedOutput
+      The output should include $TestExecutionAllFields
     End
 
     It 'populates all fields using environment variables'
@@ -330,7 +330,7 @@ Describe 'faros_event.sh'
           )
       }
       When call test_execution_event_test
-      The output should include $TestExecutionExpectedOutput
+      The output should include $TestExecutionAllFields
     End
   End
 
