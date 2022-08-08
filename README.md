@@ -33,17 +33,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.5.4 && docker run farosai/faros-events-cli:v0.5.4 help
+docker pull farosai/faros-events-cli:v0.6.0 && docker run farosai/faros-events-cli:v0.6.0 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.4/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.0/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.5.4/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.0/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -310,9 +310,9 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### URI alternatives
 
-Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or `--deploy` gets in the way. Here is how you can supply the required information as individual fields. Each alternative requires all listed fields.
+Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or `--deploy` arguments gets in the way. Here is how you can supply the required information as individual fields. Each alternative requires **all** listed fields.
 
-`--run` alternative
+`--run` alternative (**all** listed fields are required)
 
 | Argument                     | Description                  |
 | ---------------------------- | ---------------------------- |
@@ -321,7 +321,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | &#x2011;&#x2011;run_org      | The organization of the run  |
 | &#x2011;&#x2011;run_source   | The source system of the run |
 
-`--deploy` alternative
+`--deploy` alternative (**all** listed fields are required)
 
 | Argument                      | Description                                                                                                       |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -330,7 +330,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | &#x2011;&#x2011;deploy_app    | The application being deployed                                                                                    |
 | &#x2011;&#x2011;deploy_source | The source system of the deployment                                                                               |
 
-`--commit` alternative
+`--commit` alternative (**all** listed fields are required)
 
 | Argument                      | Description                          |
 | ----------------------------- | ------------------------------------ |
@@ -339,7 +339,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | &#x2011;&#x2011;commit_org    | The organization of the commit       |
 | &#x2011;&#x2011;commit_source | The source system storing the commit |
 
-`--artifact` alternative
+`--artifact` alternative (**all** listed fields are required)
 
 | Argument                        | Description                            |
 | ------------------------------- | -------------------------------------- |
