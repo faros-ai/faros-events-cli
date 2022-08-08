@@ -1110,8 +1110,8 @@ function addTestToData() {
             )
         done        
     fi
-    tryAddToEvent '["data","test","startTime"]' $test_start_time
-    tryAddToEvent '["data","test","endTime"]' $test_end_time
+    tryAddToEvent '["data","test","startTime"]' "$test_start_time"
+    tryAddToEvent '["data","test","endTime"]' "$test_end_time"
 }
 
 function sendEventToFaros() {
