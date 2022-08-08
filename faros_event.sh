@@ -180,13 +180,12 @@ function help() {
 }
 
 function parseFlags() {
-    # Loop through flags and process them
     while (($#)); do
         case "$1" in
             -k|--api_key)
                 api_key="$2"
                 shift 2 ;;
-            --run) # Externally build is referred to as run
+            --run)
                 run_uri="$2"
                 shift 2 ;;
             --run_id)
@@ -538,74 +537,72 @@ function make_artifact_key() {
 }
 
 function doPullRequestCommitMutation() {
-    if ! [ -z "$has_commit" ] &&
-       ! [ -z "$pull_request_number" ]; then
-            pull_request=$( jq -n \
-                            --arg pull_request_number "$pull_request_number" \
-                            '{
-                                "data_pull_request_uid": $pull_request_number,
-                                "data_pull_request_number": $pull_request_number|tonumber,
-                            }'
-                        )
-            pull_request_commit=$(concat "$pull_request" "$commit_key")
-            make_mutation vcs_pull_request_commit "$pull_request_commit"
+    if ! [ -z "$has_commit" ] && ! [ -z "$pull_request_number" ]; then
+        pull_request=$(jq -n \
+            --arg pull_request_number "$pull_request_number" \
+            '{
+                "data_pull_request_uid": $pull_request_number,
+                "data_pull_request_number": $pull_request_number|tonumber,
+            }'
+        )
+        pull_request_commit=$(concat "$pull_request" "$commit_key")
+        make_mutation vcs_pull_request_commit "$pull_request_commit"
     fi
 }
 
 function doCDMutations() {
     flat=$(flatten "$request_body")
 
-    compute_Application=$( jq -n \
-                --arg name "$deploy_app" \
-                --arg platform "${deploy_app_platform:-}" \
-                '{
-                    "name": $name,
-                    "platform": $platform,
-                }'
-            )
-    compute_Application_Mutation=$( jq -n \
-                --arg name "$deploy_app" \
-                --arg platform "${deploy_app_platform:-}" \
-                --argjson compute_Application "$compute_Application" \
-                '{
-                    "name": $name,
-                    "platform": $platform,
-                    "uid": $compute_Application|tostring
-                }'
-            )
+    compute_Application=$(jq -n \
+        --arg name "$deploy_app" \
+        --arg platform "${deploy_app_platform:-}" \
+        '{
+            "name": $name,
+            "platform": $platform,
+        }'
+    )
+    compute_Application_Mutation=$(jq -n \
+        --arg name "$deploy_app" \
+        --arg platform "${deploy_app_platform:-}" \
+        --argjson compute_Application "$compute_Application" \
+        '{
+            "name": $name,
+            "platform": $platform,
+            "uid": $compute_Application|tostring
+        }'
+    )
     make_mutation compute_application "$compute_Application_Mutation"
 
     cicd_Deployment_base=$(keys_matching "$flat" "data_deploy_(id|source)")
-    status_env=$( jq -n \
-                  --arg status_category "$deploy_status" \
-                  --arg status_detail "${deploy_status_details:-}" \
-                  --arg env_category "$deploy_env" \
-                  --arg env_detail "${deploy_env_details:-}" \
-                  --argjson compute_Application "$compute_Application" \
-                  '{
-                      "status": {"category" : $status_category, "detail" : $status_detail},
-                      "env": {"category" : $env_category, "detail" : $env_detail},
-                      "compute_Application": $compute_Application|tostring
-                  }'
-                )
+    status_env=$(jq -n \
+        --arg status_category "$deploy_status" \
+        --arg status_detail "${deploy_status_details:-}" \
+        --arg env_category "$deploy_env" \
+        --arg env_detail "${deploy_env_details:-}" \
+        --argjson compute_Application "$compute_Application" \
+        '{
+            "status": {"category" : $status_category, "detail" : $status_detail},
+            "env": {"category" : $env_category, "detail" : $env_detail},
+            "compute_Application": $compute_Application|tostring
+        }'
+    )
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
-    if ! [ -z "$deploy_start_time" ] &&
-        ! [ -z "$deploy_end_time" ]; then
-        start_end=$( jq -n \
-                        --arg start_time "$deploy_start_time" \
-                        --arg end_time "$deploy_end_time" \
-                        '{
-                            "deploy_start_time": $start_time,
-                            "deploy_end_time": $end_time,
-                        }'
-                    )
+    if ! [ -z "$deploy_start_time" ] && ! [ -z "$deploy_end_time" ]; then
+        start_end=$(jq -n \
+            --arg start_time "$deploy_start_time" \
+            --arg end_time "$deploy_end_time" \
+            '{
+                "deploy_start_time": $start_time,
+                "deploy_end_time": $end_time,
+            }'
+        )
     else
-        start_end=$( jq -n \
-                        '{
-                            "deploy_start_time": null,
-                            "deploy_end_time": null,
-                        }'
-                    )
+        start_end=$(jq -n \
+            '{
+                "deploy_start_time": null,
+                "deploy_end_time": null,
+            }'
+        )
     fi
     cicd_Deployment_with_start_end=$(concat "$cicd_Deployment_base" "$start_end")
 
@@ -643,45 +640,45 @@ function doCDMutations() {
 function make_mutations_from_run {
     buildKey=$(jq \
         '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
-        )
+    )
     if ! (($skip_saving_run)); then
         if [ -z "$has_run_status" ]; then
+            err "Please provided --run_status"
             fail
         fi
-        if ! [ -z "$has_run_start_time" ] &&
-            ! [ -z "$has_run_end_time" ]; then
-            cicd_Build_with_start_end=$( jq -n \
-                            --arg run_status "$run_status" \
-                            --arg run_status_details "$run_status_details" \
-                            --arg run_start_time "$run_start_time" \
-                            --arg run_end_time "$run_end_time" \
-                            '{
-                                "run_status": {"category": $run_status, "detail": $run_status_details},
-                                "run_start_time": $run_start_time,
-                                "run_end_time": $run_end_time,
-                            }'
-                        )
+        if ! [ -z "$has_run_start_time" ] && ! [ -z "$has_run_end_time" ]; then
+            cicd_Build_with_start_end=$(jq -n \
+                --arg run_status "$run_status" \
+                --arg run_status_details "$run_status_details" \
+                --arg run_start_time "$run_start_time" \
+                --arg run_end_time "$run_end_time" \
+                '{
+                    "run_status": {"category": $run_status, "detail": $run_status_details},
+                    "run_start_time": $run_start_time,
+                    "run_end_time": $run_end_time,
+                }'
+            )
             cicd_Build_with_start_end=$(concat "$cicd_Build_with_start_end" "$buildKey")
             make_mutation cicd_build_with_start_end "$cicd_Build_with_start_end"
         else
-            cicd_Build=$( jq -n \
-                            --arg run_status "$run_status" \
-                            --arg run_status_details "$run_status_details" \
-                            '{
-                                "run_status": {"category": $run_status, "detail": $run_status_details},
-                            }'
-                        )
+            cicd_Build=$(jq -n \
+                --arg run_status "$run_status" \
+                --arg run_status_details "$run_status_details" \
+                '{
+                    "run_status": {"category": $run_status, "detail": $run_status_details},
+                }'
+            )
             cicd_Build=$(concat "$cicd_Build" "$buildKey")
             make_mutation cicd_build "$cicd_Build"
         fi
 
         cicd_Pipeline=$(jq \
-        '{data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
+            '{data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
         )
         make_mutation cicd_pipeline "$cicd_Pipeline"
 
         cicd_Organization_from_run=$(jq \
-        '{data_run_organization,data_run_source}' <<< "$flat"
+            '{data_run_organization,data_run_source}' <<< "$flat"
         )
         make_mutation cicd_organization_from_run "$cicd_Organization_from_run"
     fi
@@ -706,23 +703,23 @@ function doCIMutations() {
     make_mutation cicd_artifact_commit_association "$cicd_ArtifactCommitAssociation"
 
     cicd_Repository=$(jq \
-            '{data_artifact_repository,data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
-            )
+        '{data_artifact_repository,data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
+    )
     make_mutation cicd_repository "$cicd_Repository"
 
     cicd_Organization=$(jq \
-            '{data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
-            )
+        '{data_artifact_organization,data_artifact_source}' <<< "$artifact_key"
+    )
     make_mutation cicd_organization "$cicd_Organization"
 
     doPullRequestCommitMutation
 }
 
 function make_mutation() {
-    entity_origin=$( jq -n \
-                --arg data_origin "$origin" \
-                '{"data_origin": $data_origin}'
-            )
+    entity_origin=$(jq -n \
+        --arg data_origin "$origin" \
+        '{"data_origin": $data_origin}'
+    )
     data=$(concat "$2" "$entity_origin")
     log Calling Hasura rest endpoint "$1" with payload "$data"
 
@@ -885,12 +882,6 @@ function resolveRunInput() {
     run_status_details=${run_status_details:-$FAROS_RUN_STATUS_DETAILS}
     run_start_time=${run_start_time:-$FAROS_RUN_START_TIME}
     run_end_time=${run_end_time:-$FAROS_RUN_END_TIME}
-
-    if ! [ -z "$run_status" ]; then
-        has_run_status=1
-    fi
-
-    # Run step
     run_step_id=${run_step_id:-$FAROS_RUN_STEP_ID}
     run_step_name=${run_step_name:-$FAROS_RUN_STEP_NAME}
     run_step_type=${run_step_type:-$FAROS_RUN_STEP_TYPE}
@@ -902,7 +893,9 @@ function resolveRunInput() {
     run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
     run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 
-    # Convert timestamps
+    if ! [ -z "$run_status" ]; then
+        has_run_status=1
+    fi
     if ! [ -z "$run_start_time" ]; then
         has_run_start_time=1
         run_start_time=$(convert_to_iso8601 "$run_start_time")
