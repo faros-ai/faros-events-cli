@@ -315,5 +315,16 @@ Describe 'faros_event.sh (Community edition)'
       When call cd_event_test
       The output should include "$vcs_pull_request_commit"
     End
+    It 'Fails with malformed URI responds with parsing error'
+      bad_input_test() {
+        echo $(
+          ../faros_event.sh CI -k "<key>" \
+          --commit "$1" \
+          --community_edition
+        )
+      }
+      When call bad_input_test "bad://uri"
+      The output should equal 'Resource URI could not be parsed: [bad://uri] The URI should be of the form: source://organization/repository/commit_sha Failed.'
+    End
   End
 End
