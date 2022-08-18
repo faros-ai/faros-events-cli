@@ -25,7 +25,7 @@ jobs:
     - name: Build Shellspec image
       working-directory: test
       run: |
-        docker build . 'farosai/shellspec:kcov'
+        docker build . -t 'farosai/shellspec:kcov'
     
     - name: Run ShellSpec tests
       run: |
