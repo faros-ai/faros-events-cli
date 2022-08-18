@@ -24,7 +24,7 @@ jobs:
     - name: Run ShellSpec tests
       working-directory: test
       run: |
-        docker run --rm -v "$PWD:/src" shellspec/shellspec
+        docker run --rm -v "$PWD:/src" shellspec/shellspec:kcov
 
     - name: Check for style & bugs
       uses: ludeeus/action-shellcheck@1.1.0
