@@ -20,11 +20,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
-    
-    - name: Run ShellSpec tests
+
+    # Shellspec base image does not have curl, jq, awk, sed
+    - name: Build Shellspec image
       working-directory: test
       run: |
-        docker run --rm -v "$PWD:/src" shellspec/shellspec:kcov
+        docker build . 'farosai/shellspec:kcov'
+    
+    - name: Run ShellSpec tests
+      run: |
+        docker run --rm \
+          -v "$PWD/test:/src" \
+          -v "$PWD/faros_event.sh:/faros_event.sh" \
+          faros/shellspec:kcov
 
     - name: Check for style & bugs
       uses: ludeeus/action-shellcheck@1.1.0
