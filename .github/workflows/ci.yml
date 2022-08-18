@@ -21,6 +21,7 @@ jobs:
     - uses: actions/checkout@v2
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
     
+    # Installer can be retrieved by running: curl -fsSL https://git.io/shellspec
     - name: Install ShellSpec
       run: |
         ./test/shellspec-installer.sh -y
