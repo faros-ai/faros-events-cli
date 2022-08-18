@@ -32,7 +32,7 @@ jobs:
         docker run --rm \
           -v "$PWD/test:/src" \
           -v "$PWD/faros_event.sh:/faros_event.sh" \
-          faros/shellspec:kcov
+          farosai/shellspec:kcov
 
     - name: Check for style & bugs
       uses: ludeeus/action-shellcheck@1.1.0
