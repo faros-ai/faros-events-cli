@@ -21,16 +21,10 @@ jobs:
     - uses: actions/checkout@v2
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
     
-    # Installer can be retrieved by running: curl -fsSL https://git.io/shellspec
-    - name: Install ShellSpec
-      run: |
-        ./test/shellspec-installer.sh -y
-        sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
-        shellspec --version
-
-    - name: Run tests
+    - name: Run ShellSpec tests
       working-directory: test
-      run: shellspec -f d
+      run: |
+        docker run -it --rm -v "$PWD:/src" shellspec/shellspec
 
     - name: Check for style & bugs
       uses: ludeeus/action-shellcheck@1.1.0
