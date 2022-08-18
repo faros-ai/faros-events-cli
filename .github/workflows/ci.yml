@@ -23,7 +23,7 @@ jobs:
     
     - name: Install ShellSpec
       run: |
-        curl -fsSL https://git.io/shellspec | sh -s -- -y
+        ./test/shellspec-installer.sh -y
         sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
         shellspec --version
 
