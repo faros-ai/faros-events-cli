@@ -141,6 +141,7 @@ function help() {
     echo "Argument                | Req | Allowed Values / URI form"
     echo "-----------------------------------------------------------------------------"
     echo "--commit                | Yes | $commit_uri_form"
+    echo "--pull_request_number   |     | e.g. 123 (should be a number)"
     echo "--test_id               | Yes |"
     echo "--test_source           | Yes |"
     echo "--test_type             | Yes | $test_types"
