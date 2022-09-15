@@ -33,17 +33,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.0 && docker run farosai/faros-events-cli:v0.6.0 help
+docker pull farosai/faros-events-cli:v0.6.1 && docker run farosai/faros-events-cli:v0.6.1 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.0/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.1/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.0/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.1/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -268,8 +268,10 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;deploy                | The URI of the deployment. (`<deploy_source>://<application>/<environment>/<deploy_id>`) (`<environment>` allowed values: `Prod`, `Staging`, `QA`, `Dev`, `Sandbox`, `Canary`, `Custom`)                                              |            |
 | &#x2011;&#x2011;deploy_start_time     | The start time of the deployment in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                              | --deploy   |
 | &#x2011;&#x2011;deploy_end_time       | The end time of the deployment in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                | --deploy   |
+| &#x2011;&#x2011;deploy_requested_at   | The time the deployment was requested in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                         | --deploy   |
 | &#x2011;&#x2011;deploy_status         | The status of the deployment. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `RolledBack`, `Custom`)                                                                                                          | --deploy   |
 | &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                                                                                                 | --deploy   |
+| &#x2011;&#x2011;deploy_url            | The url of the deployment.                                                                                                                                                                                                            | --deploy   |
 | &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                                                                                                       | --deploy   |
 | &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                                                                                                   | --deploy   |
 | &#x2011;&#x2011;commit                | The URI of the commit. If you specify `--artifact` in your CI events, you should use `--artifact` in your CD events. Otherwise, use `--commit`. (`<source>://<organization>/<repository>/<commit_sha>`)                               | --deploy   |
