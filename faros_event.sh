@@ -252,6 +252,9 @@ function parseFlags() {
             --artifact_source)
                 artifact_source="$2"
                 shift 2 ;;
+            --deploy_url)
+                deploy_url="$2"
+                shift 2 ;;
             --deploy_app_platform)
                 deploy_app_platform="$2"
                 shift 2 ;;
@@ -263,6 +266,9 @@ function parseFlags() {
                 shift 2 ;;
             --deploy_status_details)
                 deploy_status_details="$2"
+                shift 2 ;;
+            --deploy_requested_at)
+                deploy_requested_at="$2"
                 shift 2 ;;
             --deploy_start_time)
                 deploy_start_time="$2"
@@ -828,15 +834,20 @@ function resolveDeployInput() {
     fi
     deploy_id=${deploy_id:-$FAROS_DEPLOY_ID}
     deploy_app=${deploy_app:-$FAROS_DEPLOY_APP}
+    deploy_url=${deploy_url:-$FAROS_DEPLOY_URL}
     deploy_env=${deploy_env:-$FAROS_DEPLOY_ENV}
     deploy_source=${deploy_source:-$FAROS_DEPLOY_SOURCE}
     deploy_status=${deploy_status:-$FAROS_DEPLOY_STATUS}
     deploy_app_platform=${deploy_app_platform:-$FAROS_DEPLOY_APP_PLATFORM}
     deploy_env_details=${deploy_env_details:-$FAROS_DEPLOY_ENV_DETAILS}
     deploy_status_details=${deploy_status_details:-$FAROS_DEPLOY_STATUS_DETAILS}
+    deploy_requested_at=${deploy_requested_at:-$FAROS_DEPLOY_REQUESTED_AT}
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
+    if ! [ -z "$deploy_requested_at" ]; then
+        deploy_requested_at=$(convert_to_iso8601 "$deploy_requested_at")
+    fi
     if ! [ -z "$deploy_start_time" ]; then
         deploy_start_time=$(convert_to_iso8601 "$deploy_start_time")
     fi
@@ -1018,6 +1029,7 @@ function tryAddToEvent() {
 function addDeployToData() {
     tryAddToEvent '["data","deploy","uri"]' "$deploy_uri"
     tryAddToEvent '["data","deploy","id"]' "$deploy_id"
+    tryAddToEvent '["data","deploy","url"]' "$deploy_url"
     tryAddToEvent '["data","deploy","environment"]' "$deploy_env"
     tryAddToEvent '["data","deploy","application"]' "$deploy_app"
     tryAddToEvent '["data","deploy","source"]' "$deploy_source"
@@ -1025,6 +1037,7 @@ function addDeployToData() {
     tryAddToEvent '["data","deploy","applicationPlatform"]' "$deploy_app_platform"
     tryAddToEvent '["data","deploy","statusDetails"]' "$deploy_status_details"
     tryAddToEvent '["data","deploy","environmentDetails"]' "$deploy_env_details"
+    tryAddToEvent '["data","deploy","requestedAt"]' "$deploy_requested_at"
     tryAddToEvent '["data","deploy","startTime"]' "$deploy_start_time"
     tryAddToEvent '["data","deploy","endTime"]' "$deploy_end_time"
 }
