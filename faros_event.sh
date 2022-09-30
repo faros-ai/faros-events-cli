@@ -6,8 +6,8 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.1"
-canonical_model_version="0.11.1"
+version="0.6.2"
+canonical_model_version="0.12.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "sed" "awk")
