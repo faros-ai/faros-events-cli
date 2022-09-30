@@ -562,25 +562,24 @@ function doPullRequestCommitMutation() {
 function doCDMutations() {
     flat=$(flatten "$request_body")
 
+    app_platform="${deploy_app_platform:-}"
+    if [ -z "${app_platform}" ]; then
+        app_uid="$deploy_app"
+    else
+        app_uid="${deploy_app}_${app_platform}"
+    fi
+
     compute_Application=$(jq -n \
         --arg name "$deploy_app" \
-        --arg platform "${deploy_app_platform:-}" \
+        --arg platform "${app_platform}" \
+        --arg app_uid "${app_uid}" \
         '{
             "name": $name,
             "platform": $platform,
+            "uid": $app_uid
         }'
     )
-    compute_Application_Mutation=$(jq -n \
-        --arg name "$deploy_app" \
-        --arg platform "${deploy_app_platform:-}" \
-        --argjson compute_Application "$compute_Application" \
-        '{
-            "name": $name,
-            "platform": $platform,
-            "uid": $compute_Application|tostring
-        }'
-    )
-    make_mutation compute_application "$compute_Application_Mutation"
+    make_mutation compute_application "$compute_Application"
 
     cicd_Deployment_base=$(keys_matching "$flat" "data_deploy_(id|source)")
     status_env=$(jq -n \
@@ -588,11 +587,11 @@ function doCDMutations() {
         --arg status_detail "${deploy_status_details:-}" \
         --arg env_category "$deploy_env" \
         --arg env_detail "${deploy_env_details:-}" \
-        --argjson compute_Application "$compute_Application" \
+        --arg app_uid "${app_uid}" \
         '{
             "status": {"category" : $status_category, "detail" : $status_detail},
             "env": {"category" : $env_category, "detail" : $env_detail},
-            "compute_Application": $compute_Application|tostring
+            "compute_Application": $app_uid
         }'
     )
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
