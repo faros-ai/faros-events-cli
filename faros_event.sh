@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.2"
+version="0.6.3"
 canonical_model_version="0.12.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -25,6 +25,10 @@ fi
 FAROS_GRAPH_DEFAULT="default"
 FAROS_URL_DEFAULT="https://prod.api.faros.ai"
 FAROS_ORIGIN_DEFAULT="Faros_Script_Event"
+FAROS_MAX_TIME_DEFAULT="10"
+FAROS_RETRY_DEFAULT="3"
+FAROS_RETRY_DELAY_DEFAULT="1"
+FAROS_RETRY_MAX_TIME_DEFAULT="40"
 HASURA_URL_DEFAULT="http://localhost:8080"
 HASURA_ADMIN_SECRET_DEFAULT="admin"
 
@@ -177,6 +181,10 @@ function help() {
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
     echo "--community_edition Format and send event to Faros Community Edition."
+    echo "--max-time          The time in seconds allowed for each retry attempt"
+    echo "--retry             The number of allowed retry attempts"
+    echo "--retry-delay       The delay in seconds between each retry attempt"
+    echo "--retry-max-time    The total time in seconds the request with retries can take"
     echo
     echo "For more usage information please visit: $github_url"
     exit 0
@@ -417,6 +425,18 @@ function parseFlags() {
             -s|--silent)
                 silent=1
                 shift ;;
+            --max_time)
+                max_time="$2"
+                shift 2 ;;
+            --retry)
+                retry="$2"
+                shift 2 ;;
+            --retry_delay)
+                retry_delay="$2"
+                shift 2 ;;
+            --retry_max_time)
+                retry_max_time="$2"
+                shift 2 ;;
             --debug)
                 debug=1
                 shift ;;
@@ -772,6 +792,18 @@ function flatten() {
     jq '[paths(scalars) as $path | { ($path | map(tostring) | join("_")): getpath($path) } ] | add' <<< "$1"
 }
 
+function resolveDefaults() {
+    FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
+    FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
+    FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
+    HASURA_URL=${HASURA_URL:-$HASURA_URL_DEFAULT}
+    HASURA_ADMIN_SECRET=${HASURA_ADMIN_SECRET:-$HASURA_ADMIN_SECRET_DEFAULT}
+    FAROS_MAX_TIME=${FAROS_MAX_TIME:-$FAROS_MAX_TIME_DEFAULT}
+    FAROS_RETRY=${FAROS_RETRY:-$FAROS_RETRY_DEFAULT}
+    FAROS_RETRY_DELAY=${FAROS_RETRY_DELAY:-$FAROS_RETRY_DELAY_DEFAULT}
+    FAROS_RETRY_MAX_TIME=${FAROS_RETRY_MAX_TIME:-$FAROS_RETRY_MAX_TIME_DEFAULT}
+}
+
 function resolveInput() {
     # Required fields:
     if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
@@ -786,28 +818,25 @@ function resolveInput() {
     # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
-
+    origin=${origin:-$FAROS_ORIGIN}
     if ! ((community_edition)); then
         url=${url:-$FAROS_URL}
     else
         url=${url:-$HASURA_URL}
         hasura_admin_secret=${hasura_admin_secret:-$HASURA_ADMIN_SECRET}
     fi
-    origin=${origin:-$FAROS_ORIGIN}
+
+    # Curl settings
+    max_time="--max-time ${max_time:-$FAROS_MAX_TIME}"
+    retry="--retry ${retry:-$FAROS_RETRY}"
+    retry_delay="--retry-delay ${retry_delay:-$FAROS_RETRY_DELAY}"
+    retry_max_time="--retry-max-time ${retry_max_time:-$FAROS_RETRY_MAX_TIME}"
 
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
     full=${full:-"false"}
     skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
-}
-
-function resolveDefaults() {
-    FAROS_GRAPH=${FAROS_GRAPH:-$FAROS_GRAPH_DEFAULT}
-    FAROS_URL=${FAROS_URL:-$FAROS_URL_DEFAULT}
-    FAROS_ORIGIN=${FAROS_ORIGIN:-$FAROS_ORIGIN_DEFAULT}
-    HASURA_URL=${HASURA_URL:-$HASURA_URL_DEFAULT}
-    HASURA_ADMIN_SECRET=${HASURA_ADMIN_SECRET:-$HASURA_ADMIN_SECRET_DEFAULT}
 }
 
 function resolveCDInput() {
@@ -1132,7 +1161,7 @@ function addTestToData() {
 function sendEventToFaros() {
     log "Sending event to Faros..."
 
-    http_response=$(curl -s -S --retry 5 --retry-delay 5 \
+    http_response=$(curl -s -S "$max_time" "$retry" "$retry_delay" "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
         "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
         -H "authorization: $api_key" \

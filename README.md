@@ -33,17 +33,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.2 && docker run farosai/faros-events-cli:v0.6.2 help
+docker pull farosai/faros-events-cli:v0.6.3 && docker run farosai/faros-events-cli:v0.6.3 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.2/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.3/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.2/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.3/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -362,6 +362,10 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | &#x2011;&#x2011;skip_saving_run     | Do not include `cicd_Build` in the event.                           |                      |
 | &#x2011;&#x2011;no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo.               |                      |
 | &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret. Only used with `‑‑community_edition` flag. | "admin"              |
+| &#x2011;&#x2011;max_time            | The time in seconds allowed for each retry attempt.                 | 10                   |
+| &#x2011;&#x2011;retry               | The number of allowed retry attempts.                               | 3                    |
+| &#x2011;&#x2011;retry_delay         | The delay in seconds between each retry attempt.                    | 1                    |
+| &#x2011;&#x2011;retry_max_time      | The total time in seconds the request with retries can take.        | 40                   |
 
 ---
 
