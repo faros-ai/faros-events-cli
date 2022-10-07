@@ -1161,7 +1161,7 @@ function addTestToData() {
 function sendEventToFaros() {
     log "Sending event to Faros..."
 
-    http_response=$(curl -s -S $max_time $retry $retry_delay $retry_max_time \
+    http_response=$(curl -s -S "$max_time" "$retry" "$retry_delay" "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
         "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
         -H "authorization: $api_key" \
