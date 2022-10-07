@@ -827,10 +827,10 @@ function resolveInput() {
     fi
 
     # Curl settings
-    max_time="--max-time ${max_time:-$FAROS_MAX_TIME}"
-    retry="--retry ${retry:-$FAROS_RETRY}"
-    retry_delay="--retry-delay ${retry_delay:-$FAROS_RETRY_DELAY}"
-    retry_max_time="--retry-max-time ${retry_max_time:-$FAROS_RETRY_MAX_TIME}"
+    max_time=${max_time:-$FAROS_MAX_TIME}
+    retry=${retry:-$FAROS_RETRY}
+    retry_delay=${retry_delay:-$FAROS_RETRY_DELAY}
+    retry_max_time=${retry_max_time:-$FAROS_RETRY_MAX_TIME}
 
     # Optional script settings: If unset then false
     no_lowercase_vcs=${no_lowercase_vcs:-0}
@@ -1161,12 +1161,17 @@ function addTestToData() {
 function sendEventToFaros() {
     log "Sending event to Faros..."
 
-    http_response=$(curl -s -S "$max_time" "$retry" "$retry_delay" "$retry_max_time" \
+    http_response=$(curl -s -S \
+        --max-time "$max_time" \
+        --retry "$retry" \
+        --retry-delay "$retry_delay" \
+        --retry-max-time "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
         "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
-        -d "$request_body")
+        -d "$request_body"
+    )
 
     http_response_status=$(echo "$http_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
     http_response_body=$(echo "$http_response" | sed -e 's/HTTPSTATUS\:.*//g')
