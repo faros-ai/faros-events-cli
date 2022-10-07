@@ -362,6 +362,10 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | &#x2011;&#x2011;skip_saving_run     | Do not include `cicd_Build` in the event.                           |                      |
 | &#x2011;&#x2011;no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo.               |                      |
 | &#x2011;&#x2011;hasura_admin_secret | The Hasura Admin Secret. Only used with `‑‑community_edition` flag. | "admin"              |
+| &#x2011;&#x2011;max_time            | The time in seconds allowed for each retry attempt.                 | 10                   |
+| &#x2011;&#x2011;retry               | The number of allowed retry attempts.                               | 3                    |
+| &#x2011;&#x2011;retry_delay         | The delay in seconds between each retry attempt.                    | 0                    |
+| &#x2011;&#x2011;retry_max_time      | The total time in seconds the request with retries can take.        | 40                   |
 
 ---
 
