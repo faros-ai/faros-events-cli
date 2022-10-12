@@ -3,7 +3,7 @@ Describe 'faros_event.sh'
   export FAROS_DRY_RUN=1
 
   Describe 'CD event'
-    CDAllFields='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","id":"<deploy_uid>","url":"<deploy_url>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","requestedAt":"1970-01-01T00:00:05Z","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z"},"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>","id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
+    CDAllFields='{"type":"CD","version":"0.0.1","origin":"Faros_Script_Event","data":{"deploy":{"uri":"<deploy_source>://<app_name>/QA/<deploy_uid>","id":"<deploy_uid>","url":"<deploy_url>","environment":"QA","application":"<app_name>","source":"<deploy_source>","status":"Success","applicationPlatform":"<deploy_app_platform>","statusDetails":"<deploy_status_details>","environmentDetails":"<deploy_env_details>","requestedAt":"1970-01-01T00:00:05Z","startTime":"1970-01-01T00:00:03Z","endTime":"1970-01-01T00:00:04Z","applicationTags":[{"key":"<key1>","value":"<value1>"},{"key":"<key2>","value":"<value2>"}],"applicationPaths":[{"path":"<path1>"},{"path":"<path2>"}]},"artifact":{"uri":"<artifact_source>://<artifact_org>/<artifact_repo>/<artifact>","id":"<artifact>","repository":"<artifact_repo>","organization":"<artifact_org>","source":"<artifact_source>"},"commit":{"uri":"<vcs_source>://<vcs_organization>/<vcs_repo>/<commit_sha>","sha":"<commit_sha>","repository":"<vcs_repo>","organization":"<vcs_organization>","source":"<vcs_source>","branch":"<branch>","pullRequestNumber":101},"run":{"uri":"<cicd_source>://<cicd_organization>/<cicd_pipeline>/<build_uid>","id":"<build_uid>","pipeline":"<cicd_pipeline>","organization":"<cicd_organization>","source":"<cicd_source>","status":"Success","statusDetails":"<run_status_details>","startTime":"1970-01-01T00:00:01Z","endTime":"1970-01-01T00:00:02Z"}}}'
 
     It 'populates all fields using flags'
       cd_event_test() {
@@ -37,6 +37,8 @@ Describe 'faros_event.sh'
           --deploy_source "<deploy_source>" \
           --deploy_url "<deploy_url>" \
           --deploy_app_platform "<deploy_app_platform>" \
+          --deploy_app_tags "<key1>:<value1>,<key2>:<value2>" \
+          --deploy_app_paths "<path1>,<path2>" \
           --deploy_env_details "<deploy_env_details>" \
           --deploy_status "Success" \
           --deploy_status_details "<deploy_status_details>" \
@@ -81,6 +83,8 @@ Describe 'faros_event.sh'
           FAROS_DEPLOY_SOURCE="<deploy_source>" \
           FAROS_DEPLOY_URL="<deploy_url>" \
           FAROS_DEPLOY_APP_PLATFORM="<deploy_app_platform>" \
+          FAROS_DEPLOY_APP_TAGS="<key1>:<value1>,<key2>:<value2>" \
+          FAROS_DEPLOY_APP_PATHS="<path1>,<path2>" \
           FAROS_DEPLOY_ENV_DETAILS="<deploy_env_details>" \
           FAROS_DEPLOY_STATUS="Success" \
           FAROS_DEPLOY_STATUS_DETAILS="<deploy_status_details>" \
