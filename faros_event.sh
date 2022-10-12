@@ -128,7 +128,7 @@ function help() {
     echo "--deploy_env_details    |     |"
     echo "--deploy_app_platform   |     |"
     echo "--deploy_app_tags       |     | e.g. key1:value1,key2:value2"
-    echo "--deploy_app_path       |     | e.g. path1,path2"
+    echo "--deploy_app_paths      |     | e.g. path1,path2"
     echo "--deploy_requested_at   |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--deploy_start_time     |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--deploy_end_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
@@ -913,33 +913,29 @@ function addDeployToData() {
     tryAddToEvent '["data","deploy","requestedAt"]' "$deploy_requested_at"
     tryAddToEvent '["data","deploy","startTime"]' "$deploy_start_time"
     tryAddToEvent '["data","deploy","endTime"]' "$deploy_end_time"
-    if (( ${#deploy_app_tag_arr[@]} )); then
-        for tag in "${deploy_app_tag_arr[@]}"
-        do
-            IFS=':' read -ra keyval <<< "$tag"
-            request_body=$(jq \
-                --arg key "${keyval[0]}" \
-                --arg val "${keyval[1]}" \
-                '.data.deploy.applicationTags +=
-                [{
-                    "key": $key,
-                    "value": $val
-                }]' <<< "$request_body"
-            )
-        done
-    fi
-    if (( ${#deploy_app_path_arr[@]} )); then
-        for path in "${deploy_app_path_arr[@]}"
-        do
-            request_body=$(jq \
-                --arg path "$path" \
-                '.data.deploy.applicationPaths +=
-                [{
-                    "path": $path
-                }]' <<< "$request_body"
-            )
-        done
-    fi
+    for tag in "${deploy_app_tag_arr[@]}"
+    do
+        IFS=':' read -ra keyval <<< "$tag"
+        request_body=$(jq \
+            --arg key "${keyval[0]}" \
+            --arg val "${keyval[1]}" \
+            '.data.deploy.applicationTags +=
+            [{
+                "key": $key,
+                "value": $val
+            }]' <<< "$request_body"
+        )
+    done
+    for path in "${deploy_app_path_arr[@]}"
+    do
+        request_body=$(jq \
+            --arg path "$path" \
+            '.data.deploy.applicationPaths +=
+            [{
+                "path": $path
+            }]' <<< "$request_body"
+        )
+    done
 }
 
 function addCommitToData() {
