@@ -98,7 +98,30 @@ Describe 'faros_event.sh'
       The output should include "$CDAllFields"
     End
 
-    It 'Resolves literal Now and converts to iso8601 format'
+
+    It 'response with error message when application tags cannot be parsed'
+      bad_input_test() {
+        echo $(
+          ../faros_event.sh CD -k "<key>" \
+          --deploy_app_tags "bad"
+        )
+      }
+      When call bad_input_test
+      The output should equal 'deploy_app_tags could not be parsed Failed.'
+    End
+
+    It 'response with error message when application paths cannot be parsed'
+      bad_input_test() {
+        echo $(
+          ../faros_event.sh CD -k "<key>" \
+          --deploy_app_paths "bad,"
+        )
+      }
+      When call bad_input_test
+      The output should equal 'deploy_app_paths could not be parsed Failed.'
+    End
+
+    It 'resolves literal Now and converts to iso8601 format'
       Intercept begin
       __begin__() {
         now_as_iso8601() { echo "2022-04-22T18:31:46Z"; }
@@ -122,7 +145,7 @@ Describe 'faros_event.sh'
       The output should include '"endTime":"2022-04-22T18:31:46Z"'
     End
 
-    It 'Leaves time unchanged if not Unix millis or Now'
+    It 'leaves time unchanged if not Unix millis or Now'
       ci_event_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \

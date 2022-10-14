@@ -722,10 +722,22 @@ function resolveDeployInput() {
         deploy_end_time=$(convert_to_iso8601 "$deploy_end_time")
     fi
     if ! [ -z "$deploy_app_tags" ]; then
-        IFS=',' read -ra deploy_app_tag_arr <<< "$deploy_app_tags"
+        tags_regex="^[^:]+:[^,]+(,[^:]+:[^,]+)*$"
+        if [[ "$deploy_app_tags" =~ $tags_regex ]]; then
+            IFS=',' read -ra deploy_app_tag_arr <<< "$deploy_app_tags"
+        else
+            err "deploy_app_tags could not be parsed"
+            fail
+        fi
     fi
     if ! [ -z "$deploy_app_paths" ]; then
-        IFS=',' read -ra deploy_app_path_arr <<< "$deploy_app_paths"
+        paths_regex="^[^,]+(,[^,]+)*$"
+        if [[ "$deploy_app_paths" =~ $paths_regex ]]; then
+            IFS=',' read -ra deploy_app_path_arr <<< "$deploy_app_paths"
+        else
+            err "deploy_app_paths could not be parsed"
+            fail
+        fi
     fi
 }
 
