@@ -721,24 +721,6 @@ function resolveDeployInput() {
     if ! [ -z "$deploy_end_time" ]; then
         deploy_end_time=$(convert_to_iso8601 "$deploy_end_time")
     fi
-    if ! [ -z "$deploy_app_tags" ]; then
-        tags_regex="^[^:]+:[^,]+(,[^:]+:[^,]+)*$"
-        if [[ "$deploy_app_tags" =~ $tags_regex ]]; then
-            IFS=',' read -ra deploy_app_tag_arr <<< "$deploy_app_tags"
-        else
-            err "deploy_app_tags could not be parsed"
-            fail
-        fi
-    fi
-    if ! [ -z "$deploy_app_paths" ]; then
-        paths_regex="^[^,]+(,[^,]+)*$"
-        if [[ "$deploy_app_paths" =~ $paths_regex ]]; then
-            IFS=',' read -ra deploy_app_path_arr <<< "$deploy_app_paths"
-        else
-            err "deploy_app_paths could not be parsed"
-            fail
-        fi
-    fi
 }
 
 function resolveArtifactInput() {
@@ -925,29 +907,8 @@ function addDeployToData() {
     tryAddToEvent '["data","deploy","requestedAt"]' "$deploy_requested_at"
     tryAddToEvent '["data","deploy","startTime"]' "$deploy_start_time"
     tryAddToEvent '["data","deploy","endTime"]' "$deploy_end_time"
-    for tag in "${deploy_app_tag_arr[@]}"
-    do
-        IFS=':' read -ra keyval <<< "$tag"
-        request_body=$(jq \
-            --arg key "${keyval[0]}" \
-            --arg val "${keyval[1]}" \
-            '.data.deploy.applicationTags +=
-            [{
-                "key": $key,
-                "value": $val
-            }]' <<< "$request_body"
-        )
-    done
-    for path in "${deploy_app_path_arr[@]}"
-    do
-        request_body=$(jq \
-            --arg path "$path" \
-            '.data.deploy.applicationPaths +=
-            [{
-                "path": $path
-            }]' <<< "$request_body"
-        )
-    done
+    tryAddToEvent '["data","deploy","applicationTags"]' "$deploy_app_tags"
+    tryAddToEvent '["data","deploy","applicationPaths"]' "$deploy_app_paths"
 }
 
 function addCommitToData() {
