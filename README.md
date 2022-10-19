@@ -48,7 +48,7 @@ curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros
 
 ## Instrumenting CI/CD pipelines
 
-![When to send an event](resources/events-3.png)
+![When to send an event](resources/events-3.jpg)
 
 ### Reporting builds with commits (basic)
 
