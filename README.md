@@ -33,17 +33,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.3 && docker run farosai/faros-events-cli:v0.6.3 help
+docker pull farosai/faros-events-cli:v0.6.4 && docker run farosai/faros-events-cli:v0.6.4 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq`, `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.3/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.3/faros_event.sh | bash -s help
+curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros_event.sh | bash -s help
 ```
 
 ## Instrumenting CI/CD pipelines
@@ -273,6 +273,8 @@ There are two ways that arguments can be passed into the script. The first, is v
 | &#x2011;&#x2011;deploy_status_details | Any extra details about the status of the deployment.                                                                                                                                                                                 | --deploy   |
 | &#x2011;&#x2011;deploy_url            | The url of the deployment.                                                                                                                                                                                                            | --deploy   |
 | &#x2011;&#x2011;deploy_app_platform   | The compute platform that runs the application.                                                                                                                                                                                       | --deploy   |
+| &#x2011;&#x2011;deploy_app_tags       | A comma separated array of `key:value` application tags. (e.g. `key1:value1,key2:value2`)                                                                                                                                             | --deploy   |
+| &#x2011;&#x2011;deploy_app_paths      | A comma separated array of application slash separated paths. (e.g. `aws/us-east-1/eks-001,aws/us-west-2/eks-002`)                                                                                                                    | --deploy   |
 | &#x2011;&#x2011;deploy_env_details    | Any extra details about the deployment environment.                                                                                                                                                                                   | --deploy   |
 | &#x2011;&#x2011;commit                | The URI of the commit. If you specify `--artifact` in your CI events, you should use `--artifact` in your CD events. Otherwise, use `--commit`. (`<source>://<organization>/<repository>/<commit_sha>`)                               | --deploy   |
 | &#x2011;&#x2011;artifact              | The URI of the artifact. If you specify `--artifact` in your CI events, you should use `--artifact` in your CD events. Otherwise, use `--commit`. (`<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>`) | --deploy   |
