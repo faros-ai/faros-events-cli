@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This is used for testing purposes. It is a noop unless under testing with shellspec
 # See https://github.com/shellspec/shellspec#intercepting for details.

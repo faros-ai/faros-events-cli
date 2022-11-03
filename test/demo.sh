@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # To run this script:
 # 1) Allow this script to be executed by running the following:
