@@ -43,7 +43,7 @@ docker pull farosai/faros-events-cli:v0.6.4 && docker run farosai/faros-events-c
 Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros_event.sh | bash -s help
+bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.4/faros_event.sh) help
 ```
 
 ## Instrumenting CI/CD pipelines
