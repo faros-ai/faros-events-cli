@@ -382,6 +382,48 @@ As you are iterating on instrumentation you can use the `--validate-only` flag t
 ./faros_event.sh <...your command arguments...> --validate_only
 ```
 
+### Passing the request body
+
+If you would like the CLI to send an explicit request body directly to the Faros event API you can pipe the JSON event body to the script:
+
+```sh
+{
+cat <<EOF
+{
+  "type": "CD",
+  "version": "0.0.1",
+  "origin": "Faros_Script_Event",
+  "data": {
+    "deploy": {
+      "uri": "Test://test-app/Prod/1",
+      "status": "Success"
+    }
+  }
+}
+EOF
+} | ./faros_event.sh -k "<faros_api_key>"
+```
+
+or you can provide it to the `--request_body` flag:
+
+```sh
+./faros_event.sh -k "<faros_api_key>" \
+--request_body "$(cat <<EOF
+{
+  "type": "CD",
+  "version": "0.0.1",
+  "origin": "Faros_Script_Event",
+  "data": {
+    "deploy": {
+      "uri": "Test://test-app/Prod/1",
+      "status": "Success"
+    }
+  }
+}
+EOF
+)"
+```
+
 ### Usage with Faros Community Edition
 
 > :exclamation: Sending events in parts is not currently supported

@@ -23,7 +23,7 @@ fi
 
 # Allows the event body to be piped to the scripts
 if [ -p /dev/stdin ]; then
-    request_body=$(cat "/dev/stdin")
+    request_body=$(cat)
 fi
 
 # Defaults
@@ -363,6 +363,9 @@ function processEventTypes() {
         resolveTestExecutionInput
         addTestToData
         addCommitToData
+    else
+        err "Event type must be provided"
+        fail
     fi
 }
 
@@ -660,6 +663,7 @@ function resolveInput() {
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
     origin=${origin:-$FAROS_ORIGIN}
+    request_body=${request_body:-$FAROS_REQUEST_BODY}
     if ! ((community_edition)); then
         url=${url:-$FAROS_URL}
     else
