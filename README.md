@@ -130,7 +130,7 @@ Deployment finished successfully:
 
 When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
 
-This CD event reports that a commit was successfully built into the specified artifact:
+This CI event reports that a commit was successfully built into the specified artifact:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
