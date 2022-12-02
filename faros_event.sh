@@ -1087,7 +1087,7 @@ main() {
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
 
-    # Event body explicitly provided. Bypass event construction
+    # Event body not explicitly provided. Construct event
     if [ -z "$request_body" ]; then
         processEventTypes       # Resolve input and populate event
     fi
