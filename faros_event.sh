@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.5"
+version="0.6.6"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -19,6 +19,11 @@ done
 if ((${missing_require:-0})); then
     echo "Please ensure curl, jq, sed, and an implementation of awk (we recommend gawk) are available before running the script."
     exit 1
+fi
+
+# Allows the event body to be piped to the scripts
+if [ -p /dev/stdin ]; then
+    request_body=$(cat "/dev/stdin")
 fi
 
 # Defaults
@@ -267,6 +272,7 @@ function parseFlags() {
             -g|--graph)                graph="$2"                   && shift 2 ;;
             --origin)                  origin="$2"                  && shift 2 ;;
             -u|--url)                  url="$2"                     && shift 2 ;;
+            --request_body)            request_body="$2"            && shift 2 ;;
             --hasura_admin_secret)     hasura_admin_secret="$2"     && shift 2 ;;
             --dry_run)                 dry_run=1                    && shift ;;
             --full)                    full="true"                  && shift ;;
@@ -1075,7 +1081,11 @@ main() {
     set -- "${POSITIONAL[@]:-}" # Restore positional args
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
-    processEventTypes           # Resolve input and populate event
+
+    # Event body explicitly provided. Bypass event construction
+    if [ -z "$request_body" ]; then
+        processEventTypes       # Resolve input and populate event
+    fi
 
     if ((debug)); then
         echo "Faros url: $url"
