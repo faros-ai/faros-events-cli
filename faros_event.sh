@@ -184,6 +184,7 @@ function help() {
     echo "--silent            Unexceptional output will be silenced."
     echo "--debug             Helpful information will be printed."
     echo "--no_format         Log formatting will be turned off."
+    echo "--request_body      The explicit request body to send to the event API."
     echo "--full              Event should be validated as a full event."
     echo "--skip-saving-run   Do not include a cicd_Build in event."
     echo "--validate_only     Only validate event body against event api."
