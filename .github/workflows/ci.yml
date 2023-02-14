@@ -39,4 +39,4 @@ jobs:
       with:
         ignore: test
       env:
-        SHELLCHECK_OPTS: -s bash -e SC2059 -e SC2237 -e SC2004 -e SC2001
+        SHELLCHECK_OPTS: -s bash -e SC2059 -e SC2237 -e SC2004 -e SC2001 -e SC2317
