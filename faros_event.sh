@@ -296,7 +296,7 @@ function parseFlags() {
 # Determine which event types are present
 function processArgs() {
     # No positional arg passed - show help
-    if ! (($#)) || [ "$1" == "help" ]; then
+    if ! (($#)) || [ "$1" == "help" ] || [ -z "$1" ]; then
         help
         exit 0
     fi
