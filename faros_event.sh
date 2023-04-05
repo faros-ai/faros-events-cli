@@ -298,7 +298,6 @@ function processArgs() {
     # No positional arg passed - show help
     if ! (($#)) || [ "$1" == "help" ]; then
         help
-        exit 0
     fi
 
     ci_event=0
@@ -318,8 +317,7 @@ function processArgs() {
                 test_execution_event=1
                 shift ;;
             help)
-                help
-                exit 0 ;;
+                help ;;
             *)
                 UNRECOGNIZED+=("$1")
                 shift ;;
@@ -1121,4 +1119,4 @@ main() {
     exit 0
 }
 
-main "$@"; exit
+main "$@"
