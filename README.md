@@ -375,7 +375,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 
 ### Validating your command
 
-As you are iterating on instrumentation you can use the `--validate-only` flag to test before you are ready to send actual data:
+As you are iterating on instrumentation you can use the `--validate_only` flag to test before you are ready to send actual data:
 
 ```sh
 ./faros_event.sh <...your command arguments...> --validate_only
