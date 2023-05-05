@@ -189,7 +189,6 @@ function help() {
     echo "--retry-max-time    The total time in seconds the request with retries can take"
     echo
     echo "For more usage information please visit: $github_url"
-    exit 0
 }
 
 function parseFlags() {
@@ -284,7 +283,7 @@ function parseFlags() {
             --debug)                    debug=1                     && shift ;;
             --no_format)                no_format=1                 && shift ;;
             --community_edition)        community_edition=1         && shift ;;
-            --help)                     help ;;
+            --help)                     help exit 0 ;;
             -v|--version)               echo "$version" exit 0 ;;
             *)
                 POSITIONAL+=("$1") # save it in an array for later
@@ -296,7 +295,7 @@ function parseFlags() {
 # Determine which event types are present
 function processArgs() {
     # No positional arg passed - show help
-    if ! (($#)) || [ "$1" == "help" ]; then
+    if ! (($#)) || [ "$1" == "help" ] || [ -z "$1" ]; then
         help
     fi
 
