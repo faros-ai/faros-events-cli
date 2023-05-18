@@ -192,10 +192,42 @@ function help() {
     echo "For more usage information please visit: $github_url"
 }
 
+function parseControls() {
+    while (($#)); do
+        case "$1" in
+            -k|--api_key)              api_key="$2"                 && shift 2 ;;
+            -g|--graph)                graph="$2"                   && shift 2 ;;
+            --origin)                  origin="$2"                  && shift 2 ;;
+            -u|--url)                  url="$2"                     && shift 2 ;;
+            --hasura_admin_secret)     hasura_admin_secret="$2"     && shift 2 ;;
+            --dry_run)                 dry_run=1                    && shift ;;
+            --full)                    full="true"                  && shift ;;
+            --no_build_object)
+                warn "no_build_object flag is deprecated, use skip_saving_run"
+                skip_saving_run="true"
+                shift ;;
+            --skip_saving_run)          skip_saving_run="true"      && shift ;;
+            --validate_only)            validate_only="true"        && shift ;;
+            -s|--silent)                silent=1                    && shift ;;
+            --max_time)                 max_time="$2"               && shift 2 ;;
+            --retry)                    retry="$2"                  && shift 2 ;;
+            --retry_delay)              retry_delay="$2"            && shift 2 ;;
+            --retry_max_time)           retry_max_time="$2"         && shift 2 ;;
+            --debug)                    debug=1                     && shift ;;
+            --no_format)                no_format=1                 && shift ;;
+            --community_edition)        community_edition=1         && shift ;;
+            --help)                     help exit 0 ;;
+            -v|--version)               echo "$version" exit 0 ;;
+            *)
+                FLAGS+=("$1") # save it in an array for later
+                shift ;;
+        esac
+    done
+}
+
 function parseFlags() {
     while (($#)); do
         case "$1" in
-            -k|--api_key)              api_key="$2"                              && shift 2 ;;
             --artifact)                setFlag "$1" artifact_uri "$2"            && shift 2 ;;
             --artifact_id)             setFlag "$1" artifact_id "$2"             && shift 2 ;;
             --artifact_repo)           setFlag "$1" artifact_repo "$2"           && shift 2 ;;
@@ -264,28 +296,6 @@ function parseFlags() {
             --run_step_status)         setFlag "$1" run_step_status "$2"         && shift 2 ;;
             --run_step_status_details) setFlag "$1" run_step_status_details "$2" && shift 2 ;;
             --run_step_url)            setFlag "$1" run_step_url "$2"            && shift 2 ;;
-            -g|--graph)                graph="$2"                                && shift 2 ;;
-            --origin)                  setFlag "$1" origin "$2"                  && shift 2 ;;
-            -u|--url)                  url="$2"                                  && shift 2 ;;
-            --hasura_admin_secret)     hasura_admin_secret="$2"                  && shift 2 ;;
-            --dry_run)                 dry_run=1                                 && shift ;;
-            --full)                    full="true"                               && shift ;;
-            --no_build_object)
-                warn "no_build_object flag is deprecated, use skip_saving_run"
-                skip_saving_run="true"
-                shift ;;
-            --skip_saving_run)          skip_saving_run="true"                   && shift ;;
-            --validate_only)            validate_only="true"                     && shift ;;
-            -s|--silent)                silent=1                                 && shift ;;
-            --max_time)                 max_time="$2"                            && shift 2 ;;
-            --retry)                    retry="$2"                               && shift 2 ;;
-            --retry_delay)              retry_delay="$2"                         && shift 2 ;;
-            --retry_max_time)           retry_max_time="$2"                      && shift 2 ;;
-            --debug)                    debug=1                                  && shift ;;
-            --no_format)                no_format=1                              && shift ;;
-            --community_edition)        community_edition=1                      && shift ;;
-            --help)                     help exit 0 ;;
-            -v|--version)               echo "$version" exit 0 ;;
             *)
                 POSITIONAL+=("$1") # save it in an array for later
                 shift ;;
@@ -387,7 +397,7 @@ function make_commit_key() {
 }
 
 function make_artifact_key() {
-    if ! [ -z "$has_artifact" ]; then
+    if [ -n "$has_artifact" ]; then
         keys_matching "$flat" "data_artifact_(id|repository|organization|source)"
     else
         jq -n \
@@ -405,7 +415,7 @@ function make_artifact_key() {
 }
 
 function doPullRequestCommitMutation() {
-    if ! [ -z "$has_commit" ] && ! [ -z "$pull_request_number" ]; then
+    if [ -n "$has_commit" ] && [ -n "$pull_request_number" ]; then
         pull_request=$(jq -n \
             --arg pull_request_number "$pull_request_number" \
             '{
@@ -454,7 +464,7 @@ function doCDMutations() {
         }'
     )
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
-    if ! [ -z "$deploy_start_time" ] && ! [ -z "$deploy_end_time" ]; then
+    if [ -n "$deploy_start_time" ] && [ -n "$deploy_end_time" ]; then
         start_end=$(jq -n \
             --arg start_time "$deploy_start_time" \
             --arg end_time "$deploy_end_time" \
@@ -479,7 +489,7 @@ function doCDMutations() {
     cicd_ArtifactDeployment=$(concat "$cicd_ArtifactDeployment" "$artifact_key")
     make_mutation cicd_artifact_deployment "$cicd_ArtifactDeployment"
 
-    if ! [ -z "$has_run" ]; then
+    if [ -n "$has_run" ]; then
         make_mutations_from_run
 
         cicd_Deployment=$(concat "$cicd_Deployment_with_start_end" "$buildKey")
@@ -489,7 +499,7 @@ function doCDMutations() {
     fi
 
     if [ -z "$has_artifact" ]; then
-        if ! [ -z "$has_run" ]; then
+        if [ -n "$has_run" ]; then
             cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
             make_mutation cicd_artifact_with_build "$cicd_Artifact_with_build"
         else
@@ -508,12 +518,12 @@ function make_mutations_from_run {
     buildKey=$(jq \
         '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
     )
-    if ! (($skip_saving_run)); then
+    if ! ((skip_saving_run)); then
         if [ -z "$has_run_status" ]; then
             err "Please provided --run_status"
             fail
         fi
-        if ! [ -z "$has_run_start_time" ] && ! [ -z "$has_run_end_time" ]; then
+        if [ -n "$has_run_start_time" ] && [ -n "$has_run_end_time" ]; then
             cicd_Build_with_start_end=$(jq -n \
                 --arg run_status "$run_status" \
                 --arg run_status_details "$run_status_details" \
@@ -557,7 +567,7 @@ function doCIMutations() {
     artifact_key=$(make_artifact_key)
     commit_key=$(make_commit_key)
 
-    if ! [ -z "$has_run" ]; then
+    if [ -n "$has_run" ]; then
         make_mutations_from_run
 
         cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
@@ -645,7 +655,7 @@ function resolveDefaults() {
 
 function resolveInput() {
     # Required fields:
-    if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
+    if [ -n "${api_key+x}" ] || [ -n "${FAROS_API_KEY+x}" ]; then
         api_key=${api_key:-$FAROS_API_KEY}
     else
         if ! ((community_edition)); then
@@ -716,13 +726,13 @@ function resolveDeployInput() {
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
-    if ! [ -z "$deploy_requested_at" ]; then
+    if [ -n "$deploy_requested_at" ]; then
         deploy_requested_at=$(convert_to_iso8601 "$deploy_requested_at")
     fi
-    if ! [ -z "$deploy_start_time" ]; then
+    if [ -n "$deploy_start_time" ]; then
         deploy_start_time=$(convert_to_iso8601 "$deploy_start_time")
     fi
-    if ! [ -z "$deploy_end_time" ]; then
+    if [ -n "$deploy_end_time" ]; then
         deploy_end_time=$(convert_to_iso8601 "$deploy_end_time")
     fi
 }
@@ -776,21 +786,21 @@ function resolveRunInput() {
     run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
     run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 
-    if ! [ -z "$run_status" ]; then
+    if [ -n "$run_status" ]; then
         has_run_status=1
     fi
-    if ! [ -z "$run_start_time" ]; then
+    if [ -n "$run_start_time" ]; then
         has_run_start_time=1
         run_start_time=$(convert_to_iso8601 "$run_start_time")
     fi
-    if ! [ -z "$run_end_time" ]; then
+    if [ -n "$run_end_time" ]; then
         has_run_end_time=1
         run_end_time=$(convert_to_iso8601 "$run_end_time")
     fi
-    if ! [ -z "$run_step_start_time" ]; then
+    if [ -n "$run_step_start_time" ]; then
         run_step_start_time=$(convert_to_iso8601 "$run_step_start_time")
     fi
-    if ! [ -z "$run_step_end_time" ]; then
+    if [ -n "$run_step_end_time" ]; then
         run_step_end_time=$(convert_to_iso8601 "$run_step_end_time")
     fi
 }
@@ -818,10 +828,10 @@ function resolveTestInput() {
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
     task_source=${task_source:-$FAROS_TASK_SOURCE}
 
-    if ! [ -z "$test_start_time" ]; then
+    if [ -n "$test_start_time" ]; then
         test_start_time=$(convert_to_iso8601 "$test_start_time")
     fi
-    if ! [ -z "$test_end_time" ]; then
+    if [ -n "$test_end_time" ]; then
         test_end_time=$(convert_to_iso8601 "$test_end_time")
     fi
 }
@@ -837,7 +847,7 @@ function resolveTestInput() {
 function parseUri() {
     valid_chars="a-zA-Z0-9_.<>-"
     uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
-    if ! [ -z "$6" ]; then
+    if [ -n "$6" ]; then
         if [[ "$6" =~ $uri_regex ]]; then
             export "$1"="$(sed 's/:.*//' <<< "$6")"
             export "$2"="$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< "$6")"
@@ -852,14 +862,14 @@ function parseUri() {
 
 function parseCommitUri() {
     parseUri "commit_source" "commit_org" "commit_repo" "commit_sha" "$commit_uri_form" "$commit_uri"
-    if ! [ -z "$commit_source" ] && ! [ -z "$commit_org" ] && ! [ -z "$commit_repo" ] && ! [ -z "$commit_sha" ]; then
+    if [ -n "$commit_source" ] && [ -n "$commit_org" ] && [ -n "$commit_repo" ] && [ -n "$commit_sha" ]; then
         has_commit=1
     fi
 }
 
 function parseRunUri() {
     parseUri "run_source" "run_org" "run_pipeline" "run_id" "$run_uri_form" "$run_uri"
-    if ! [ -z "$run_source" ] && ! [ -z "$run_org" ] && ! [ -z "$run_pipeline" ] && ! [ -z "$run_id" ]; then
+    if [ -n "$run_source" ] && [ -n "$run_org" ] && [ -n "$run_pipeline" ] && [ -n "$run_id" ]; then
         has_run=1
     fi
 }
@@ -870,7 +880,7 @@ function parseDeployUri() {
 
 function parseArtifactUri() {
     parseUri "artifact_source" "artifact_org" "artifact_repo" "artifact_id" "$artifact_uri_form" "$artifact_uri"
-    if ! [ -z "$artifact_source" ] && ! [ -z "$artifact_org" ] && ! [ -z "$artifact_repo" ] && ! [ -z "$artifact_id" ]; then
+    if [ -n "$artifact_source" ] && [ -n "$artifact_org" ] && [ -n "$artifact_repo" ] && [ -n "$artifact_id" ]; then
         has_artifact=1
     fi
 }
@@ -888,7 +898,7 @@ function makeEvent() {
 }
 
 function tryAddToEvent() {
-    if ! [ -z "$2" ]; then
+    if [ -n "$2" ]; then
         request_body=$(jq \
             --argjson path "$1" \
             --arg val "$2" \
@@ -922,7 +932,7 @@ function addCommitToData() {
     tryAddToEvent '["data","commit","organization"]' "$commit_org"
     tryAddToEvent '["data","commit","source"]' "$commit_source"
     tryAddToEvent '["data","commit","branch"]' "$branch"
-    if ! [ -z "$pull_request_number" ]; then
+    if [ -n "$pull_request_number" ]; then
         request_body=$(jq \
             --arg pull_request_number "$pull_request_number" \
             '.data.commit +=
@@ -986,7 +996,7 @@ function addTestToData() {
     tryAddToEvent '["data","test","suiteTask"]' "$test_suite_task"
     tryAddToEvent '["data","test","executionTask"]' "$test_execution_task"
     tryAddToEvent '["data","test","taskSource"]' "$task_source"
-    if ! [ -z "$test_stats" ]; then
+    if [ -n "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
             IFS='=' read -r key value <<< "$i"
@@ -1084,25 +1094,26 @@ function fail() {
 }
 
 main() {
+    parseControls "$@"
+    set -- "${FLAGS[@]:-}" # Restore positional args
     parseFlags "$@"
     set -- "${POSITIONAL[@]:-}" # Restore positional args
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
     processEventTypes           # Resolve input and populate event
 
-    if ((debug)); then
-        echo "Faros url: $url"
-        echo "Faros graph: $graph"
-        echo "Validate Only: $validate_only"
-        echo "Dry run: $dry_run"
-        echo "Community edition: $community_edition"
-    fi
+    debug "Faros url: $url"
+    debug "Faros graph: $graph"
+    debug "Faros origin: $origin"
+    debug "Validate Only: $validate_only"
+    debug "Dry run: $dry_run"
+    debug "Community edition: $community_edition"
 
-    if ! (($community_edition)); then
+    if ! ((community_edition)); then
         log "Request Body:"
         log "$request_body"
 
-        if ! (($dry_run)); then
+        if ! ((dry_run)); then
             sendEventToFaros
 
             # Log error response as an error and fail
