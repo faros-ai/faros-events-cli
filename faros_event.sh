@@ -996,7 +996,6 @@ function addTestToData() {
 
 function sendEventToFaros() {
     log "Sending event to Faros..."
-
     http_response=$(curl -s -S \
         --max-time "$max_time" \
         --retry "$retry" \
@@ -1043,6 +1042,16 @@ function printLog() {
     fi
 }
 
+function handle_error {
+    local script_name=$(basename "$0")
+    local line_number=$1
+    local error_message=$2
+
+    echo "An error occurred in $script_name at line $line_number:"
+    echo "$error_message"
+    exit 1
+}
+
 function log() {
     if ! ((silent)); then
         fmtLog "info"
@@ -1073,6 +1082,8 @@ main() {
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
     processEventTypes           # Resolve input and populate event
+    # Set up error handling
+    trap 'handle_error $LINENO "$BASH_COMMAND"' ERR
 
     if ((debug)); then
         echo "Faros url: $url"
@@ -1083,7 +1094,7 @@ main() {
         echo "Debug: $debug"
         echo "Community edition: $community_edition"
     fi
-
+    
     if ! (($community_edition)); then
         log "Request Body:"
         log "$request_body"
