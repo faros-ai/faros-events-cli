@@ -294,7 +294,7 @@ function parseFlags() {
 }
 
 function setFlag() {
-    var_name=$2
+    var_name="$2"
     declare -g "$var_name"="$3"
     debug "[ $1 ] : [ $3 ]"
 }
