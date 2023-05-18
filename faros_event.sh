@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.5"
+version="0.6.6"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -59,6 +59,7 @@ community_edition=${FAROS_COMMUNITY_EDITION:-0}
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 function help() {
@@ -194,95 +195,95 @@ function help() {
 function parseFlags() {
     while (($#)); do
         case "$1" in
-            -k|--api_key)              api_key="$2"                 && shift 2 ;;
-            --artifact)                artifact_uri="$2"            && shift 2 ;;
-            --artifact_id)             artifact_id="$2"             && shift 2 ;;
-            --artifact_repo)           artifact_repo="$2"           && shift 2 ;;
-            --artifact_org)            artifact_org="$2"            && shift 2 ;;
-            --artifact_source)         artifact_source="$2"         && shift 2 ;;
-            --commit)                  commit_uri="$2"              && shift 2 ;;
-            --commit_sha)              commit_sha="$2"              && shift 2 ;;
-            --commit_repo)             commit_repo="$2"             && shift 2 ;;
-            --commit_org)              commit_org="$2"              && shift 2 ;;
-            --commit_source)           commit_source="$2"           && shift 2 ;;
-            --branch)                  branch="$2"                  && shift 2 ;;
-            --pull_request_number)     pull_request_number="$2"     && shift 2 ;;
-            --deploy)                  deploy_uri="$2"              && shift 2 ;;
-            --deploy_id)               deploy_id="$2"               && shift 2 ;;
-            --deploy_env)              deploy_env="$2"              && shift 2 ;;
-            --deploy_app)              deploy_app="$2"              && shift 2 ;;
-            --deploy_source)           deploy_source="$2"           && shift 2 ;;
-            --deploy_app_platform)     deploy_app_platform="$2"     && shift 2 ;;
-            --deploy_app_tags)         deploy_app_tags="$2"         && shift 2 ;;
-            --deploy_app_paths)        deploy_app_paths="$2"        && shift 2 ;;
-            --deploy_url)              deploy_url="$2"              && shift 2 ;;
-            --deploy_env_details)      deploy_env_details="$2"      && shift 2 ;;
-            --deploy_status)           deploy_status="$2"           && shift 2 ;;
-            --deploy_status_details)   deploy_status_details="$2"   && shift 2 ;;
-            --deploy_requested_at)     deploy_requested_at="$2"     && shift 2 ;;
-            --deploy_start_time)       deploy_start_time="$2"       && shift 2 ;;
-            --deploy_end_time)         deploy_end_time="$2"         && shift 2 ;;
-            --test_id)                 test_id="$2"                 && shift 2 ;;
-            --test_source)             test_source="$2"             && shift 2 ;;
-            --test_type)               test_type="$2"               && shift 2 ;;
-            --test_type_details)       test_type_details="$2"       && shift 2 ;;
-            --test_status)             test_status="$2"             && shift 2 ;;
-            --test_status_details)     test_status_details="$2"     && shift 2 ;;
-            --test_suite)              test_suite="$2"              && shift 2 ;;
-            --test_stats)              test_stats="$2"              && shift 2 ;;
-            --test_tags)               test_tags="$2"               && shift 2 ;;
-            --environments)            environments="$2"            && shift 2 ;;
-            --device_name)             device_name="$2"             && shift 2 ;;
-            --device_os)               device_os="$2"               && shift 2 ;;
-            --device_browser)          device_browser="$2"          && shift 2 ;;
-            --device_type)             device_type="$2"             && shift 2 ;;
-            --test_start_time)         test_start_time="$2"         && shift 2 ;;
-            --test_end_time)           test_end_time="$2"           && shift 2 ;;
-            --test_task)               test_task="$2"               && shift 2 ;;
-            --defect_task)             defect_task="$2"             && shift 2 ;;
-            --test_suite_task)         test_suite_task="$2"         && shift 2 ;;
-            --test_execution_task)     test_execution_task="$2"     && shift 2 ;;
-            --task_source)             task_source="$2"             && shift 2 ;;
-            --run)                     run_uri="$2"                 && shift 2 ;;
-            --run_id)                  run_id="$2"                  && shift 2 ;;
-            --run_pipeline)            run_pipeline="$2"            && shift 2 ;;
-            --run_org)                 run_org="$2"                 && shift 2 ;;
-            --run_source)              run_source="$2"              && shift 2 ;;
-            --run_name)                run_name="$2"                && shift 2 ;;
-            --run_status)              run_status="$2"              && shift 2 ;;
-            --run_status_details)      run_status_details="$2"      && shift 2 ;;
-            --run_start_time)          run_start_time="$2"          && shift 2 ;;
-            --run_end_time)            run_end_time="$2"            && shift 2 ;;
-            --run_step_id)             run_step_id="$2"             && shift 2 ;;
-            --run_step_name)           run_step_name="$2"           && shift 2 ;;
-            --run_step_type)           run_step_type="$2"           && shift 2 ;;
-            --run_step_type_details)   run_step_type_details="$2"   && shift 2 ;;
-            --run_step_command)        run_step_command="$2"        && shift 2 ;;
-            --run_step_start_time)     run_step_start_time="$2"     && shift 2 ;;
-            --run_step_end_time)       run_step_end_time="$2"       && shift 2 ;;
-            --run_step_status)         run_step_status="$2"         && shift 2 ;;
-            --run_step_status_details) run_step_status_details="$2" && shift 2 ;;
-            --run_step_url)            run_step_url="$2"            && shift 2 ;;
-            -g|--graph)                graph="$2"                   && shift 2 ;;
-            --origin)                  origin="$2"                  && shift 2 ;;
-            -u|--url)                  url="$2"                     && shift 2 ;;
-            --hasura_admin_secret)     hasura_admin_secret="$2"     && shift 2 ;;
-            --dry_run)                 dry_run=1                    && shift ;;
-            --full)                    full="true"                  && shift ;;
+            -k|--api_key)              api_key="$2"                              && shift 2 ;;
+            --artifact)                setFlag "$1" artifact_uri "$2"            && shift 2 ;;
+            --artifact_id)             setFlag "$1" artifact_id "$2"             && shift 2 ;;
+            --artifact_repo)           setFlag "$1" artifact_repo "$2"           && shift 2 ;;
+            --artifact_org)            setFlag "$1" artifact_org "$2"            && shift 2 ;;
+            --artifact_source)         setFlag "$1" artifact_source "$2"         && shift 2 ;;
+            --commit)                  setFlag "$1" commit_uri "$2"              && shift 2 ;;
+            --commit_sha)              setFlag "$1" commit_sha "$2"              && shift 2 ;;
+            --commit_repo)             setFlag "$1" commit_repo "$2"             && shift 2 ;;
+            --commit_org)              setFlag "$1" commit_org "$2"              && shift 2 ;;
+            --commit_source)           setFlag "$1" commit_source "$2"           && shift 2 ;;
+            --branch)                  setFlag "$1" branch "$2"                  && shift 2 ;;
+            --pull_request_number)     setFlag "$1" pull_request_number "$2"     && shift 2 ;;
+            --deploy)                  setFlag "$1" deploy_uri "$2"              && shift 2 ;;
+            --deploy_id)               setFlag "$1" deploy_id "$2"               && shift 2 ;;
+            --deploy_env)              setFlag "$1" deploy_env "$2"              && shift 2 ;;
+            --deploy_app)              setFlag "$1" deploy_app "$2"              && shift 2 ;;
+            --deploy_source)           setFlag "$1" deploy_source "$2"           && shift 2 ;;
+            --deploy_app_platform)     setFlag "$1" deploy_app_platform "$2"     && shift 2 ;;
+            --deploy_app_tags)         setFlag "$1" deploy_app_tags "$2"         && shift 2 ;;
+            --deploy_app_paths)        setFlag "$1" deploy_app_paths "$2"        && shift 2 ;;
+            --deploy_url)              setFlag "$1" deploy_url "$2"              && shift 2 ;;
+            --deploy_env_details)      setFlag "$1" deploy_env_details "$2"      && shift 2 ;;
+            --deploy_status)           setFlag "$1" deploy_status "$2"           && shift 2 ;;
+            --deploy_status_details)   setFlag "$1" deploy_status_details "$2"   && shift 2 ;;
+            --deploy_requested_at)     setFlag "$1" deploy_requested_at "$2"     && shift 2 ;;
+            --deploy_start_time)       setFlag "$1" deploy_start_time "$2"       && shift 2 ;;
+            --deploy_end_time)         setFlag "$1" deploy_end_time "$2"         && shift 2 ;;
+            --test_id)                 setFlag "$1" test_id "$2"                 && shift 2 ;;
+            --test_source)             setFlag "$1" test_source "$2"             && shift 2 ;;
+            --test_type)               setFlag "$1" test_type "$2"               && shift 2 ;;
+            --test_type_details)       setFlag "$1" test_type_details "$2"       && shift 2 ;;
+            --test_status)             setFlag "$1" test_status="$2"             && shift 2 ;;
+            --test_status_details)     setFlag "$1" test_status_details "$2"     && shift 2 ;;
+            --test_suite)              setFlag "$1" test_suite "$2"              && shift 2 ;;
+            --test_stats)              setFlag "$1" test_stats "$2"              && shift 2 ;;
+            --test_tags)               setFlag "$1" test_tags "$2"               && shift 2 ;;
+            --environments)            setFlag "$1" environments "$2"            && shift 2 ;;
+            --device_name)             setFlag "$1" device_name "$2"             && shift 2 ;;
+            --device_os)               setFlag "$1" device_os "$2"               && shift 2 ;;
+            --device_browser)          setFlag "$1" device_browser "$2"          && shift 2 ;;
+            --device_type)             setFlag "$1" device_type "$2"             && shift 2 ;;
+            --test_start_time)         setFlag "$1" test_start_time "$2"         && shift 2 ;;
+            --test_end_time)           setFlag "$1" test_end_time "$2"           && shift 2 ;;
+            --test_task)               setFlag "$1" test_task "$2"               && shift 2 ;;
+            --defect_task)             setFlag "$1" defect_task "$2"             && shift 2 ;;
+            --test_suite_task)         setFlag "$1" test_suite_task "$2"         && shift 2 ;;
+            --test_execution_task)     setFlag "$1" test_execution_task "$2"     && shift 2 ;;
+            --task_source)             setFlag "$1" task_source "$2"             && shift 2 ;;
+            --run)                     setFlag "$1" run_uri "$2"                 && shift 2 ;;
+            --run_id)                  setFlag "$1" run_id "$2"                  && shift 2 ;;
+            --run_pipeline)            setFlag "$1" run_pipeline "$2"            && shift 2 ;;
+            --run_org)                 setFlag "$1" run_org "$2"                 && shift 2 ;;
+            --run_source)              setFlag "$1" run_source "$2"              && shift 2 ;;
+            --run_name)                setFlag "$1" run_name "$2"                && shift 2 ;;
+            --run_status)              setFlag "$1" run_status "$2"              && shift 2 ;;
+            --run_status_details)      setFlag "$1" run_status_details "$2"      && shift 2 ;;
+            --run_start_time)          setFlag "$1" run_start_time "$2"          && shift 2 ;;
+            --run_end_time)            setFlag "$1" run_end_time "$2"            && shift 2 ;;
+            --run_step_id)             setFlag "$1" run_step_id "$2"             && shift 2 ;;
+            --run_step_name)           setFlag "$1" run_step_name "$2"           && shift 2 ;;
+            --run_step_type)           setFlag "$1" run_step_type "$2"           && shift 2 ;;
+            --run_step_type_details)   setFlag "$1" run_step_type_details "$2"   && shift 2 ;;
+            --run_step_command)        setFlag "$1" run_step_command "$2"        && shift 2 ;;
+            --run_step_start_time)     setFlag "$1" run_step_start_time "$2"     && shift 2 ;;
+            --run_step_end_time)       setFlag "$1" run_step_end_time "$2"       && shift 2 ;;
+            --run_step_status)         setFlag "$1" run_step_status "$2"         && shift 2 ;;
+            --run_step_status_details) setFlag "$1" run_step_status_details "$2" && shift 2 ;;
+            --run_step_url)            setFlag "$1" run_step_url "$2"            && shift 2 ;;
+            -g|--graph)                graph="$2"                                && shift 2 ;;
+            --origin)                  setFlag "$1" origin="$2"                  && shift 2 ;;
+            -u|--url)                  url="$2"                                  && shift 2 ;;
+            --hasura_admin_secret)     hasura_admin_secret="$2"                  && shift 2 ;;
+            --dry_run)                 dry_run=1                                 && shift ;;
+            --full)                    full="true"                               && shift ;;
             --no_build_object)
                 warn "no_build_object flag is deprecated, use skip_saving_run"
                 skip_saving_run="true"
                 shift ;;
-            --skip_saving_run)          skip_saving_run="true"      && shift ;;
-            --validate_only)            validate_only="true"        && shift ;;
-            -s|--silent)                silent=1                    && shift ;;
-            --max_time)                 max_time="$2"               && shift 2 ;;
-            --retry)                    retry="$2"                  && shift 2 ;;
-            --retry_delay)              retry_delay="$2"            && shift 2 ;;
-            --retry_max_time)           retry_max_time="$2"         && shift 2 ;;
-            --debug)                    debug=1                     && shift ;;
-            --no_format)                no_format=1                 && shift ;;
-            --community_edition)        community_edition=1         && shift ;;
+            --skip_saving_run)          skip_saving_run="true"                   && shift ;;
+            --validate_only)            validate_only="true"                     && shift ;;
+            -s|--silent)                silent=1                                 && shift ;;
+            --max_time)                 max_time="$2"                            && shift 2 ;;
+            --retry)                    retry="$2"                               && shift 2 ;;
+            --retry_delay)              retry_delay="$2"                         && shift 2 ;;
+            --retry_max_time)           retry_max_time="$2"                      && shift 2 ;;
+            --debug)                    debug=1                                  && shift ;;
+            --no_format)                no_format=1                              && shift ;;
+            --community_edition)        community_edition=1                      && shift ;;
             --help)                     help exit 0 ;;
             -v|--version)               echo "$version" exit 0 ;;
             *)
@@ -290,6 +291,12 @@ function parseFlags() {
                 shift ;;
         esac
     done
+}
+
+function setFlag() {
+    var_name=$2
+    declare -g $var_name="$3"
+    debug "[ $1 ] : [ $3 ]"
 }
 
 # Determine which event types are present
@@ -1022,6 +1029,8 @@ function fmtLog(){
             fmtLog="$fmtTime ${RED}ERROR${NC} "
         elif [ "$1" == "warn" ]; then
             fmtLog="$fmtTime ${YELLOW}WARN${NC} "
+        elif [ "$1" == "debug" ]; then
+            fmtLog="$fmtTime ${GREEN}DEBUG${NC} "
         else
             fmtLog="$fmtTime ${BLUE}INFO${NC} "
         fi
@@ -1040,6 +1049,13 @@ function printLog() {
     else
         printf "$fmtLog"
         printf "$* \n"
+    fi
+}
+
+function debug() {
+    if ((debug)); then
+        fmtLog "debug"
+        printLog "$*"
     fi
 }
 
@@ -1077,10 +1093,8 @@ main() {
     if ((debug)); then
         echo "Faros url: $url"
         echo "Faros graph: $graph"
+        echo "Validate Only: $validate_only"
         echo "Dry run: $dry_run"
-        echo "Silent: $silent"
-        echo "Skip Saving Run: $skip_saving_run"
-        echo "Debug: $debug"
         echo "Community edition: $community_edition"
     fi
 
