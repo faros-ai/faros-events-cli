@@ -265,7 +265,7 @@ function parseFlags() {
             --run_step_status_details) setFlag "$1" run_step_status_details "$2" && shift 2 ;;
             --run_step_url)            setFlag "$1" run_step_url "$2"            && shift 2 ;;
             -g|--graph)                graph="$2"                                && shift 2 ;;
-            --origin)                  setFlag "$1" origin="$2"                  && shift 2 ;;
+            --origin)                  setFlag "$1" origin "$2"                  && shift 2 ;;
             -u|--url)                  url="$2"                                  && shift 2 ;;
             --hasura_admin_secret)     hasura_admin_secret="$2"                  && shift 2 ;;
             --dry_run)                 dry_run=1                                 && shift ;;
