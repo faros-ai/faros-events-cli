@@ -227,7 +227,7 @@ function parseFlags() {
             --test_source)             setFlag "$1" test_source "$2"             && shift 2 ;;
             --test_type)               setFlag "$1" test_type "$2"               && shift 2 ;;
             --test_type_details)       setFlag "$1" test_type_details "$2"       && shift 2 ;;
-            --test_status)             setFlag "$1" test_status="$2"             && shift 2 ;;
+            --test_status)             setFlag "$1" test_status "$2"             && shift 2 ;;
             --test_status_details)     setFlag "$1" test_status_details "$2"     && shift 2 ;;
             --test_suite)              setFlag "$1" test_suite "$2"              && shift 2 ;;
             --test_stats)              setFlag "$1" test_stats "$2"              && shift 2 ;;
