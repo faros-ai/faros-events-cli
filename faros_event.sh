@@ -1090,7 +1090,7 @@ function handle_error {
     local function_name=$2
     local line_number=$3
     local args=("${@:4}")  # Slice the array to start from the 4th argument
-    local IFS="|"        # Set IFS to '|' 
+    local IFS="|"        # Set IFS to '|' - meaning debug args will be separated by |
     local args_string="${args[*]}"
     echo "Error occurred in function: $function_name, line: $line_number, remaining args: [ $args_string ]"
     exit 1
