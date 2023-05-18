@@ -1060,16 +1060,6 @@ function printLog() {
     fi
 }
 
-function handle_error {
-    local script_name=$(basename "$0")
-    local line_number=$1
-    local error_message=$2
-
-    echo "An error occurred in $script_name at line $line_number:"
-    echo "$error_message"
-    exit 1
-}
-
 function log() {
     if ! ((silent)); then
         fmtLog "info"
