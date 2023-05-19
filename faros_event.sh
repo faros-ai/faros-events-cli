@@ -333,6 +333,7 @@ function processArgs() {
 # Resolve input and populate event depending on present event types
 # Only one event should be considered per execution
 function processEventTypes() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     if ((ci_event)); then
         event_type="CI"
         makeEvent
