@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.5"
+version="0.6.6"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -60,6 +60,7 @@ community_edition=${FAROS_COMMUNITY_EDITION:-0}
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 function help() {
@@ -192,78 +193,10 @@ function help() {
     echo "For more usage information please visit: $github_url"
 }
 
-function parseFlags() {
+function parseControls() {
     while (($#)); do
         case "$1" in
             -k|--api_key)              api_key="$2"                 && shift 2 ;;
-            --artifact)                artifact_uri="$2"            && shift 2 ;;
-            --artifact_id)             artifact_id="$2"             && shift 2 ;;
-            --artifact_repo)           artifact_repo="$2"           && shift 2 ;;
-            --artifact_org)            artifact_org="$2"            && shift 2 ;;
-            --artifact_source)         artifact_source="$2"         && shift 2 ;;
-            --commit)                  commit_uri="$2"              && shift 2 ;;
-            --commit_sha)              commit_sha="$2"              && shift 2 ;;
-            --commit_repo)             commit_repo="$2"             && shift 2 ;;
-            --commit_org)              commit_org="$2"              && shift 2 ;;
-            --commit_source)           commit_source="$2"           && shift 2 ;;
-            --branch)                  branch="$2"                  && shift 2 ;;
-            --pull_request_number)     pull_request_number="$2"     && shift 2 ;;
-            --deploy)                  deploy_uri="$2"              && shift 2 ;;
-            --deploy_id)               deploy_id="$2"               && shift 2 ;;
-            --deploy_env)              deploy_env="$2"              && shift 2 ;;
-            --deploy_app)              deploy_app="$2"              && shift 2 ;;
-            --deploy_source)           deploy_source="$2"           && shift 2 ;;
-            --deploy_app_platform)     deploy_app_platform="$2"     && shift 2 ;;
-            --deploy_app_tags)         deploy_app_tags="$2"         && shift 2 ;;
-            --deploy_app_paths)        deploy_app_paths="$2"        && shift 2 ;;
-            --deploy_url)              deploy_url="$2"              && shift 2 ;;
-            --deploy_env_details)      deploy_env_details="$2"      && shift 2 ;;
-            --deploy_status)           deploy_status="$2"           && shift 2 ;;
-            --deploy_status_details)   deploy_status_details="$2"   && shift 2 ;;
-            --deploy_requested_at)     deploy_requested_at="$2"     && shift 2 ;;
-            --deploy_start_time)       deploy_start_time="$2"       && shift 2 ;;
-            --deploy_end_time)         deploy_end_time="$2"         && shift 2 ;;
-            --test_id)                 test_id="$2"                 && shift 2 ;;
-            --test_source)             test_source="$2"             && shift 2 ;;
-            --test_type)               test_type="$2"               && shift 2 ;;
-            --test_type_details)       test_type_details="$2"       && shift 2 ;;
-            --test_status)             test_status="$2"             && shift 2 ;;
-            --test_status_details)     test_status_details="$2"     && shift 2 ;;
-            --test_suite)              test_suite="$2"              && shift 2 ;;
-            --test_stats)              test_stats="$2"              && shift 2 ;;
-            --test_tags)               test_tags="$2"               && shift 2 ;;
-            --environments)            environments="$2"            && shift 2 ;;
-            --device_name)             device_name="$2"             && shift 2 ;;
-            --device_os)               device_os="$2"               && shift 2 ;;
-            --device_browser)          device_browser="$2"          && shift 2 ;;
-            --device_type)             device_type="$2"             && shift 2 ;;
-            --test_start_time)         test_start_time="$2"         && shift 2 ;;
-            --test_end_time)           test_end_time="$2"           && shift 2 ;;
-            --test_task)               test_task="$2"               && shift 2 ;;
-            --defect_task)             defect_task="$2"             && shift 2 ;;
-            --test_suite_task)         test_suite_task="$2"         && shift 2 ;;
-            --test_execution_task)     test_execution_task="$2"     && shift 2 ;;
-            --task_source)             task_source="$2"             && shift 2 ;;
-            --run)                     run_uri="$2"                 && shift 2 ;;
-            --run_id)                  run_id="$2"                  && shift 2 ;;
-            --run_pipeline)            run_pipeline="$2"            && shift 2 ;;
-            --run_org)                 run_org="$2"                 && shift 2 ;;
-            --run_source)              run_source="$2"              && shift 2 ;;
-            --run_name)                run_name="$2"                && shift 2 ;;
-            --run_status)              run_status="$2"              && shift 2 ;;
-            --run_status_details)      run_status_details="$2"      && shift 2 ;;
-            --run_start_time)          run_start_time="$2"          && shift 2 ;;
-            --run_end_time)            run_end_time="$2"            && shift 2 ;;
-            --run_step_id)             run_step_id="$2"             && shift 2 ;;
-            --run_step_name)           run_step_name="$2"           && shift 2 ;;
-            --run_step_type)           run_step_type="$2"           && shift 2 ;;
-            --run_step_type_details)   run_step_type_details="$2"   && shift 2 ;;
-            --run_step_command)        run_step_command="$2"        && shift 2 ;;
-            --run_step_start_time)     run_step_start_time="$2"     && shift 2 ;;
-            --run_step_end_time)       run_step_end_time="$2"       && shift 2 ;;
-            --run_step_status)         run_step_status="$2"         && shift 2 ;;
-            --run_step_status_details) run_step_status_details="$2" && shift 2 ;;
-            --run_step_url)            run_step_url="$2"            && shift 2 ;;
             -g|--graph)                graph="$2"                   && shift 2 ;;
             --origin)                  origin="$2"                  && shift 2 ;;
             -u|--url)                  url="$2"                     && shift 2 ;;
@@ -287,10 +220,94 @@ function parseFlags() {
             --help)                     help exit 0 ;;
             -v|--version)               echo "$version" exit 0 ;;
             *)
+                FLAGS+=("$1") # save it in an array for later
+                shift ;;
+        esac
+    done
+}
+
+function parseFlags() {
+    while (($#)); do
+        case "$1" in
+            --artifact)                setFlag "$1" artifact_uri "$2"            && shift 2 ;;
+            --artifact_id)             setFlag "$1" artifact_id "$2"             && shift 2 ;;
+            --artifact_repo)           setFlag "$1" artifact_repo "$2"           && shift 2 ;;
+            --artifact_org)            setFlag "$1" artifact_org "$2"            && shift 2 ;;
+            --artifact_source)         setFlag "$1" artifact_source "$2"         && shift 2 ;;
+            --commit)                  setFlag "$1" commit_uri "$2"              && shift 2 ;;
+            --commit_sha)              setFlag "$1" commit_sha "$2"              && shift 2 ;;
+            --commit_repo)             setFlag "$1" commit_repo "$2"             && shift 2 ;;
+            --commit_org)              setFlag "$1" commit_org "$2"              && shift 2 ;;
+            --commit_source)           setFlag "$1" commit_source "$2"           && shift 2 ;;
+            --branch)                  setFlag "$1" branch "$2"                  && shift 2 ;;
+            --pull_request_number)     setFlag "$1" pull_request_number "$2"     && shift 2 ;;
+            --deploy)                  setFlag "$1" deploy_uri "$2"              && shift 2 ;;
+            --deploy_id)               setFlag "$1" deploy_id "$2"               && shift 2 ;;
+            --deploy_env)              setFlag "$1" deploy_env "$2"              && shift 2 ;;
+            --deploy_app)              setFlag "$1" deploy_app "$2"              && shift 2 ;;
+            --deploy_source)           setFlag "$1" deploy_source "$2"           && shift 2 ;;
+            --deploy_app_platform)     setFlag "$1" deploy_app_platform "$2"     && shift 2 ;;
+            --deploy_app_tags)         setFlag "$1" deploy_app_tags "$2"         && shift 2 ;;
+            --deploy_app_paths)        setFlag "$1" deploy_app_paths "$2"        && shift 2 ;;
+            --deploy_url)              setFlag "$1" deploy_url "$2"              && shift 2 ;;
+            --deploy_env_details)      setFlag "$1" deploy_env_details "$2"      && shift 2 ;;
+            --deploy_status)           setFlag "$1" deploy_status "$2"           && shift 2 ;;
+            --deploy_status_details)   setFlag "$1" deploy_status_details "$2"   && shift 2 ;;
+            --deploy_requested_at)     setFlag "$1" deploy_requested_at "$2"     && shift 2 ;;
+            --deploy_start_time)       setFlag "$1" deploy_start_time "$2"       && shift 2 ;;
+            --deploy_end_time)         setFlag "$1" deploy_end_time "$2"         && shift 2 ;;
+            --test_id)                 setFlag "$1" test_id "$2"                 && shift 2 ;;
+            --test_source)             setFlag "$1" test_source "$2"             && shift 2 ;;
+            --test_type)               setFlag "$1" test_type "$2"               && shift 2 ;;
+            --test_type_details)       setFlag "$1" test_type_details "$2"       && shift 2 ;;
+            --test_status)             setFlag "$1" test_status "$2"             && shift 2 ;;
+            --test_status_details)     setFlag "$1" test_status_details "$2"     && shift 2 ;;
+            --test_suite)              setFlag "$1" test_suite "$2"              && shift 2 ;;
+            --test_stats)              setFlag "$1" test_stats "$2"              && shift 2 ;;
+            --test_tags)               setFlag "$1" test_tags "$2"               && shift 2 ;;
+            --environments)            setFlag "$1" environments "$2"            && shift 2 ;;
+            --device_name)             setFlag "$1" device_name "$2"             && shift 2 ;;
+            --device_os)               setFlag "$1" device_os "$2"               && shift 2 ;;
+            --device_browser)          setFlag "$1" device_browser "$2"          && shift 2 ;;
+            --device_type)             setFlag "$1" device_type "$2"             && shift 2 ;;
+            --test_start_time)         setFlag "$1" test_start_time "$2"         && shift 2 ;;
+            --test_end_time)           setFlag "$1" test_end_time "$2"           && shift 2 ;;
+            --test_task)               setFlag "$1" test_task "$2"               && shift 2 ;;
+            --defect_task)             setFlag "$1" defect_task "$2"             && shift 2 ;;
+            --test_suite_task)         setFlag "$1" test_suite_task "$2"         && shift 2 ;;
+            --test_execution_task)     setFlag "$1" test_execution_task "$2"     && shift 2 ;;
+            --task_source)             setFlag "$1" task_source "$2"             && shift 2 ;;
+            --run)                     setFlag "$1" run_uri "$2"                 && shift 2 ;;
+            --run_id)                  setFlag "$1" run_id "$2"                  && shift 2 ;;
+            --run_pipeline)            setFlag "$1" run_pipeline "$2"            && shift 2 ;;
+            --run_org)                 setFlag "$1" run_org "$2"                 && shift 2 ;;
+            --run_source)              setFlag "$1" run_source "$2"              && shift 2 ;;
+            --run_name)                setFlag "$1" run_name "$2"                && shift 2 ;;
+            --run_status)              setFlag "$1" run_status "$2"              && shift 2 ;;
+            --run_status_details)      setFlag "$1" run_status_details "$2"      && shift 2 ;;
+            --run_start_time)          setFlag "$1" run_start_time "$2"          && shift 2 ;;
+            --run_end_time)            setFlag "$1" run_end_time "$2"            && shift 2 ;;
+            --run_step_id)             setFlag "$1" run_step_id "$2"             && shift 2 ;;
+            --run_step_name)           setFlag "$1" run_step_name "$2"           && shift 2 ;;
+            --run_step_type)           setFlag "$1" run_step_type "$2"           && shift 2 ;;
+            --run_step_type_details)   setFlag "$1" run_step_type_details "$2"   && shift 2 ;;
+            --run_step_command)        setFlag "$1" run_step_command "$2"        && shift 2 ;;
+            --run_step_start_time)     setFlag "$1" run_step_start_time "$2"     && shift 2 ;;
+            --run_step_end_time)       setFlag "$1" run_step_end_time "$2"       && shift 2 ;;
+            --run_step_status)         setFlag "$1" run_step_status "$2"         && shift 2 ;;
+            --run_step_status_details) setFlag "$1" run_step_status_details "$2" && shift 2 ;;
+            --run_step_url)            setFlag "$1" run_step_url "$2"            && shift 2 ;;
+            *)
                 POSITIONAL+=("$1") # save it in an array for later
                 shift ;;
         esac
     done
+}
+
+function setFlag() {
+    var_name="$2"
+    declare -g "$var_name"="$3"
+    debug "[ $1 ] : [ $3 ]"
 }
 
 # Determine which event types are present
@@ -382,7 +399,7 @@ function make_commit_key() {
 }
 
 function make_artifact_key() {
-    if ! [ -z "$has_artifact" ]; then
+    if [ -n "$has_artifact" ]; then
         keys_matching "$flat" "data_artifact_(id|repository|organization|source)"
     else
         jq -n \
@@ -401,7 +418,7 @@ function make_artifact_key() {
 
 function doPullRequestCommitMutation() {
     trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
-    if ! [ -z "$has_commit" ] && ! [ -z "$pull_request_number" ]; then
+    if ! [ -n "$has_commit" ] && ! [ -n "$pull_request_number" ]; then
         pull_request=$(jq -n \
             --arg pull_request_number "$pull_request_number" \
             '{
@@ -451,7 +468,7 @@ function doCDMutations() {
         }'
     )
     cicd_Deployment_base=$(concat "$cicd_Deployment_base" "$status_env")
-    if ! [ -z "$deploy_start_time" ] && ! [ -z "$deploy_end_time" ]; then
+    if [ -n "$deploy_start_time" ] && [ -n "$deploy_end_time" ]; then
         start_end=$(jq -n \
             --arg start_time "$deploy_start_time" \
             --arg end_time "$deploy_end_time" \
@@ -476,7 +493,7 @@ function doCDMutations() {
     cicd_ArtifactDeployment=$(concat "$cicd_ArtifactDeployment" "$artifact_key")
     make_mutation cicd_artifact_deployment "$cicd_ArtifactDeployment"
 
-    if ! [ -z "$has_run" ]; then
+    if [ -n "$has_run" ]; then
         make_mutations_from_run
 
         cicd_Deployment=$(concat "$cicd_Deployment_with_start_end" "$buildKey")
@@ -486,7 +503,7 @@ function doCDMutations() {
     fi
 
     if [ -z "$has_artifact" ]; then
-        if ! [ -z "$has_run" ]; then
+        if [ -n "$has_run" ]; then
             cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
             make_mutation cicd_artifact_with_build "$cicd_Artifact_with_build"
         else
@@ -506,12 +523,12 @@ function make_mutations_from_run {
     buildKey=$(jq \
         '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
     )
-    if ! (($skip_saving_run)); then
+    if ! ((skip_saving_run)); then
         if [ -z "$has_run_status" ]; then
             err "Please provided --run_status"
             fail
         fi
-        if ! [ -z "$has_run_start_time" ] && ! [ -z "$has_run_end_time" ]; then
+        if [ -n "$has_run_start_time" ] && [ -n "$has_run_end_time" ]; then
             cicd_Build_with_start_end=$(jq -n \
                 --arg run_status "$run_status" \
                 --arg run_status_details "$run_status_details" \
@@ -556,7 +573,7 @@ function doCIMutations() {
     artifact_key=$(make_artifact_key)
     commit_key=$(make_commit_key)
 
-    if ! [ -z "$has_run" ]; then
+    if [ -n "$has_run" ]; then
         make_mutations_from_run
 
         cicd_Artifact_with_build=$(concat "$artifact_key" "$buildKey")
@@ -646,7 +663,7 @@ function resolveDefaults() {
 
 function resolveInput() {
     # Required fields:
-    if ! [ -z ${api_key+x} ] || ! [ -z ${FAROS_API_KEY+x} ]; then
+    if [ -n "${api_key+x}" ] || [ -n "${FAROS_API_KEY+x}" ]; then
         api_key=${api_key:-$FAROS_API_KEY}
     else
         if ! ((community_edition)); then
@@ -720,13 +737,13 @@ function resolveDeployInput() {
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
 
-    if ! [ -z "$deploy_requested_at" ]; then
+    if [ -n "$deploy_requested_at" ]; then
         deploy_requested_at=$(convert_to_iso8601 "$deploy_requested_at")
     fi
-    if ! [ -z "$deploy_start_time" ]; then
+    if [ -n "$deploy_start_time" ]; then
         deploy_start_time=$(convert_to_iso8601 "$deploy_start_time")
     fi
-    if ! [ -z "$deploy_end_time" ]; then
+    if [ -n "$deploy_end_time" ]; then
         deploy_end_time=$(convert_to_iso8601 "$deploy_end_time")
     fi
 }
@@ -780,21 +797,21 @@ function resolveRunInput() {
     run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
     run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 
-    if ! [ -z "$run_status" ]; then
+    if [ -n "$run_status" ]; then
         has_run_status=1
     fi
-    if ! [ -z "$run_start_time" ]; then
+    if [ -n "$run_start_time" ]; then
         has_run_start_time=1
         run_start_time=$(convert_to_iso8601 "$run_start_time")
     fi
-    if ! [ -z "$run_end_time" ]; then
+    if [ -n "$run_end_time" ]; then
         has_run_end_time=1
         run_end_time=$(convert_to_iso8601 "$run_end_time")
     fi
-    if ! [ -z "$run_step_start_time" ]; then
+    if [ -n "$run_step_start_time" ]; then
         run_step_start_time=$(convert_to_iso8601 "$run_step_start_time")
     fi
-    if ! [ -z "$run_step_end_time" ]; then
+    if [ -n "$run_step_end_time" ]; then
         run_step_end_time=$(convert_to_iso8601 "$run_step_end_time")
     fi
 }
@@ -822,10 +839,10 @@ function resolveTestInput() {
     test_execution_task=${test_execution_task:-$FAROS_TEST_EXECUTION_TASK}
     task_source=${task_source:-$FAROS_TASK_SOURCE}
 
-    if ! [ -z "$test_start_time" ]; then
+    if [ -n "$test_start_time" ]; then
         test_start_time=$(convert_to_iso8601 "$test_start_time")
     fi
-    if ! [ -z "$test_end_time" ]; then
+    if [ -n "$test_end_time" ]; then
         test_end_time=$(convert_to_iso8601 "$test_end_time")
     fi
 }
@@ -841,7 +858,7 @@ function resolveTestInput() {
 function parseUri() {
     valid_chars="a-zA-Z0-9_.<>-"
     uri_regex="^[$valid_chars]+:\/\/[$valid_chars]+\/[$valid_chars]+\/[$valid_chars]+$"
-    if ! [ -z "$6" ]; then
+    if [ -n "$6" ]; then
         if [[ "$6" =~ $uri_regex ]]; then
             export "$1"="$(sed 's/:.*//' <<< "$6")"
             export "$2"="$(sed 's/.*:\/\/\(.*\)\/.*\/.*/\1/' <<< "$6")"
@@ -856,14 +873,14 @@ function parseUri() {
 
 function parseCommitUri() {
     parseUri "commit_source" "commit_org" "commit_repo" "commit_sha" "$commit_uri_form" "$commit_uri"
-    if ! [ -z "$commit_source" ] && ! [ -z "$commit_org" ] && ! [ -z "$commit_repo" ] && ! [ -z "$commit_sha" ]; then
+    if [ -n "$commit_source" ] && [ -n "$commit_org" ] && [ -n "$commit_repo" ] && [ -n "$commit_sha" ]; then
         has_commit=1
     fi
 }
 
 function parseRunUri() {
     parseUri "run_source" "run_org" "run_pipeline" "run_id" "$run_uri_form" "$run_uri"
-    if ! [ -z "$run_source" ] && ! [ -z "$run_org" ] && ! [ -z "$run_pipeline" ] && ! [ -z "$run_id" ]; then
+    if [ -n "$run_source" ] && [ -n "$run_org" ] && [ -n "$run_pipeline" ] && [ -n "$run_id" ]; then
         has_run=1
     fi
 }
@@ -874,7 +891,7 @@ function parseDeployUri() {
 
 function parseArtifactUri() {
     parseUri "artifact_source" "artifact_org" "artifact_repo" "artifact_id" "$artifact_uri_form" "$artifact_uri"
-    if ! [ -z "$artifact_source" ] && ! [ -z "$artifact_org" ] && ! [ -z "$artifact_repo" ] && ! [ -z "$artifact_id" ]; then
+    if [ -n "$artifact_source" ] && [ -n "$artifact_org" ] && [ -n "$artifact_repo" ] && [ -n "$artifact_id" ]; then
         has_artifact=1
     fi
 }
@@ -894,7 +911,7 @@ function makeEvent() {
 }
 
 function tryAddToEvent() {
-    if ! [ -z "$2" ]; then
+    if [ -n "$2" ]; then
         request_body=$(jq \
             --argjson path "$1" \
             --arg val "$2" \
@@ -929,7 +946,7 @@ function addCommitToData() {
     tryAddToEvent '["data","commit","organization"]' "$commit_org"
     tryAddToEvent '["data","commit","source"]' "$commit_source"
     tryAddToEvent '["data","commit","branch"]' "$branch"
-    if ! [ -z "$pull_request_number" ]; then
+    if [ -n "$pull_request_number" ]; then
         request_body=$(jq \
             --arg pull_request_number "$pull_request_number" \
             '.data.commit +=
@@ -997,7 +1014,7 @@ function addTestToData() {
     tryAddToEvent '["data","test","suiteTask"]' "$test_suite_task"
     tryAddToEvent '["data","test","executionTask"]' "$test_execution_task"
     tryAddToEvent '["data","test","taskSource"]' "$task_source"
-    if ! [ -z "$test_stats" ]; then
+    if [ -n "$test_stats" ]; then
         IFS=',' read -ra ADDR <<< "$test_stats"
         for i in "${ADDR[@]}"; do
             IFS='=' read -r key value <<< "$i"
@@ -1040,6 +1057,8 @@ function fmtLog(){
             fmtLog="$fmtTime ${RED}ERROR${NC} "
         elif [ "$1" == "warn" ]; then
             fmtLog="$fmtTime ${YELLOW}WARN${NC} "
+        elif [ "$1" == "debug" ]; then
+            fmtLog="$fmtTime ${GREEN}DEBUG${NC} "
         else
             fmtLog="$fmtTime ${BLUE}INFO${NC} "
         fi
@@ -1058,6 +1077,13 @@ function printLog() {
     else
         printf "$fmtLog"
         printf "$* \n"
+    fi
+}
+
+function debug() {
+    if ((debug)); then
+        fmtLog "debug"
+        printLog "$*"
     fi
 }
 
@@ -1098,15 +1124,15 @@ function handle_error {
 
 main() {
 
-
     trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO main_1' ERR
+    parseControls "$@"
+    set -- "${FLAGS[@]:-}" # Restore positional args
     parseFlags "$@"
     set -- "${POSITIONAL[@]:-}" # Restore positional args
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
     processEventTypes           # Resolve input and populate event
     trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO main_2' ERR
-
     if ((debug)); then
         echo "Faros url: $url"
         echo "Faros graph: $graph"
@@ -1121,7 +1147,7 @@ main() {
         log "Request Body:"
         log "$request_body"
 
-        if ! (($dry_run)); then
+        if ! ((dry_run)); then
             sendEventToFaros
 
             # Log error response as an error and fail
