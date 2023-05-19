@@ -32,6 +32,7 @@ FAROS_RETRY_MAX_TIME_DEFAULT="40"
 HASURA_URL_DEFAULT="http://localhost:8080"
 HASURA_ADMIN_SECRET_DEFAULT="admin"
 
+
 declare -a ENVS=("Prod" "Staging" "QA" "Dev" "Sandbox" "Canary" "Custom")
 envs=$(printf '%s\n' "$(IFS=,; printf '%s' "${ENVS[*]}")")
 declare -a BUILD_STATUSES=("Success" "Failed" "Canceled" "Queued" "Running" "Unknown" "Custom")
@@ -349,6 +350,7 @@ function processArgs() {
 # Resolve input and populate event depending on present event types
 # Only one event should be considered per execution
 function processEventTypes() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     if ((ci_event)); then
         event_type="CI"
         makeEvent
@@ -415,7 +417,8 @@ function make_artifact_key() {
 }
 
 function doPullRequestCommitMutation() {
-    if [ -n "$has_commit" ] && [ -n "$pull_request_number" ]; then
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
+    if ! [ -n "$has_commit" ] && ! [ -n "$pull_request_number" ]; then
         pull_request=$(jq -n \
             --arg pull_request_number "$pull_request_number" \
             '{
@@ -430,6 +433,7 @@ function doPullRequestCommitMutation() {
 
 function doCDMutations() {
     flat=$(flatten "$request_body")
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $flat' ERR
 
     app_platform="${deploy_app_platform:-}"
     if [ -z "${app_platform}" ]; then
@@ -515,6 +519,7 @@ function doCDMutations() {
 }
 
 function make_mutations_from_run {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     buildKey=$(jq \
         '{data_run_id,data_run_pipeline,data_run_organization,data_run_source}' <<< "$flat"
     )
@@ -562,6 +567,7 @@ function make_mutations_from_run {
 }
 
 function doCIMutations() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     flat=$(flatten "$request_body")
 
     artifact_key=$(make_artifact_key)
@@ -593,6 +599,7 @@ function doCIMutations() {
 }
 
 function make_mutation() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $1 $2' ERR
     entity_origin=$(jq -n \
         --arg data_origin "$origin" \
         '{"data_origin": $data_origin}'
@@ -638,6 +645,7 @@ function concat() {
 }
 
 function flatten() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $1' ERR
     jq '[paths(scalars) as $path | { ($path | map(tostring) | join("_")): getpath($path) } ] | add' <<< "$1"
 }
 
@@ -689,6 +697,7 @@ function resolveInput() {
 }
 
 function resolveCDInput() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     resolveDeployInput
     resolveArtifactInput
     resolveCommitInput
@@ -696,12 +705,14 @@ function resolveCDInput() {
 }
 
 function resolveCIInput() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     resolveArtifactInput
     resolveCommitInput
     resolveRunInput
 }
 
 function resolveTestExecutionInput() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO' ERR
     resolveTestInput
     resolveCommitInput
 }
@@ -886,6 +897,8 @@ function parseArtifactUri() {
 }
 
 function makeEvent() {
+    # Error handling
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $origin $event_type' ERR
     request_body=$(jq -n \
         --arg origin "$origin" \
         --arg event_type "$event_type" \
@@ -926,6 +939,7 @@ function addDeployToData() {
 }
 
 function addCommitToData() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $commit_uri $commit_sha $commit_repo $commit_org $commit_source $branch' ERR
     tryAddToEvent '["data","commit","uri"]' "$commit_uri"
     tryAddToEvent '["data","commit","sha"]' "$commit_sha"
     tryAddToEvent '["data","commit","repository"]' "$commit_repo"
@@ -944,6 +958,7 @@ function addCommitToData() {
 }
 
 function addArtifactToData() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $artifact_uri $artifact_id $artifact_repo $artifact_org $artifact_source' ERR
     tryAddToEvent '["data","artifact","uri"]' "$artifact_uri"
     tryAddToEvent '["data","artifact","id"]' "$artifact_id"
     tryAddToEvent '["data","artifact","repository"]' "$artifact_repo"
@@ -952,6 +967,7 @@ function addArtifactToData() {
 }
 
 function addRunToData() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $run_uri' ERR
     tryAddToEvent '["data","run","uri"]' "$run_uri"
     tryAddToEvent '["data","run","id"]' "$run_id"
     tryAddToEvent '["data","run","pipeline"]' "$run_pipeline"
@@ -965,6 +981,7 @@ function addRunToData() {
 }
 
 function addRunStepToData() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $run_step_id' ERR
     tryAddToEvent '["data","run","step","id"]' "$run_step_id"
     tryAddToEvent '["data","run","step","name"]' "$run_step_name"
     tryAddToEvent '["data","run","step","type"]' "$run_step_type"
@@ -978,6 +995,7 @@ function addRunStepToData() {
 }
 
 function addTestToData() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $test_id' ERR
     tryAddToEvent '["data","test","id"]' "$test_id"
     tryAddToEvent '["data","test","source"]' "$test_source"
     tryAddToEvent '["data","test","type"]' "$test_type"
@@ -1012,8 +1030,8 @@ function addTestToData() {
 }
 
 function sendEventToFaros() {
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO $graph $request_body' ERR
     log "Sending event to Faros..."
-
     http_response=$(curl -s -S \
         --max-time "$max_time" \
         --retry "$retry" \
@@ -1093,7 +1111,20 @@ function fail() {
     exit 1
 }
 
+function handle_error {
+    local error_message=$1
+    local function_name=$2
+    local line_number=$3
+    local args=("${@:4}")  # Slice the array to start from the 4th argument
+    local IFS="|"        # Set IFS to '|' - meaning debug args will be separated by |
+    local args_string="${args[*]}"
+    echo "Error occurred in function: $function_name, line: $line_number, remaining args: [ $args_string ]"
+    exit 1
+}
+
 main() {
+
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO main_1' ERR
     parseControls "$@"
     set -- "${FLAGS[@]:-}" # Restore positional args
     parseFlags "$@"
@@ -1101,15 +1132,18 @@ main() {
     processArgs "$@"            # Determine which event types are present
     resolveInput                # Resolve general fields
     processEventTypes           # Resolve input and populate event
-
-    debug "Faros url: $url"
-    debug "Faros graph: $graph"
-    debug "Faros origin: $origin"
-    debug "Validate Only: $validate_only"
-    debug "Dry run: $dry_run"
-    debug "Community edition: $community_edition"
-
-    if ! ((community_edition)); then
+    trap 'handle_error "$BASH_COMMAND" "${FUNCNAME[0]}" $LINENO main_2' ERR
+    if ((debug)); then
+        echo "Faros url: $url"
+        echo "Faros graph: $graph"
+        echo "Dry run: $dry_run"
+        echo "Silent: $silent"
+        echo "Skip Saving Run: $skip_saving_run"
+        echo "Debug: $debug"
+        echo "Community edition: $community_edition"
+    fi
+    
+    if ! (($community_edition)); then
         log "Request Body:"
         log "$request_body"
 
