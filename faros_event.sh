@@ -1104,7 +1104,7 @@ main() {
     debug "| url:           $url"
     debug "| graph:         $graph"
     debug "| origin:        $origin"
-    debug "| dry run:       $dry_run"
+    debug "| dry run:       $(if ((dry_run)); then echo true; else echo false; fi)"
     debug "| validate only: $validate_only"
     debug "+---------------------------------------------------------"
 
