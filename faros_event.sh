@@ -17,7 +17,7 @@ for i in "${arr[@]}"; do
 done
 
 if ((${missing_require:-0})); then
-    echo "Please ensure curl, jq, sed, and an implementation of awk (we recommend gawk) are available before running the script."
+    echo "Please ensure curl, jq (1.6+), sed, and an implementation of awk (we recommend gawk) are available before running the script."
     exit 1
 fi
 
@@ -306,7 +306,7 @@ function parseFlags() {
 function setFlag() {
     var_name="$2"
     declare -g "$var_name"="$3"
-    debug "[ $1 ] : [ $3 ]"
+    debug "| $1 [ $3 ]"
 }
 
 # Determine which event types are present
@@ -653,7 +653,7 @@ function resolveDefaults() {
     FAROS_RETRY_MAX_TIME=${FAROS_RETRY_MAX_TIME:-$FAROS_RETRY_MAX_TIME_DEFAULT}
 }
 
-function resolveInput() {
+function resolveControlInput() {
     # Required fields:
     if [ -n "${api_key+x}" ] || [ -n "${FAROS_API_KEY+x}" ]; then
         api_key=${api_key:-$FAROS_API_KEY}
@@ -1096,18 +1096,25 @@ function fail() {
 main() {
     parseControls "$@"
     set -- "${FLAGS[@]:-}" # Restore positional args
+    resolveControlInput    # Resolve control fields
+
+    debug "+========================================================="
+    debug "| version:       $version"
+    debug "| jq version:    $(jq --version)"
+    debug "| url:           $url"
+    debug "| graph:         $graph"
+    debug "| origin:        $origin"
+    debug "| dry run:       $dry_run"
+    debug "| validate only: $validate_only"
+    debug "+---------------------------------------------------------"
+
     parseFlags "$@"
     set -- "${POSITIONAL[@]:-}" # Restore positional args
-    processArgs "$@"            # Determine which event types are present
-    resolveInput                # Resolve general fields
-    processEventTypes           # Resolve input and populate event
 
-    debug "Faros url: $url"
-    debug "Faros graph: $graph"
-    debug "Faros origin: $origin"
-    debug "Validate Only: $validate_only"
-    debug "Dry run: $dry_run"
-    debug "Community edition: $community_edition"
+    debug "+========================================================="
+
+    processArgs "$@"            # Determine which event types are present
+    processEventTypes           # Resolve input and populate event
 
     if ! ((community_edition)); then
         log "Request Body:"
