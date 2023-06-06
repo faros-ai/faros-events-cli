@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.7"
+version="0.6.8"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -304,8 +304,7 @@ function parseFlags() {
 }
 
 function setFlag() {
-    var_name="$2"
-    declare -g "$var_name"="$3"
+    export "$2"="$3"
     debug "| $1 [ $3 ]"
 }
 
