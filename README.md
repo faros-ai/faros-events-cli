@@ -33,17 +33,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.7 && docker run farosai/faros-events-cli:v0.6.7 help
+docker pull farosai/faros-events-cli:v0.6.8 && docker run farosai/faros-events-cli:v0.6.8 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq` (1.6+), `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.7/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.8/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.7/faros_event.sh) help
+bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.8/faros_event.sh) help
 ```
 
 ## Instrumenting CI/CD pipelines
