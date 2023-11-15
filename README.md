@@ -69,6 +69,8 @@ Example usage:
     --run_end_time "2023-11-14T18:08:42.024Z"
 ```
 
+> :exclamation: The `run_status` is an enum. Read the documentation on arguments [here](#ci-arguments) for accepted values. 
+
 > :exclamation: If your CI pipeline does not build artifacts, omit the `--artifact` parameter, and add the `--ci-only` flag. 
 
 ### Reporting builds and build steps in parts
@@ -80,6 +82,7 @@ For example, after reporting the start of a build:
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_start_time "Now"
 ```
@@ -103,15 +106,13 @@ Then report its outcome and end time:
     --run_step_end_time "Now"
 ```
 
-Don't forget to report the end of the build itself, and information about the artifact generated!
+Don't forget to report the end of the build itself!
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_status "Success" \
     --run_end_time "Now"
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" 
 ```
 
 
@@ -141,7 +142,7 @@ This event reports a successful test suite invocation:
 
 Send CD events to the Faros platform if you would like to analyze your deploy frequency and lead time metrics. 
 
-**Option 1**
+**Option 1: **
 If information about the specific commit that is being deployed is available at the time of deployment, use this CD event to report the successful deployment of an application to an environment:
 
 ```sh
@@ -153,7 +154,7 @@ If information about the specific commit that is being deployed is available at 
     --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-**Option 2**
+**Option 2: **
 If commit information is not readily available at the time of deployment, but you do have artifact information, you can reference the artifact instead of the commit. 
 In such a scenario, you must also spearately report CI events as described [above](#instrumenting-ci-pipelines), and the Faros Platform will do the work of figuring out what commit got deployed. 
 
@@ -167,6 +168,10 @@ In such a scenario, you must also spearately report CI events as described [abov
 ```
 
 > :exclamation: If choosing Option 2 to report your deployment events, the  `--artifact` parameter in the CD event should exactly match the artifact parameter in the CI event.
+
+> :exclamation: The `deploy_status` is an enum. Read the documentation on arguments [here](#cd-arguments) for accepted values. 
+
+> :exclamation: The `deploy_environment` is also an enum. Read the documentation on arguments [here](#cd-arguments) for accepted values. 
 
 
 ## Arguments
