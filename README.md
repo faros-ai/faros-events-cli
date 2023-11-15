@@ -107,6 +107,7 @@ Don't forget to report the end of the build itself, and information about the ar
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_status "Success" \
     --run_end_time "Now"
@@ -116,7 +117,7 @@ Don't forget to report the end of the build itself, and information about the ar
 
 ## Reporting test execution results
 
-Use this event type if you would like to analyze success/failure rates of Test Suites 
+Use this event type if you would like to analyze success/failure rates and execution times of Test Suites 
 
 > :exclamation: `--full` flag must be provided with TestExecution event
 
