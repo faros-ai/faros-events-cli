@@ -71,7 +71,7 @@ Example usage:
 
 > :exclamation: The `run_status` is an enum. Read the documentation on arguments [here](#ci-arguments) for accepted values. 
 
-> :exclamation: If your CI pipeline does not build artifacts, omit the `--artifact` parameter, and add the `--ci-only` flag. 
+> :exclamation: If your CI pipeline does not build artifacts, omit the `--artifact` parameter, and be sure to add the `--no-artifact` flag. 
 
 ### Reporting builds and build steps in parts
 
