@@ -114,7 +114,7 @@ function help() {
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
-    echo "--no_artifact           Use if CI event does not generate artifact. (Do not specify the --artifact param)" 
+    echo "--no_artifact           |     |Use if CI event does not generate artifact. (Do not specify the --artifact param)" 
     echo "*1 If --run included"
     echo
     printf "${BLUE}CD Event Arguments:${NC}\\n"
