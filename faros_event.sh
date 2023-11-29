@@ -1022,7 +1022,7 @@ function sendEventToFaros() {
         --retry-delay "$retry_delay" \
         --retry-max-time "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full&no_artifact=$no_artifact" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full&noArtifact=$no_artifact" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body"
