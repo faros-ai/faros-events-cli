@@ -5,14 +5,10 @@ CLI for reporting events to Faros platform.
 - [Installation](#installation)
   - [Using Docker](#using-docker)
   - [Using Bash](#using-bash)
-- [Instrumenting CI/CD pipelines](#instrumenting-cicd-pipelines)
-  - [Reporting builds with commits (basic)](#reporting-builds-with-commits-basic)
-  - [Reporting deployments with commits (basic)](#reporting-deployments-with-commits-basic)
-  - [Reporting builds & deployments in parts (advanced)](#reporting-builds--deployments-in-parts-advanced)
-  - [Reporting builds & deployments with commits & artifacts (advanced)](#reporting-builds--deployments-with-commits--artifacts-advanced)
-  - [Reporting build steps](#reporting-build-steps)
-- [Code quality](#code-quality)
-  - [Reporting test execution results](#reporting-test-execution-results)
+- [Instrumenting CI pipelines](#instrumenting-ci-pipelines)
+  - [Reporting builds and build steps in parts](#reporting-builds-and-build-steps-in-parts)
+- [Reporting test execution results](#reporting-test-execution-results)
+- [Reporting deployments](#reporting-deployments)
 - [Arguments](#arguments)
   - [Passing arguments: flags or environment variables](#passing-arguments-flags-or-environment-variables)
   - [General arguments](#general-arguments)
@@ -33,105 +29,24 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.8 && docker run farosai/faros-events-cli:v0.6.8 help
+docker pull farosai/faros-events-cli:v0.6.9 && docker run farosai/faros-events-cli:v0.6.9 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq` (1.6+), `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.8/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.9/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.8/faros_event.sh) help
+bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.9/faros_event.sh) help
 ```
 
-## Instrumenting CI/CD pipelines
 
-![When to send an event](resources/events-3.jpg)
+## Instrumenting CI pipelines
+Report CI events to the Faros platform if you would like to analyze success/failure rates of your CI pipelines and how long different stages take.
 
-### Reporting builds with commits (basic)
-
-This CI event reports a successful code build:
-
-```sh
-./faros_event.sh CI -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --run_status "Success" \
-    --run_start_time "2021-07-20T18:05:46.019Z" \
-    --run_end_time "2021-07-20T18:08:42.024Z"
-```
-
-### Reporting deployments with commits (basic)
-
-This CD event reports a successful deployment of your application to your environment:
-
-```sh
-./faros_event.sh CD -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
-    --deploy_status "Success" \
-    --deploy_start_time "2021-07-20T18:05:46.019Z" \
-    --deploy_end_time "2021-07-20T18:08:42.024Z"
-```
-
-### Reporting builds & deployments in parts (advanced)
-
-Faros events are very flexible. Information can be sent all at once in a single event, or as it becomes available using multiple events. Certain fields depend on other fields to be present for Faros to correctly link information behind the scenes. See the [argument tables](#arguments) for dependency information.
-
-#### Sending build information in parts
-
-You can send a CI event when a code build has started. And a final event, when the code build has finished successfully.
-
-Code build started:
-
-```sh
-./faros_event.sh CI -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --run_status "Running" \
-    --run_start_time "Now"
-```
-
-Code build finished successfully:
-
-```sh
-./faros_event.sh CI -k "<faros_api_key>" \
-    --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
-    --run_status "Success" \
-    --run_end_time "Now"
-```
-
-#### Sending deployment information in parts
-
-You can send a CD event when an deployment has started. Then later, you can send an event when that deployment has finished successfully.
-
-Deployment started:
-
-```sh
-./faros_event.sh CD -k "<faros_api_key>" \
-    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
-    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
-    --deploy_status "Running" \
-    --deploy_start_time "Now"
-```
-
-Deployment finished successfully:
-
-```sh
-./faros_event.sh CD -k "<faros_api_key>" \
-    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
-    --deploy_status "Success" \
-    --deploy_end_time "Now"
-```
-
-### Reporting builds & deployments with commits & artifacts (advanced)
-
-When the commit information is not available at the time of deployment, you will need to use the `--artifact` flag. This flag lets Faros know that a commit was built into an artifact so that when you deploy that artifact, Faros knows how it all links together.
-
-This CI event reports that a commit was successfully built into the specified artifact:
-
+This CI event reports a successful build event where an artifact is built from a commit: 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
@@ -142,28 +57,32 @@ This CI event reports that a commit was successfully built into the specified ar
     --run_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-This CD event reports the successful deployment of an application to an environment using that artifact:
+Example usage: 
 
 ```sh
-./faros_event.sh CD -k "<faros_api_key>" \
-    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
-    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
-    --deploy_status "Success" \
-    --deploy_start_time "2021-07-20T18:05:46.019Z" \
-    --deploy_end_time "2021-07-20T18:08:42.024Z"
+./faros_event.sh CI -k "<faros_api_key>" \
+    --commit "GitHub://faros-ai/faros-events-cli/4414ad2b3b13b17055171678437a92e5d788cad1" \
+    --artifact "Docker://farosai/faros-events-cli/v0.6.9" \
+    --run "Jenkins://faros-ai/faros-events-cli/168_1700016590" \
+    --run_status "Success" \
+    --run_start_time "2023-11-14T18:05:46.019Z" \
+    --run_end_time "2023-11-14T18:08:42.024Z"
 ```
 
-Same as in the [earlier section](#reporting-builds--deployments-in-parts-advanced), you can report this information in parts, e.g. build started, build completed, deploy started, deploy completed.
+> :exclamation: The `run_status` is an enum. Read the documentation on arguments [here](#ci-arguments) for accepted values. 
 
-### Reporting build steps
+> :exclamation: If your CI pipeline does not build artifacts, omit the `--artifact` parameter, and be sure to add the `--no-artifact` flag. 
 
-In addition to tracking build outcomes, you can also instrument specific steps in your build processes.
+### Reporting builds and build steps in parts
 
-After reporting the start of a build:
+In addition to tracking build outcomes, you can also instrument specific steps in your build processes, and report on information in parts, as it becomes available.
+
+For example, after reporting the start of a build:
 
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
     --run "<run_source>://<run_organization>/<run_pipeline>/<run_id>" \
     --run_start_time "Now"
 ```
@@ -196,9 +115,10 @@ Don't forget to report the end of the build itself!
     --run_end_time "Now"
 ```
 
-## Code quality
 
-### Reporting test execution results
+## Reporting test execution results
+
+Use this event type if you would like to analyze success/failure rates and execution times of Test Suites 
 
 > :exclamation: `--full` flag must be provided with TestExecution event
 
@@ -217,6 +137,42 @@ This event reports a successful test suite invocation:
     --test_end_time "2021-07-20T18:08:42.024Z" \
     --full
 ```
+
+## Reporting deployments
+
+Send CD events to the Faros platform if you would like to analyze your deploy frequency and lead time metrics. 
+
+**Option 1: **
+If information about the specific commit that is being deployed is available at the time of deployment, use this CD event to report the successful deployment of an application to an environment:
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --commit "<commit_source>://<commit_organization>/<commit_repository>/<commit_sha>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
+    --deploy_status "Success" \
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
+```
+
+**Option 2: **
+If commit information is not readily available at the time of deployment, but you do have artifact information, you can reference the artifact instead of the commit. 
+In such a scenario, you must also spearately report CI events as described [above](#instrumenting-ci-pipelines), and the Faros Platform will do the work of figuring out what commit got deployed. 
+
+```sh
+./faros_event.sh CD -k "<faros_api_key>" \
+    --artifact "<artifact_source>://<artifact_organization>/<artifact_repository>/<artifact_id>" \
+    --deploy "<deploy_source>://<deploy_application>/<deploy_environment>/<deploy_id>" \
+    --deploy_status "Success" \
+    --deploy_start_time "2021-07-20T18:05:46.019Z" \
+    --deploy_end_time "2021-07-20T18:08:42.024Z"
+```
+
+> :exclamation: If choosing Option 2 to report your deployment events, the  `--artifact` parameter in the CD event should exactly match the artifact parameter in the CI event.
+
+> :exclamation: The `deploy_status` is an enum. Read the documentation on arguments [here](#cd-arguments) for accepted values. 
+
+> :exclamation: The `deploy_environment` is also an enum. Read the documentation on arguments [here](#cd-arguments) for accepted values. 
+
 
 ## Arguments
 

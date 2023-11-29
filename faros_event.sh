@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.8"
+version="0.6.9"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -114,6 +114,7 @@ function help() {
     echo "--run_name              |     |"
     echo "--run_start_time        |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--run_end_time          |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--no_artifact           |     |Use if CI event does not generate artifact. (Do not specify the --artifact param)" 
     echo "*1 If --run included"
     echo
     printf "${BLUE}CD Event Arguments:${NC}\\n"
@@ -207,6 +208,7 @@ function parseControls() {
                 skip_saving_run="true"
                 shift ;;
             --skip_saving_run)          skip_saving_run="true"      && shift ;;
+            --no_artifact)              no_artifact="true"          && shift ;;
             --validate_only)            validate_only="true"        && shift ;;
             -s|--silent)                silent=1                    && shift ;;
             --max_time)                 max_time="$2"               && shift 2 ;;
@@ -685,6 +687,7 @@ function resolveControlInput() {
     full=${full:-"false"}
     skip_saving_run=${skip_saving_run:-"false"}
     validate_only=${validate_only:-"false"}
+    no_artifact=${no_artifact:-"false"}
 }
 
 function resolveCDInput() {
@@ -1019,7 +1022,7 @@ function sendEventToFaros() {
         --retry-delay "$retry_delay" \
         --retry-max-time "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full" \
+        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full&noArtifact=$no_artifact" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body"
