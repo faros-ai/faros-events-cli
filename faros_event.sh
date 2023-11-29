@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.8"
+version="0.6.9"
 canonical_model_version="0.12.14"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
