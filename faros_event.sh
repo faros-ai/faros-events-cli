@@ -668,7 +668,7 @@ function resolveControlInput() {
     # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
-    graphs=(${graph//,/ })
+    IFS=',' read -ra graphs <<< "$graph"
 
     origin=${origin:-$FAROS_ORIGIN}
     if ! ((community_edition)); then
