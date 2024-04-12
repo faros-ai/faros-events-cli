@@ -184,19 +184,19 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### General arguments
 
-| Argument            | Description                                                                                                                              | Required                                                      | Default                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| -k, --api_key       | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access). | Yes (not required when `--community_edition` flag is present) |                                                                                   |
-| -u, --url           | The Faros API url to send the event to.                                                                                                  |                                                               | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
-| -g, --graph         | The graph that the event should be sent to.                                                                                              |                                                               | "default"                                                                         |
-| --validate_only     | Event will not be consumed but instead will only be validated against event schema.                                                      |                                                               |                                                                                   |
-| --dry_run           | Print the event instead of sending.                                                                                                      |                                                               |                                                                                   |
-| --community_edition | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition).                     |                                                               |                                                                                   |
+| Argument            | Description                                                                                                                                                   | Required                                                      | Default                                                                           |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| -k, --api_key       | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                      | Yes (not required when `--community_edition` flag is present) |                                                                                   |
+| -u, --url           | The Faros API url to send the event to.                                                                                                                       |                                                               | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
+| -g, --graph         | The graph(s) that the event should be sent to. If specifying more than one graph, they should be provided as a comma separated array (e.g. `graph_1,graph_2`) |                                                               | "default"                                                                         |
+| --validate_only     | Event will not be consumed but instead will only be validated against event schema.                                                                           |                                                               |                                                                                   |
+| --dry_run           | Print the event instead of sending.                                                                                                                           |                                                               |                                                                                   |
+| --community_edition | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition).                                          |                                                               |                                                                                   |
 
 ### CI arguments
 
 | Argument                  | Description                                                                                                                                | Dependency |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|------------|
 | --run                     | The URI of the job run that built the code. (`<source>://<organization>/<pipeline>/<run_id>`)                                              |            |
 | --run_status              | The status of the job run that built the code. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `Unknown`, `Custom`) | --run      |
 | --run_status_details      | Any extra details about the status of the job run.                                                                                         | --run      |
@@ -220,7 +220,7 @@ There are two ways that arguments can be passed into the script. The first, is v
 ### CD arguments
 
 | Argument                | Description                                                                                                                                                                                                                           | Dependency |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
 | --deploy                | The URI of the deployment. (`<deploy_source>://<application>/<environment>/<deploy_id>`) (`<environment>` allowed values: `Prod`, `Staging`, `QA`, `Dev`, `Sandbox`, `Canary`, `Custom`)                                              |            |
 | --deploy_start_time     | The start time of the deployment in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                              | --deploy   |
 | --deploy_end_time       | The end time of the deployment in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                | --deploy   |
@@ -243,25 +243,25 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### Test Execution arguments
 
-| Argument              | Description                                                                                                                                                                                                                                                                                                                      | Required                                                                            |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| --commit              | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)                                                                                                                                                                         | Yes                                                                                 |
-| --pull_request_number | The pull request number of the commit. (e.g. 123).                                                                                                                                                                                                                                                                               |                                                                                     |
-| --test_id             | The unique identifier of the test within the test source system.                                                                                                                                                                                                                                                                 | Yes                                                                                 |
-| --test_source         | The test source system. (e.g. `Jenkins`)                                                                                                                                                                                                                                                                                         | Yes                                                                                 |
-| --test_type           | The type of the test that was executed: (Allowed values: `Functional`, `Integration`, `Manual`, `Performance`, `Regression`, `Security`, `Unit`, `Custom`)                                                                                                                                                                       | Yes                                                                                 |
-| --test_type_details   | Additional details about the type of the test that was executed.                                                                                                                                                                                                                                                                 |                                                                                     |
-| --test_status         | The outcome status of the test execution. (Allowed values: `Success`, `Failure`, `Custom`, `Skipped`, `Unknown`)                                                                                                                                                                                                                 | Yes                                                                                 |
-| --test_status_details | Additional details about the status of the outcome status of the test.                                                                                                                                                                                                                                                           |                                                                                     |
-| --test_suite          | The name of the test suite.                                                                                                                                                                                                                                                                                                      | Yes                                                                                 |
-| --test_stats          | The stats of the test outcome as a string of comma separated `key=value` pairs. (e.g. `failure=0,success=18,skipped=3,unknown=0,custom=2,total=23`)                                                                                                                                                                              |                                                                                     |
-| --test_start_time     | The start time of the test in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                                                                                                               |                                                                                     |
-| --test_end_time       | The end time of the test in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                                                                                                                 |                                                                                     |
-| --test_tags           | A string of comma separated tags to associate with the test. (e.g. `tag1,tag2`)                                                                                                                                                                                                                                                  |                                                                                     |
-| --environments        | A string of comma separated environments to associate with the test. (e.g. `env1,env2`)                                                                                                                                                                                                                                          |                                                                                     |
-| --device_name         | The name of the device on which the test was executed. (e.g. `MacBook`)                                                                                                                                                                                                                                                          |                                                                                     |
-| --device_os           | The operating system of the device on which the test was executed. (e.g. `OSX`)                                                                                                                                                                                                                                                  |                                                                                     |
-| --device_browser      | The browser on which the test was executed. (e.g. `Chrome`)                                                                                                                                                                                                                                                                      |                                                                                     |
+| Argument              | Description                                                                                                                                                | Required |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| --commit              | The URI of the commit. (`<source>://<organization>/<repository>/<commit_sha>` e.g. `GitHub://faros-ai/my-repo/da500aa4f54cbf8f3eb47a1dc2c136715c9197b9`)   | Yes      |
+| --pull_request_number | The pull request number of the commit. (e.g. 123).                                                                                                         |          |
+| --test_id             | The unique identifier of the test within the test source system.                                                                                           | Yes      |
+| --test_source         | The test source system. (e.g. `Jenkins`)                                                                                                                   | Yes      |
+| --test_type           | The type of the test that was executed: (Allowed values: `Functional`, `Integration`, `Manual`, `Performance`, `Regression`, `Security`, `Unit`, `Custom`) | Yes      |
+| --test_type_details   | Additional details about the type of the test that was executed.                                                                                           |          |
+| --test_status         | The outcome status of the test execution. (Allowed values: `Success`, `Failure`, `Custom`, `Skipped`, `Unknown`)                                           | Yes      |
+| --test_status_details | Additional details about the status of the outcome status of the test.                                                                                     |          |
+| --test_suite          | The name of the test suite.                                                                                                                                | Yes      |
+| --test_stats          | The stats of the test outcome as a string of comma separated `key=value` pairs. (e.g. `failure=0,success=18,skipped=3,unknown=0,custom=2,total=23`)        |          |
+| --test_start_time     | The start time of the test in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                         |          |
+| --test_end_time       | The end time of the test in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                           |          |
+| --test_tags           | A string of comma separated tags to associate with the test. (e.g. `tag1,tag2`)                                                                            |          |
+| --environments        | A string of comma separated environments to associate with the test. (e.g. `env1,env2`)                                                                    |          |
+| --device_name         | The name of the device on which the test was executed. (e.g. `MacBook`)                                                                                    |          |
+| --device_os           | The operating system of the device on which the test was executed. (e.g. `OSX`)                                                                            |          |
+| --device_browser      | The browser on which the test was executed. (e.g. `Chrome`)                                                                                                |          |
 | --device_type         | The type of the device on which the test was executed.                                                                                                                                                                                                                                                                           |
 | --task_source         | The type of TMS (Task Management System). (e.g. `Jira`, `Shortcut`, `GitHub`)                                                                                                                                                                                                                                                    | If --test_task, --defect_task, --test_suite_task, or --test_execution_task provided |
 | --test_task           | A comma separated array of one or many unique identifiers of test tasks within the TMS (Task Management System). The outcome of a specific test for this execution can be provided as a `key=value` pair (e.g. `TEST-123=Success,TEST-456=Failure` with allowed statuses: `Success`, `Failure`, `Custom`, `Skipped`, `Unknown` ) |                                                                                     |
@@ -276,7 +276,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 #### `--run` argument alternative (**all** listed fields are required)
 
 | Argument       | Description                  |
-| -------------- | ---------------------------- |
+|----------------|------------------------------|
 | --run_id       | The id of the run            |
 | --run_pipeline | The pipeline of the run      |
 | --run_org      | The organization of the run  |
@@ -285,7 +285,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 #### `--deploy` argument alternative (**all** listed fields are required)
 
 | Argument        | Description                                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+|-----------------|-------------------------------------------------------------------------------------------------------------------|
 | --deploy_id     | The id of the deployment                                                                                          |
 | --deploy_env    | The environment of the deployment (allowed values: `Prod`, `Staging`, `QA`, `Dev`, `Sandbox`, `Canary`, `Custom`) |
 | --deploy_app    | The application being deployed                                                                                    |
@@ -294,7 +294,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 #### `--commit` argument alternative (**all** listed fields are required)
 
 | Argument        | Description                          |
-| --------------- | ------------------------------------ |
+|-----------------|--------------------------------------|
 | --commit_sha    | The SHA of the commit                |
 | --commit_repo   | The repository of the commit         |
 | --commit_org    | The organization of the commit       |
@@ -303,7 +303,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 #### `--artifact` argument alternative (**all** listed fields are required)
 
 | Argument          | Description                            |
-| ----------------- | -------------------------------------- |
+|-------------------|----------------------------------------|
 | --artifact_id     | The id of the artifact                 |
 | --artifact_repo   | The repository of the artifact         |
 | --artifact_org    | The organization of the artifact       |
@@ -312,7 +312,7 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 ### Additional arguments
 
 | Argument              | Description                                                         | Default              |
-| --------------------- | ------------------------------------------------------------------- | -------------------- |
+|-----------------------|---------------------------------------------------------------------|----------------------|
 | --origin              | The origin of the event that is being sent to Faros.                | "Faros_Script_Event" |
 | --full                | The event being sent should be validated as a full event.           |                      |
 | --silent              | Unexceptional output will be silenced.                              |                      |

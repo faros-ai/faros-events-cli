@@ -363,7 +363,7 @@ Describe 'faros_event.sh'
       multi_graph_test() {
         echo $(
           ../faros_event.sh CD -k "<api_key>" \
-          --graph "test_1, test_2" \
+          --graph test_1,test_2 \
           --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
           --debug
         )
