@@ -6,8 +6,8 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.9"
-canonical_model_version="0.12.14"
+version="0.6.10"
+canonical_model_version="0.15.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
 declare -a arr=("curl" "jq" "sed" "awk")
@@ -668,6 +668,8 @@ function resolveControlInput() {
     # Optional fields:
     resolveDefaults
     graph=${graph:-$FAROS_GRAPH}
+    IFS=',' read -ra graphs <<< "$graph"
+
     origin=${origin:-$FAROS_ORIGIN}
     if ! ((community_edition)); then
         url=${url:-$FAROS_URL}
@@ -1014,7 +1016,7 @@ function addTestToData() {
 }
 
 function sendEventToFaros() {
-    log "Sending event to Faros..."
+    log "Sending event to Faros (graph: $1)..."
 
     http_response=$(curl -s -S \
         --max-time "$max_time" \
@@ -1022,7 +1024,7 @@ function sendEventToFaros() {
         --retry-delay "$retry_delay" \
         --retry-max-time "$retry_max_time" \
         --write-out "HTTPSTATUS:%{http_code}" -X POST \
-        "$url/graphs/$graph/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full&noArtifact=$no_artifact" \
+        "$url/graphs/$1/events?validateOnly=$validate_only&skipSavingRun=$skip_saving_run&full=$full&noArtifact=$no_artifact" \
         -H "authorization: $api_key" \
         -H "content-type: application/json" \
         -d "$request_body"
@@ -1123,17 +1125,20 @@ main() {
         log "$request_body"
 
         if ! ((dry_run)); then
-            sendEventToFaros
+            for i in "${graphs[@]}";
+            do
+                sendEventToFaros "$i"
 
-            # Log error response as an error and fail
-            if [ ! "$http_response_status" -eq 202 ]; then
-                err "[HTTP status: $http_response_status]"
-                err "Response Body:"
-                err "$http_response_body"
-                fail
-            else
-                log "[HTTP status ACCEPTED: $http_response_status]"
-            fi
+                # Log error response as an error and fail
+                if [ ! "$http_response_status" -eq 202 ]; then
+                    err "[HTTP status: $http_response_status]"
+                    err "Response Body:"
+                    err "$http_response_body"
+                    fail
+                else
+                    log "[HTTP status ACCEPTED: $http_response_status]"
+                fi
+            done
         else
             log "Dry run: Event NOT sent to Faros."
         fi

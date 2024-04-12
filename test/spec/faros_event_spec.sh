@@ -357,4 +357,20 @@ Describe 'faros_event.sh'
       The output should equal 'Unrecognized arg(s): Bad_Input Also_Bad Failed.'
     End
   End
+
+  Describe 'Common Tests - '
+    It 'Multiple graphs send multiple events'
+      multi_graph_test() {
+        echo $(
+          ../faros_event.sh CD -k "<api_key>" \
+          --graph test_1,test_2 \
+          --deploy "<deploy_source>://<app_name>/QA/<deploy_uid>" \
+          --debug
+        )
+      }
+      When call multi_graph_test
+      The output should include 'test_1'
+      The output should include 'test_2'
+    End
+  End
 End
