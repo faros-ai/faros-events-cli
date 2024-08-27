@@ -29,17 +29,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.10 && docker run farosai/faros-events-cli:v0.6.10 help
+docker pull farosai/faros-events-cli:v0.6.11 && docker run farosai/faros-events-cli:v0.6.11 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq` (1.6+), `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.10/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.11/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.10/faros_event.sh) help
+bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.11/faros_event.sh) help
 ```
 
 
@@ -62,7 +62,7 @@ Example usage:
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --commit "GitHub://faros-ai/faros-events-cli/4414ad2b3b13b17055171678437a92e5d788cad1" \
-    --artifact "Docker://farosai/faros-events-cli/v0.6.10" \
+    --artifact "Docker://farosai/faros-events-cli/v0.6.11" \
     --run "Jenkins://faros-ai/faros-events-cli/168_1700016590" \
     --run_status "Success" \
     --run_start_time "2023-11-14T18:05:46.019Z" \
@@ -268,6 +268,11 @@ There are two ways that arguments can be passed into the script. The first, is v
 | --defect_task         | The unique identifier of the defect task within the TMS (Task Management System).                                                                                                                                                                                                                                                |                                                                                     |
 | --test_suite_task     | The unique identifier of the test suite task within the TMS (Task Management System).                                                                                                                                                                                                                                            |                                                                                     |
 | --test_execution_task | The unique identifier of the test execution task within the TMS (Task Management System).                                                                                                                                                                                                                                        |                                                                                     |
+| --run                   | The URI of the job run executing the deployment. (`<source>://<organization>/<pipeline>/<run_id>` e.g. `Jenkins://faros-ai/my-pipeline/1234`)                                                                                         |            |
+| --run_status            | The status of the job run executing the deployment. (Allowed values: `Success`, `Failed`, `Canceled`, `Queued`, `Running`, `Unknown`, `Custom`)                                                                                       | --run      |
+| --run_status_details    | Any extra details about the status of the job run executing the deployment.                                                                                                                                                           | --run      |
+| --run_start_time        | The start time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                 | --run      |
+| --run_end_time          | The end time of the job run in milliseconds since the epoch, ISO-8601, or `Now`. (e.g. `1626804346019`, `2021-07-20T18:05:46.019Z`)                                                                                                   | --run      |
 
 ### URI arguments alternative
 
