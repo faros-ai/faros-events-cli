@@ -372,6 +372,7 @@ function processEventTypes() {
         resolveTestExecutionInput
         addTestToData
         addCommitToData
+        addRunToData
     fi
 }
 
@@ -708,6 +709,7 @@ function resolveCIInput() {
 function resolveTestExecutionInput() {
     resolveTestInput
     resolveCommitInput
+    resolveRunInput
 }
 
 function resolveDeployInput() {
