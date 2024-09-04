@@ -142,7 +142,7 @@ This event reports a successful test suite invocation:
 
 Send CD events to the Faros platform if you would like to analyze your deploy frequency and lead time metrics. 
 
-**Option 1: **
+**Option 1**:
 If information about the specific commit that is being deployed is available at the time of deployment, use this CD event to report the successful deployment of an application to an environment:
 
 ```sh
@@ -154,7 +154,7 @@ If information about the specific commit that is being deployed is available at 
     --deploy_end_time "2021-07-20T18:08:42.024Z"
 ```
 
-**Option 2: **
+**Option 2**:
 If commit information is not readily available at the time of deployment, but you do have artifact information, you can reference the artifact instead of the commit. 
 In such a scenario, you must also spearately report CI events as described [above](#instrumenting-ci-pipelines), and the Faros Platform will do the work of figuring out what commit got deployed. 
 
