@@ -6,7 +6,7 @@ test || __() { :; }
 
 set -eo pipefail
 
-version="0.6.11"
+version="0.6.12"
 canonical_model_version="0.15.9"
 github_url="https://github.com/faros-ai/faros-events-cli"
 
@@ -134,6 +134,7 @@ function help() {
     echo "--deploy_requested_at   |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--deploy_start_time     |     | e.g. 1626804346019 (milliseconds since epoch)"
     echo "--deploy_end_time       |     | e.g. 1626804346019 (milliseconds since epoch)"
+    echo "--deploy_tags           |     | e.g. tag1:value1,tag2:value2"
     echo "--pull_request_number   |     | *3 e.g. 123 (should be a number)"
     echo "--run                   |     | $run_uri_form"
     echo "--run_status            | *4  | $run_statuses"
@@ -257,6 +258,7 @@ function parseFlags() {
             --deploy_requested_at)     setFlag "$1" deploy_requested_at "$2"     && shift 2 ;;
             --deploy_start_time)       setFlag "$1" deploy_start_time "$2"       && shift 2 ;;
             --deploy_end_time)         setFlag "$1" deploy_end_time "$2"         && shift 2 ;;
+            --deploy_tags)             setFlag "$1" deploy_tags "$2"             && shift 2 ;;
             --test_id)                 setFlag "$1" test_id "$2"                 && shift 2 ;;
             --test_source)             setFlag "$1" test_source "$2"             && shift 2 ;;
             --test_type)               setFlag "$1" test_type "$2"               && shift 2 ;;
@@ -731,6 +733,7 @@ function resolveDeployInput() {
     deploy_requested_at=${deploy_requested_at:-$FAROS_DEPLOY_REQUESTED_AT}
     deploy_start_time=${deploy_start_time:-$FAROS_DEPLOY_START_TIME}
     deploy_end_time=${deploy_end_time:-$FAROS_DEPLOY_END_TIME}
+    deploy_tags=${deploy_tags:-$FAROS_DEPLOY_TAGS}
 
     if [ -n "$deploy_requested_at" ]; then
         deploy_requested_at=$(convert_to_iso8601 "$deploy_requested_at")
@@ -929,6 +932,7 @@ function addDeployToData() {
     tryAddToEvent '["data","deploy","endTime"]' "$deploy_end_time"
     tryAddToEvent '["data","deploy","applicationTags"]' "$deploy_app_tags"
     tryAddToEvent '["data","deploy","applicationPaths"]' "$deploy_app_paths"
+    tryAddToEvent '["data","deploy","tags"]' "$deploy_tags"
 }
 
 function addCommitToData() {
@@ -1112,6 +1116,7 @@ main() {
     debug "| origin:        $origin"
     debug "| dry run:       $(if ((dry_run)); then echo true; else echo false; fi)"
     debug "| validate only: $validate_only"
+    debug "| no artifact:   $no_artifact"
     debug "+---------------------------------------------------------"
 
     parseFlags "$@"

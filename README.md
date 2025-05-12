@@ -29,17 +29,17 @@ CLI for reporting events to Faros platform.
 **Requirements**: `docker`
 
 ```sh
-docker pull farosai/faros-events-cli:v0.6.11 && docker run farosai/faros-events-cli:v0.6.11 help
+docker pull farosai/faros-events-cli:v0.6.12 && docker run farosai/faros-events-cli:v0.6.12 help
 ```
 
 ### Using Bash
 
 **Requirements**: `curl`, `jq` (1.6+), `sed`, `awk` (we recommend `gawk`).
 
-Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.11/faros_event.sh) or invoke the script directly with curl:
+Either [download the script manually](https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.12/faros_event.sh) or invoke the script directly with curl:
 
 ```sh
-bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.11/faros_event.sh) help
+bash <(curl -s https://raw.githubusercontent.com/faros-ai/faros-events-cli/v0.6.12/faros_event.sh) help
 ```
 
 
@@ -62,7 +62,7 @@ Example usage:
 ```sh
 ./faros_event.sh CI -k "<faros_api_key>" \
     --commit "GitHub://faros-ai/faros-events-cli/4414ad2b3b13b17055171678437a92e5d788cad1" \
-    --artifact "Docker://farosai/faros-events-cli/v0.6.11" \
+    --artifact "Docker://farosai/faros-events-cli/v0.6.12" \
     --run "Jenkins://faros-ai/faros-events-cli/168_1700016590" \
     --run_status "Success" \
     --run_start_time "2023-11-14T18:05:46.019Z" \
