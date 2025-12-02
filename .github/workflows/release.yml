@@ -65,22 +65,15 @@ jobs:
           docker push $EVENTS_CLI_TAG && \
           docker push $EVENTS_CLI_VERSION_TAG
       
-      - name: Checkout infra-tools for service image signing
-        uses: actions/checkout@v4
-        with:
-          repository: faros-ai/infra-tools
-          token: ${{ secrets.FAROS_AI_BOT_INFRA_TOOLS_READ_PAT }}
-          path: infra-tools
-
       - name: Sign events cli tag image
-        uses: ./infra-tools/.github/actions/sign_image_with_cosign
+        uses: ./.github/actions/sign_image_with_cosign
         with:
           docker-image: ${{ env.EVENTS_CLI_TAG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Sign events cli version tag image
-        uses: ./infra-tools/.github/actions/sign_image_with_cosign
+        uses: ./.github/actions/sign_image_with_cosign
         with:
           docker-image: ${{ env.EVENTS_CLI_VERSION_TAG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
