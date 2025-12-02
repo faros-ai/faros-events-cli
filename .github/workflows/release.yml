@@ -78,6 +78,13 @@ jobs:
           docker-image: ${{ env.EVENTS_CLI_TAG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Sign image
+        uses: ./infra-tools/.github/actions/sign_image_with_cosign
+        with:
+          docker-image: ${{ env.EVENTS_CLI_VERSION_TAG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set CI end time
         run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
