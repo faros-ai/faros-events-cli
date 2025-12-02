@@ -14,6 +14,9 @@ jobs:
       FAROS_PROD_API_URL: https://prod.api.faros.ai
       FAROS_PIPELINE_ID: faros-events-cli-release
       FAROS_GRAPH: faros
+    permissions:
+      id-token: write # needed for signing the images with GitHub OIDC Token
+      contents: read
     steps:
       - name: Check out
         uses: actions/checkout@v2.3.4
@@ -61,6 +64,20 @@ jobs:
           docker push $EVENTS_CLI_COMMIT_SHA_TAG && \
           docker push $EVENTS_CLI_TAG && \
           docker push $EVENTS_CLI_VERSION_TAG
+      
+      - name: Checkout infra-tools for service image signing
+        uses: actions/checkout@v4
+        with:
+          repository: faros-ai/infra-tools
+          token: ${{ secrets.FAROS_AI_BOT_INFRA_TOOLS_READ_PAT }}
+          path: infra-tools
+
+      - name: Sign image
+        uses: ./infra-tools/.github/actions/sign_image_with_cosign
+        with:
+          docker-image: ${{ env.EVENTS_CLI_TAG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set CI end time
         run: echo "CI_ENDED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
