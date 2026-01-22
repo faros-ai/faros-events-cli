@@ -19,7 +19,6 @@ CLI for reporting events to Faros platform.
   - [Additional arguments](#additional-arguments)
 - [Tips](#tips)
   - [Validating your command](#validating-your-command)
-  - [Usage with Faros Community Edition](#usage-with-faros-community-edition)
 - [Development](#hammer-development)
 
 ## Installation
@@ -184,14 +183,13 @@ There are two ways that arguments can be passed into the script. The first, is v
 
 ### General arguments
 
-| Argument            | Description                                                                                                                                                   | Required                                                      | Default                                                                           |
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| -k, --api_key       | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                      | Yes (not required when `--community_edition` flag is present) |                                                                                   |
-| -u, --url           | The Faros API url to send the event to.                                                                                                                       |                                                               | `https://prod.api.faros.ai` (`http://localhost:8080` for Faros Community Edition) |
-| -g, --graph         | The graph(s) that the event should be sent to. If specifying more than one graph, they should be provided as a comma separated array (e.g. `graph_1,graph_2`) |                                                               | "default"                                                                         |
-| --validate_only     | Event will not be consumed but instead will only be validated against event schema.                                                                           |                                                               |                                                                                   |
-| --dry_run           | Print the event instead of sending.                                                                                                                           |                                                               |                                                                                   |
-| --community_edition | Events will be formatted and sent to [Faros Community Edition](https://github.com/faros-ai/faros-community-edition).                                          |                                                               |                                                                                   |
+| Argument            | Description                                                                                                                                                   | Required | Default                   |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------|
+| -k, --api_key       | Your Faros API key. See the documentation for more information on [obtaining an api key](https://docs.faros.ai/#/api?id=getting-access).                      | Yes      |                           |
+| -u, --url           | The Faros API url to send the event to.                                                                                                                       |          | `https://prod.api.faros.ai` |
+| -g, --graph         | The graph(s) that the event should be sent to. If specifying more than one graph, they should be provided as a comma separated array (e.g. `graph_1,graph_2`) |          | "default"                 |
+| --validate_only     | Event will not be consumed but instead will only be validated against event schema.                                                                           |          |                           |
+| --dry_run           | Print the event instead of sending.                                                                                                                           |          |                           |
 
 ### CI arguments
 
@@ -325,7 +323,6 @@ Sometimes using the URI format required by `--run`, `--commit`, `--artifact`, or
 | --debug               | Helpful information will be printed.                                |                      |
 | --skip_saving_run     | Do not include `cicd_Build` in the event.                           |                      |
 | --no_lowercase_vcs    | Do not lowercase commit_organization and commit_repo.               |                      |
-| --hasura_admin_secret | The Hasura Admin Secret. Only used with `‑‑community_edition` flag. | "admin"              |
 | --max_time            | The time in seconds allowed for each retry attempt.                 | 10                   |
 | --retry               | The number of allowed retry attempts.                               | 3                    |
 | --retry_delay         | The delay in seconds between each retry attempt.                    | 1                    |
@@ -341,18 +338,6 @@ As you are iterating on instrumentation you can use the `--validate_only` flag t
 
 ```sh
 ./faros_event.sh <...your command arguments...> --validate_only
-```
-
-### Usage with Faros Community Edition
-
-> :exclamation: Sending events in parts is not currently supported
-> :exclamation: Build steps in CI events are not currently supported
-> :exclamation: Test Execution events are not currently supported
-
-When using Faros Community Edition, you can use the tool in exactly the same way as described above. Just include the `--community_edition` flag. The Faros API key is not needed, since the tool will call your locally deployed Hasura to perform mutations derived from the events. See the [Faros Community Edition repo](https://github.com/faros-ai/faros-community-edition) for more details.
-
-```sh
-./faros_event.sh <...your command arguments...> --community_edition
 ```
 
 ## :hammer: Development
