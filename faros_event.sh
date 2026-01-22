@@ -517,15 +517,10 @@ function resolveRunInput() {
     run_step_start_time=${run_step_start_time:-$FAROS_RUN_STEP_START_TIME}
     run_step_end_time=${run_step_end_time:-$FAROS_RUN_STEP_END_TIME}
 
-    if [ -n "$run_status" ]; then
-        has_run_status=1
-    fi
     if [ -n "$run_start_time" ]; then
-        has_run_start_time=1
         run_start_time=$(convert_to_iso8601 "$run_start_time")
     fi
     if [ -n "$run_end_time" ]; then
-        has_run_end_time=1
         run_end_time=$(convert_to_iso8601 "$run_end_time")
     fi
     if [ -n "$run_step_start_time" ]; then
