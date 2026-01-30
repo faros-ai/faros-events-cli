@@ -1,0 +1,6 @@
+deploy_id,deploy_app,deploy_env,deploy_status,artifact,deploy_start_time,deploy_end_time,deploy_url
+dep-2024-001,payment-service,Prod,Success,Docker://mycompany/payment-service/v2.1.0,2024-01-15T10:00:00Z,2024-01-15T10:05:30Z,https://deploy.example.com/dep-2024-001
+dep-2024-002,payment-service,Staging,Success,Docker://mycompany/payment-service/v2.1.1,2024-01-16T14:00:00Z,2024-01-16T14:03:45Z,https://deploy.example.com/dep-2024-002
+dep-2024-003,user-service,QA,Failed,Docker://mycompany/user-service/v1.5.0,2024-01-17T09:30:00Z,2024-01-17T09:32:10Z,https://deploy.example.com/dep-2024-003
+dep-2024-004,user-service,QA,Success,Docker://mycompany/user-service/v1.5.1,2024-01-17T11:00:00Z,2024-01-17T11:04:20Z,https://deploy.example.com/dep-2024-004
+dep-2024-005,api-gateway,Prod,Success,Docker://mycompany/api-gateway/v3.0.0,2024-01-18T08:00:00Z,2024-01-18T08:10:00Z,https://deploy.example.com/dep-2024-005
