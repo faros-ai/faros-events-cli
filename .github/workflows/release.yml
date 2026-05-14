@@ -19,7 +19,7 @@ jobs:
       contents: read
     steps:
       - name: Check out
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Set CI start time # https://serverfault.com/a/151112
         run: echo "CI_STARTED_AT=$(date +%s%N | cut -b1-13)" >> $GITHUB_ENV
@@ -41,7 +41,7 @@ jobs:
           echo "EVENTS_CLI_ARTIFACT=Docker://$EVENTS_CLI_IMAGE/$TAG_VERSION" >> "$GITHUB_ENV"
 
       - name: Docker login
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
