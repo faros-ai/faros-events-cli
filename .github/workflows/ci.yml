@@ -18,7 +18,7 @@ jobs:
     env:
       FORCE_COLOR: true
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
     # Based on https://github.com/snyk/snyk/blob/master/.github/workflows/smoke-tests.yml
 
     # Shellspec base image does not have curl, jq, awk, sed
@@ -35,14 +35,14 @@ jobs:
           farosai/shellspec:kcov
 
     - name: Check for style & bugs
-      uses: ludeeus/action-shellcheck@1.1.0
+      uses: ludeeus/action-shellcheck@94e0aab03ca135d11a35e5bfc14e6746dc56e7e9 # 1.1.0
       with:
         ignore: test
       env:
         SHELLCHECK_OPTS: -s bash -e SC2059 -e SC2237 -e SC2004 -e SC2001 -e SC2317
 
     - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: https://sonarcloud.io
