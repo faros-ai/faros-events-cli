@@ -40,9 +40,3 @@ jobs:
         ignore: test
       env:
         SHELLCHECK_OPTS: -s bash -e SC2059 -e SC2237 -e SC2004 -e SC2001 -e SC2317
-
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: https://sonarcloud.io
